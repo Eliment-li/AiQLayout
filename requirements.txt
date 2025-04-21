@@ -1,0 +1,9 @@
+opencv-python
+ray[rllib]
+torch
+gymnasium
+gymnasium[atari,accept-rom-license,mujoco]
+matplotlib
+numpy
+pandas
+hydra-core
