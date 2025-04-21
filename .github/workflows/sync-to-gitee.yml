@@ -12,7 +12,7 @@ jobs:
         with:
           src: 'github/Eliment-li'
           dst: 'gitee/Eliment-li'
-          dst_key: ${{ secrets.GITEE }}
+          dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
           dst_token:  ${{ secrets.GITEE_TOKEN }}
           force_update: true
           debug: true
