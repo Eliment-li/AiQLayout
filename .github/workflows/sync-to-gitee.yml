@@ -2,7 +2,7 @@ name: syncToGitee
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   repo-sync:
     runs-on: ubuntu-latest
