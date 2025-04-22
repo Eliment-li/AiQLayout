@@ -72,7 +72,8 @@ class Env_0(MultiAgentEnv):
 
         move1 = action_dict["player1"]
         move2 = action_dict["player2"]
-
+        self.move(1,move1)
+        self.move(2,move2)
         #update obs
 
         # return observation dict, rewards dict, termination/truncation dicts, and infos dict
@@ -83,5 +84,22 @@ class Env_0(MultiAgentEnv):
     def reward(self):
         pass
 
+    def move(self, player: int ,act:int):
+        old_pos = self.positions[player]
+        if act ==0:
+            new_pos = [old_pos[0], old_pos[1]+1]
+        elif act ==1:
+            new_pos = [old_pos[0], old_pos[1]-1]
+        elif act ==2:
+            new_pos = [old_pos[0]-1, old_pos[1]]
+        elif act ==3:
+            new_pos = [old_pos[0]+1, old_pos[1]]
 
-# __sphinx_doc_5_end__
+        #if new_post out of matrix
+        if new_pos[0] < 0 or new_pos[0] > 2 or new_pos[1] < 0 or new_pos[1] > 2:
+            return False
+        else:
+            self.positions[player] = new_pos
+            return True
+
+
