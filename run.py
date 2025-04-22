@@ -3,7 +3,7 @@
 This example:
     - demonstrates how to write your own (multi-agent) environment using RLlib's
     MultiAgentEnv API.
-    - shows how to implement the `reset()` and `step()` methods of the environments such that
+    - shows how to implement the `reset()` and `step()` methods of the envs such that
     the agents act simultaneously.
     - shows how to configure and setup this environment class within an RLlib
     Algorithm config.
@@ -17,7 +17,7 @@ from ray.rllib.utils.test_utils import (
 )
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
 
-from environments.env_0 import Env_0
+from envs.env_0 import Env_0
 
 parser = add_rllib_example_script_args(
     default_reward=0.9, default_iters=2, default_timesteps=10
@@ -39,8 +39,8 @@ if __name__ == "__main__":
 
     assert args.num_agents == 2, "Must set --num-agents=2 when running this script!"
 
-    # You can also register the environments creator function explicitly with:
-    # register_env("environments", lambda cfg: RockPaperScissors({"sheldon_cooper_mode": False}))
+    # You can also register the envs creator function explicitly with:
+    # register_env("envs", lambda cfg: RockPaperScissors({"sheldon_cooper_mode": False}))
 
     # Or you can hard code certain settings into the Env's constructor (`config`).
     # register_env(

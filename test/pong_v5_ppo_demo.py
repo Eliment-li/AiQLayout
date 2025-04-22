@@ -49,12 +49,12 @@ def _env_creator(cfg):
     )
 
 
-tune.register_env("environments", _env_creator)
+tune.register_env("envs", _env_creator)
 
 config = (
     PPOConfig()
     .environment(
-        "environments",
+        "envs",
         env_config={
             # Make analogous to old v4 + NoFrameskip.
             "frameskip": 1,

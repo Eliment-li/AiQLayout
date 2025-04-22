@@ -94,22 +94,22 @@ def add_rllib_example_script_args(
         help="The DL framework specifier.",
     )
     parser.add_argument(
-        "--environments",
+        "--envs",
         type=str,
         default=None,
         help="The gym.Env identifier to run the experiment with.",
     )
     parser.add_argument(
-        "--num-environments-runners",
+        "--num-envs-runners",
         type=int,
         default=None,
         help="The number of (remote) EnvRunners to use for the experiment.",
     )
     parser.add_argument(
-        "--num-envs-per-environments-runner",
+        "--num-envs-per-envs-runner",
         type=int,
         default=None,
-        help="The number of (vectorized) environments per EnvRunner. Note that "
+        help="The number of (vectorized) envs per EnvRunner. Note that "
         "this is identical to the batch size for (inference) action computations.",
     )
     parser.add_argument(
@@ -124,7 +124,7 @@ def add_rllib_example_script_args(
 
     # Evaluation options.
     parser.add_argument(
-        "--evaluation-num-environments-runners",
+        "--evaluation-num-envs-runners",
         type=int,
         default=0,
         help="The number of evaluation (remote) EnvRunners to use for the experiment.",
@@ -635,7 +635,7 @@ def check_compute_single_action(
     # actions; unsquash option; clip option; full fetch or not.
     for what in [pol, algorithm]:
         if what is algorithm:
-            # Get the obs-space from Workers.environments (not Policy) due to possible
+            # Get the obs-space from Workers.envs (not Policy) due to possible
             # pre-processor up front.
             worker_set = getattr(algorithm, "env_runner_group", None)
             assert worker_set
@@ -675,7 +675,7 @@ def check_compute_single_action(
 
 
 def check_inference_w_connectors(policy, env_name, max_steps: int = 100):
-    """Checks whether the given policy can infer actions from an environments with connectors.
+    """Checks whether the given policy can infer actions from an envs with connectors.
 
     Args:
         policy: The policy to check.
@@ -690,7 +690,7 @@ def check_inference_w_connectors(policy, env_name, max_steps: int = 100):
 
     env = gym.make(env_name)
 
-    # Potentially wrap the environments like we do in RolloutWorker
+    # Potentially wrap the envs like we do in RolloutWorker
     if is_atari(env):
         env = wrap_deepmind(
             env,
@@ -1134,7 +1134,7 @@ def run_rllib_example_script_experiment(
         # Set the framework.
         config.framework(args.framework)
 
-        # Add an environments specifier (only if not already set in config)?
+        # Add an envs specifier (only if not already set in config)?
         if args.env is not None and config.env is None:
             config.environment(args.env)
 
@@ -1808,7 +1808,7 @@ def check_supported_spaces(
     default_observation_space = default_action_space = "discrete"
 
     config["log_level"] = "ERROR"
-    config["environments"] = RandomEnv
+    config["envs"] = RandomEnv
 
     def _do_check(alg, config, a_name, o_name):
         # We need to copy here so that this validation does not affect the actual
