@@ -3,7 +3,7 @@
 This example:
     - demonstrates how to write your own (multi-agent) environment using RLlib's
     MultiAgentEnv API.
-    - shows how to implement the `reset()` and `step()` methods of the env such that
+    - shows how to implement the `reset()` and `step()` methods of the environments such that
     the agents act simultaneously.
     - shows how to configure and setup this environment class within an RLlib
     Algorithm config.
@@ -15,7 +15,7 @@ How to run this script
 `python [script file name].py --enable-new-api-stack --sheldon-cooper-mode`
 
 For debugging, use the following additional command line options
-`--no-tune --num-env-runners=0`
+`--no-tune --num-environments-runners=0`
 which should allow you to set breakpoints anywhere in the RLlib code and
 have the execution stop there for inspection and debugging.
 
@@ -73,8 +73,8 @@ if __name__ == "__main__":
 
     assert args.num_agents == 2, "Must set --num-agents=2 when running this script!"
 
-    # You can also register the env creator function explicitly with:
-    # register_env("env", lambda cfg: RockPaperScissors({"sheldon_cooper_mode": False}))
+    # You can also register the environments creator function explicitly with:
+    # register_env("environments", lambda cfg: RockPaperScissors({"sheldon_cooper_mode": False}))
 
     # Or you can hard code certain settings into the Env's constructor (`config`).
     # register_env(

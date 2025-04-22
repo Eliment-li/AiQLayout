@@ -16,7 +16,7 @@ fcnet_hiddens_grid: [[128,256,256,128]]
 #lstm
 use_lstm: True
 
-#One call to env.step() is one timestep.
+#One call to environments.step() is one timestep.
 stop_timesteps: 99999999
 
 #the reward for multi-agent is the total sum (not the mean) over the agents.

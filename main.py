@@ -20,7 +20,7 @@ from ray.tune import CLIReporter
 from hydra import initialize, compose
 from omegaconf import DictConfig
 
-from env import custom_env
+from environments import custom_env
 
 args = None
 # 手动初始化 Hydra
@@ -43,7 +43,7 @@ def init_algo_config(args):
         PPOConfig()
         .environment(env=RockPaperScissors)
         # .env_runners(
-        #     env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
+        #     env_to_module_connector=lambda environments: FlattenObservations(multi_agent=True),
         # )
         .multi_agent(
             policy_mapping_fn=policy_mapping_fn,
@@ -132,21 +132,21 @@ if __name__ == "__main__":
     # register(
     #     id='custom_environment_v0',
     #     # entry_point='core.envs.circuit_env:CircuitEnv',
-    #     entry_point='env.rock_paper_scissors:RockPaperScissors',
+    #     entry_point='environments.rock_paper_scissors:RockPaperScissors',
     #     max_episode_steps=1000,
     # )
 
-    # env = custom_env.CustomActionMaskedEnvironment()
-    # observations, infos = env.reset(seed=42)
+    # environments = custom_env.CustomActionMaskedEnvironment()
+    # observations, infos = environments.reset(seed=42)
     #
-    # while env.agents:
+    # while environments.agents:
     #     # this is where you would insert your policy
-    #     actions = {agent: env.action_space(agent).sample() for agent in env.agents}
+    #     actions = {agent: environments.action_space(agent).sample() for agent in environments.agents}
     #     print(actions)
     #
-    #     observations, rewards, terminations, truncations, infos = env.step(actions)
+    #     observations, rewards, terminations, truncations, infos = environments.step(actions)
     #     print(observations, rewards, terminations, truncations, infos)
-    # env.close()
+    # environments.close()
     config = init_algo_config(args)
     train(config=config,args = args)
 
