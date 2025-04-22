@@ -24,129 +24,28 @@ from envs import custom_env
 
 args = None
 # 手动初始化 Hydra
-with initialize(config_path="conf", job_name="config"):
+with initialize(config_path="conf", job_name="config",version_base="1.2"):
     # 加载配置文件
-    args = compose(config_name="config")
-# 设置环境变量
-os.environ["HYDRA_FULL_ERROR"] = "1"
+    confs = compose(config_name="config")
+    args = OmegaConf.create({})
+    for key in confs.keys():
+        args = OmegaConf.merge(args, confs[key])
 
-# 定义一个普通函数来实现策略映射
-def policy_mapping_fn(aid, episode):
-    # 提取 player 的编号，并映射到对应的策略
-    player_number = int(aid.split('_')[1])  # 从 agent ID 提取数字部分
-    return f"p{player_number}"  # 返回对应的策略名称
+    for key, value in args.items():
+        if str(value).lower() == 'none':
+            # 如果值是字符串 'none'（忽略大小写），则替换为 None
+            args[key] = None
 
-def init_algo_config(args):
-    args = args.run
-    # 最简单的环境
-    config = (
-        PPOConfig()
-        .environment(env=RockPaperScissors)
-        # .env_runners(
-        #     env_to_module_connector=lambda envs: FlattenObservations(multi_agent=True),
-        # )
-        .multi_agent(
-            policy_mapping_fn=policy_mapping_fn,
-            policies={"p0", "p1"}
-        )
-        .training(
-            vf_loss_coeff=0.005,
-        )
-        .rl_module(
-            rl_module_spec=MultiRLModuleSpec(
-                rl_module_specs={
-                    "p0": RLModuleSpec(),
-                    "p1": RLModuleSpec(),
-                }
-            ),
-            model_config=DefaultModelConfig(
-                use_lstm=args.use_lstm,
-                # Use a simpler FCNet when we also have an LSTM.
-                fcnet_hiddens=[32] if args.use_lstm else [256, 256],
-                lstm_cell_size=256,
-                max_seq_len=15,
-                vf_share_layers=True,
-            ),
-        )
-    )
 
-    return config
-
-def train(config, args: DictConfig):
-    args =args.run
-    # Auto-configure a CLIReporter (to log the results to the console).
-    # Use better ProgressReporter for multi-agent cases: List individual policy rewards.
-    progress_reporter = CLIReporter(
-        metric_columns={
-            **{
-                TRAINING_ITERATION: "iter",
-                "time_total_s": "total time (s)",
-                NUM_ENV_STEPS_SAMPLED_LIFETIME: "ts",
-                f"{ENV_RUNNER_RESULTS}/{EPISODE_RETURN_MEAN}": "combined return",
-            },
-            **{
-                (
-                    f"{ENV_RUNNER_RESULTS}/module_episode_returns_mean/" f"{pid}"
-                ): f"return {pid}"
-                for pid in config.policies
-            },
-        },
-    )
-
-    # Run the actual experiment (using Tune).
-    try:
-        start_time = time.time()
-        results = tune.Tuner(
-           config.algo_class,
-            param_space=config,
-            run_config=tune.RunConfig(
-                stop={
-             TRAINING_ITERATION: args.stop_iters,
-                 #NUM_ENV_STEPS_SAMPLED_LIFETIME: 1000,
-                },
-                verbose=args.verbose,
-                #callbacks=tune_callbacks,
-                # checkpoint_config=tune.CheckpointConfig(
-                #     checkpoint_frequency=args.checkpoint_freq,
-                #     checkpoint_at_end=args.checkpoint_at_end,
-                # ),
-                progress_reporter=progress_reporter,
-            ),
-            # tune_config=tune.TuneConfig(
-            #     num_samples=args.num_samples,
-            #     max_concurrent_trials=args.max_concurrent_trials,
-            #     scheduler=scheduler,
-            # ),
-        ).fit()
-        time_taken = time.time() - start_time
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        time_taken = None
-    finally:
-        # Perform any necessary cleanup or finalization here
-        print(f"Total time taken: {time_taken} seconds")
-        ray.shutdown()
 
 
 if __name__ == "__main__":
-    # register(
-    #     id='custom_environment_v0',
-    #     # entry_point='core.envs.circuit_env:CircuitEnv',
-    #     entry_point='envs.rock_paper_scissors:RockPaperScissors',
-    #     max_episode_steps=1000,
-    # )
-
-    # envs = custom_env.CustomActionMaskedEnvironment()
-    # observations, infos = envs.reset(seed=42)
-    #
-    # while envs.agents:
-    #     # this is where you would insert your policy
-    #     actions = {agent: envs.action_space(agent).sample() for agent in envs.agents}
-    #     print(actions)
-    #
-    #     observations, rewards, terminations, truncations, infos = envs.step(actions)
-    #     print(observations, rewards, terminations, truncations, infos)
-    # envs.close()
-    config = init_algo_config(args)
-    train(config=config,args = args)
-
+    print(args)
+    if args.num_gpus is None:
+        print('none')
+    # 解析命令行参数
+    # args = parse_args()
+    # print(OmegaConf.to_yaml(args))
+    # print(args)
+    # print(args.env_config)
+    # print(args.env_config.key)

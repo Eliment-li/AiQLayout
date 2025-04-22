@@ -1,0 +1,47 @@
+# This file contains the default configuration for the RLlib Trainer.
+
+# Algorithm and Algorithm Config Options
+algo: "PPO"
+enable_new_api_stack: True
+framework: "torch"
+env: null
+num_env_runners: null
+num_envs_per_env_runner: null
+num_agents: 0
+
+# Evaluation Options
+evaluation_num_env_runners: 0
+evaluation_interval: 0
+evaluation_duration: 10
+evaluation_duration_unit: "episodes"
+evaluation_parallel_to_training: false
+
+# RLlib Logging Options
+output: null
+log_level: WARN  # Options: INFO, DEBUG, WARN, ERROR
+
+# tune.Tuner Options
+num_samples: 1
+max_concurrent_trials: null
+verbose: 2
+checkpoint_freq: 0
+checkpoint_at_end: false
+
+# WandB Logging Options
+wandb_key: null
+wandb_project: null
+wandb_run_name: null
+
+
+# Learner Scaling Options
+num_learners: null
+num_cpus_per_learner: null
+num_gpus_per_learner: null
+num_aggregator_actors_per_learner: null
+
+# Ray Init Options
+num_cpus: 0
+local_mode: false
+
+# Old API Stack Config
+num_gpus: null

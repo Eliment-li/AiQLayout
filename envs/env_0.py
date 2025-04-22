@@ -77,18 +77,9 @@ class Env_0(MultiAgentEnv):
         }
         rewards = self.reward_function()
 
-        terminateds = {
-            "agent_1": False,
-            "agent_2": False,
-        }
-        truncated = {
-            "agent_1": False,
-            "agent_2": False,
-        }
-        infos = {
-            "agent_1": {},
-            "agent_2": {},
-        }
+        terminateds = {"__all__": False}
+        truncated = {}
+        infos = {}
 
         return obs,rewards,terminateds,truncated,infos
 

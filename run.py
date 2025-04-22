@@ -1,3 +1,7 @@
+from hydra import initialize, compose
+from omegaconf import OmegaConf
+
+
 def policy_mapping_fn(agent_id, episode, **kwargs):
     """
     Map agent IDs to policy names based on their numeric suffix.
@@ -18,7 +22,6 @@ def policy_mapping_fn(agent_id, episode, **kwargs):
         raise ValueError(f"Invalid agent_id format: {agent_id}. Expected 'agent_n'.")
 
 
-
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.rllib.utils.test_utils import (
     add_rllib_example_script_args,
@@ -28,25 +31,22 @@ from ray.tune.registry import get_trainable_cls, register_env  # noqa
 
 from envs.env_0 import Env_0
 
-parser = add_rllib_example_script_args(
-    default_reward=0.9, default_iters=2, default_timesteps=10
-)
-parser.set_defaults(
-    enable_new_api_stack=True,
-    num_agents=2,
-)
-parser.add_argument(
-    "--sheldon-cooper-mode",
-    action="store_true",
-    help="Whether to add two more actions to the game: Lizard and Spock. "
-    "Watch here for more details :) https://www.youtube.com/watch?v=x5Q6-wMx-K8",
-)
+args = None
+# 手动初始化 Hydra
+with initialize(config_path="conf", job_name="config",version_base="1.2"):
+    # 加载配置文件
+    confs = compose(config_name="config")
+    args = OmegaConf.create({})
+    for key in confs.keys():
+        args = OmegaConf.merge(args, confs[key])
+    for key, value in args.items():
+        if str(value).lower() == 'none':
+            # 如果值是字符串 'none'（忽略大小写），则替换为 None
+            args[key] = None
 # Map "agent_n" to "policy_n" in
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-
-    assert args.num_agents == 2, "Must set --num-agents=2 when running this script!"
+    args.num_agents = 2
 
     # You can also register the envs creator function explicitly with:
     # register_env("envs", lambda cfg: RockPaperScissors({"sheldon_cooper_mode": False}))

@@ -1,7 +1,24 @@
+#The default value for the --stop-reward option.
+#The default value for the --stop-iters option.
+#The default value for the --stop-timesteps option.
+
+default_reward: 100.0
+default_iters: 200
+default_timesteps: 100000
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters: 3
+stop_iters: 200  # Default: default_iters
 verbose: 1
+#Stopping
+#the reward for multi-agent is the total sum (not the mean) over the agents.
+stop_reward: 100.0
+#One call to envs.step() is one timestep.
+stop_timesteps: 100000  # Default: default_timesteps
+
+as_test: false
+as_release_test: false
+
+
 
 #learning rate
 lr: 3.0e-5
@@ -16,11 +33,7 @@ fcnet_hiddens_grid: [[128,256,256,128]]
 #lstm
 use_lstm: True
 
-#One call to envs.step() is one timestep.
-stop_timesteps: 99999999
 
-#the reward for multi-agent is the total sum (not the mean) over the agents.
-stop_reward: 100
 
 no_tune: False
 local_mode: False
@@ -28,19 +41,18 @@ framework: torch
 checkpoint_frequency: 10
 checkpoint_at_end: True
 
-qasm: None
 log_file_id: 0
 
 
 
 run: PPO
 #在config.py中有自动配置
-num_gpus: 1
+num_gpus: none
 #resume: False
-checkpoint: None
+checkpoint: none
 
 #the save path of check_point zip file
-check_point_zip_path: None
+check_point_zip_path: none
 
 debug: False
 
