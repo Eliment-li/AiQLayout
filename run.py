@@ -1,14 +1,23 @@
-"""Example of running a multi-agent experiment w/ agents always acting simultaneously.
+def policy_mapping_fn(agent_id, episode, **kwargs):
+    """
+    Map agent IDs to policy names based on their numeric suffix.
 
-This example:
-    - demonstrates how to write your own (multi-agent) environment using RLlib's
-    MultiAgentEnv API.
-    - shows how to implement the `reset()` and `step()` methods of the envs such that
-    the agents act simultaneously.
-    - shows how to configure and setup this environment class within an RLlib
-    Algorithm config.
-    - runs the experiment with the configured algo, trying to solve the environment.
-"""
+    Args:
+        agent_id (str): The ID of the agent (e.g., "agent_1").
+        episode (object): The current episode object (not used here).
+        **kwargs: Additional keyword arguments (not used here).
+
+    Returns:
+        str: The name of the policy corresponding to the agent ID (e.g., "policy_1").
+    """
+    # Extract the numeric suffix from the agent ID and map it to "policy_n"
+    try:
+        agent_number = agent_id.split('_')[1]  # Split and get the number part
+        return f"policy_{agent_number}"       # Return the mapped policy name
+    except IndexError:
+        raise ValueError(f"Invalid agent_id format: {agent_id}. Expected 'agent_n'.")
+
+
 
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.rllib.utils.test_utils import (
@@ -32,7 +41,7 @@ parser.add_argument(
     help="Whether to add two more actions to the game: Lizard and Spock. "
     "Watch here for more details :) https://www.youtube.com/watch?v=x5Q6-wMx-K8",
 )
-
+# Map "agent_n" to "policy_n" in
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -56,17 +65,17 @@ if __name__ == "__main__":
         .get_default_config()
         .environment(
             Env_0,
-            env_config={"sheldon_cooper_mode": args.sheldon_cooper_mode},
+            env_config={"key": "value"},
         )
         .env_runners(
             env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
         )
         .multi_agent(
             # Define two policies.
-            policies={"player1", "player2"},
+            policies={"policy_1", "policy_2"},
             # Map agent "player1" to policy "player1" and agent "player2" to policy
             # "player2".
-            policy_mapping_fn=lambda agent_id, episode, **kw: agent_id,
+            policy_mapping_fn=policy_mapping_fn
         )
     )
 

@@ -8,3 +8,4 @@ numpy
 pandas
 hydra-core
 pettingzoo
+gputil
