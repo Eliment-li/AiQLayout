@@ -1,5 +1,6 @@
 import time
 
+import gymnasium as gym
 import hydra
 import ray
 from gymnasium import register
@@ -18,6 +19,9 @@ from ray.rllib.utils.metrics import NUM_ENV_STEPS_SAMPLED_LIFETIME, EPISODE_RETU
 from ray.tune import CLIReporter
 from hydra import initialize, compose
 from omegaconf import DictConfig
+
+from env import custom_env
+
 args = None
 # 手动初始化 Hydra
 with initialize(config_path="conf", job_name="config"):
@@ -35,16 +39,9 @@ def policy_mapping_fn(aid, episode):
 def init_algo_config(args):
     args = args.run
     # 最简单的环境
-    register(
-        id='env_1',
-        # entry_point='core.envs.circuit_env:CircuitEnv',
-        entry_point='env.custom_environment:CustomEnvironment',
-        max_episode_steps=2000000,
-    )
-
     config = (
         PPOConfig()
-        .environment(env="env_1")
+        .environment(env=RockPaperScissors)
         # .env_runners(
         #     env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
         # )
@@ -132,6 +129,24 @@ def train(config, args: DictConfig):
 
 
 if __name__ == "__main__":
+    # register(
+    #     id='custom_environment_v0',
+    #     # entry_point='core.envs.circuit_env:CircuitEnv',
+    #     entry_point='env.rock_paper_scissors:RockPaperScissors',
+    #     max_episode_steps=1000,
+    # )
+
+    # env = custom_env.CustomActionMaskedEnvironment()
+    # observations, infos = env.reset(seed=42)
+    #
+    # while env.agents:
+    #     # this is where you would insert your policy
+    #     actions = {agent: env.action_space(agent).sample() for agent in env.agents}
+    #     print(actions)
+    #
+    #     observations, rewards, terminations, truncations, infos = env.step(actions)
+    #     print(observations, rewards, terminations, truncations, infos)
+    # env.close()
     config = init_algo_config(args)
     train(config=config,args = args)
 

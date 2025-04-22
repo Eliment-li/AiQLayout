@@ -8,8 +8,43 @@ This example:
     - shows how to configure and setup this environment class within an RLlib
     Algorithm config.
     - runs the experiment with the configured algo, trying to solve the environment.
-"""
 
+
+How to run this script
+----------------------
+`python [script file name].py --enable-new-api-stack --sheldon-cooper-mode`
+
+For debugging, use the following additional command line options
+`--no-tune --num-env-runners=0`
+which should allow you to set breakpoints anywhere in the RLlib code and
+have the execution stop there for inspection and debugging.
+
+For logging to your WandB account, use:
+`--wandb-key=[your WandB API key] --wandb-project=[some project name]
+--wandb-run-name=[optional: WandB run name (within the defined project)]`
+
+
+Results to expect
+-----------------
+You should see results similar to the following in your console output:
+
++-----------------------------------+----------+--------+------------------+-------+
+| Trial name                        | status   |   iter |   total time (s) |    ts |
+|-----------------------------------+----------+--------+------------------+-------+
+| PPO_RockPaperScissors_8cef7_00000 | RUNNING  |      3 |          16.5348 | 12000 |
++-----------------------------------+----------+--------+------------------+-------+
++-------------------+------------------+------------------+
+|   combined return |   return player2 |   return player1 |
+|-------------------+------------------+------------------|
+|                 0 |            -0.15 |             0.15 |
++-------------------+------------------+------------------+
+
+Note that b/c we are playing a zero-sum game, the overall return remains 0.0 at
+all times.
+"""
+from ray.rllib.examples.envs.classes.multi_agent.rock_paper_scissors import (
+    RockPaperScissors,
+)
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.rllib.utils.test_utils import (
     add_rllib_example_script_args,
@@ -17,10 +52,9 @@ from ray.rllib.utils.test_utils import (
 )
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
 
-from env.env_0 import Env_0
 
 parser = add_rllib_example_script_args(
-    default_reward=0.9, default_iters=2, default_timesteps=10
+    default_reward=0.9, default_iters=4, default_timesteps=100
 )
 parser.set_defaults(
     enable_new_api_stack=True,
@@ -51,11 +85,12 @@ if __name__ == "__main__":
     # Or allow the RLlib user to set more c'tor options via their algo config:
     # config.environment(env_config={[c'tor arg name]: [value]})
     # register_env("rock-paper-scissors", lambda cfg: RockPaperScissors(cfg))
+    print(args.algo)
     base_config = (
         get_trainable_cls(args.algo)
         .get_default_config()
         .environment(
-            Env_0,
+            RockPaperScissors,
             env_config={"sheldon_cooper_mode": args.sheldon_cooper_mode},
         )
         .env_runners(
