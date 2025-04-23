@@ -35,7 +35,6 @@ from ray.tune.registry import get_trainable_cls, register_env  # noqa
 from envs.env_0 import Env_0
 
 
-
 if __name__ == "__main__":
     # ConfigSingleton().add('num_agents' ,2)
     args = ConfigSingleton().get_args()
@@ -68,7 +67,7 @@ if __name__ == "__main__":
             # Map agent "player1" to policy "player1" and agent "player2" to policy
             # "player2".
             policy_mapping_fn=policy_mapping_fn
-        )
+        ).rl_module()
     )
 
     train(base_config, args)

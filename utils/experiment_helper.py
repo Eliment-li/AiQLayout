@@ -19,6 +19,7 @@ from typing import (
 )
 
 import gymnasium as gym
+from gymnasium import register
 from gymnasium.spaces import Box, Discrete, MultiDiscrete, MultiBinary
 from gymnasium.spaces import Dict as GymDict
 from gymnasium.spaces import Tuple as GymTuple
@@ -29,6 +30,7 @@ import ray
 from ray import tune
 from ray.air.integrations.wandb import WandbLoggerCallback, WANDB_ENV_VAR
 from ray.rllib.core import DEFAULT_MODULE_ID, Columns
+from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 from ray.rllib.env.wrappers.atari_wrappers import is_atari, wrap_deepmind
 from ray.rllib.utils.annotations import OldAPIStack
 from ray.rllib.utils.framework import try_import_jax, try_import_tf, try_import_torch
@@ -192,9 +194,7 @@ def train(
     if progress_reporter is None and args.num_agents > 0:
         progress_reporter =cli_reporter(config)
 
-    # Force Tuner to use old progress output as the new one silently ignores our custom
-    # `CLIReporter`.
-    os.environ["RAY_AIR_NEW_OUTPUT"] = "0"
+
 
     # Run the actual experiment (using Tune).
     start_time = time.time()
@@ -212,25 +212,22 @@ def train(
             progress_reporter=progress_reporter,
         ),
         tune_config=tune.TuneConfig(
-            num_samples=args.num_samples,
+            num_samples=args.num_samples,#default to 1
             max_concurrent_trials=args.max_concurrent_trials,
             scheduler=scheduler,
         ),
     ).fit()
     time_taken = time.time() - start_time
-
+    print('time_taken=',str(time_taken/60))
 
     ray.shutdown()
 
-    # Error out, if Tuner.fit() failed to run. Otherwise, erroneous examples might pass
-    # the CI tests w/o us knowing that they are broken (b/c some examples do not have
-    # a --as-test flag and/or any passing criteris).
+    # Error out, if Tuner.fit() failed to run.
     if results.errors:
         raise RuntimeError(
             "Running the example script resulted in one or more errors! "
             f"{[e.args[0].args[2] for e in results.errors]}"
         )
-
 
 
     return results
@@ -358,6 +355,10 @@ def append_wandb(tune_callbacks,args,config):
     )
 
 def cli_reporter(config):
+    # Force Tuner to use old progress output as the new one silently ignores our custom
+    # `CLIReporter`.
+    os.environ["RAY_AIR_NEW_OUTPUT"] = "0"
+
     # Auto-configure a CLIReporter (to log the results to the console).
     # Use better ProgressReporter for multi-agent cases: List individual policy rewards.
     CLIReporter(
@@ -377,7 +378,15 @@ def cli_reporter(config):
         },
     )
 
-def evaluate_policyv2(results):
+def register_env():
+    for version in range(1):
+        register(
+            id='Env_'+str(version),
+            # entry_point='core.envs.circuit_env:CircuitEnv',
+            entry_point='env.env_v'+str(version)+':CircuitEnv_v'+str(version),
+            #max_episode_steps=999999,
+        )
+def evaluate(results):
     args = ConfigSingleton().get_config()
 
     if  not isinstance(results, str):
@@ -393,7 +402,9 @@ def evaluate_policyv2(results):
     episode_reward = 0.0
     trace = []
     trace.append(deepcopy(info['occupy']))
-    #attention start
+
+
+    #attention  start
     # In case the model needs previous-reward/action inputs, keep track of
     # these via these variables here (we'll have to pass them into the
     # compute_actions methods below).
@@ -414,6 +425,30 @@ def evaluate_policyv2(results):
         init_prev_r = prev_r = np.array([0.0] * int(args.prev_n_rewards))
     #attention end
 
+
+
+    #####################
+
+    from ray.rllib.algorithms.ppo.torch.default_ppo_torch_rl_module import (
+        DefaultPPOTorchRLModule
+    )
+    from ray.rllib.algorithms.ppo.ppo_catalog import PPOCatalog
+
+    # Create an instance of the default RLModule used by PPO.
+    module = algo.get_module('policy_1')
+    action_dist_class = module.get_inference_action_dist_cls()
+    while not terminated:
+        fwd_ins = {"obs": torch.Tensor([obs])}
+        fwd_outputs = module.forward_inference(fwd_ins)
+        # this can be either deterministic or stochastic distribution
+        action_dist = action_dist_class.from_logits(
+            fwd_outputs["action_dist_inputs"]
+        )
+        action = action_dist.sample()[0].numpy()
+        obs, reward, terminated, truncated, info = env.step(action)
+
+
+    #######################
     for i in range(10):
         a, state_out, _ = algo.compute_single_action(
             observation=obs,
@@ -426,6 +461,7 @@ def evaluate_policyv2(results):
 
         obs, reward, done, truncated, info = env.step(a)
         #trace
+
         print('done = %r, action = %r, reward = %r,  info = %r \n' % (done,a, reward,info['occupy']))
         episode_reward *=args.gamma
         episode_reward += reward
