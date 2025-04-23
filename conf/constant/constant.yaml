@@ -40,7 +40,7 @@ num_gpus_per_learner: null
 num_aggregator_actors_per_learner: null
 
 # Ray Init Options
-num_cpus: 0
+num_cpus: 6
 local_mode: false
 
 # Old API Stack Config

@@ -28,10 +28,15 @@ class ConfigSingleton:
                 if str(value).lower() == 'none':
                     # 如果值是字符串 'none'（忽略大小写），则替换为 None
                     self.args[key] = None
+
+    def custom_configure(self):
+        pass
+
+
     def get_args(self):
         return self.args
-
-    def add(self, key, value):
+    @staticmethod
+    def update(self, key, value):
         """
         动态添加键值对到配置中
         """
@@ -42,6 +47,25 @@ class ConfigSingleton:
                 current[k] = {}  # 创建嵌套字典
             current = current[k]
         current[keys[-1]] = value
+
+
+import os
+import multiprocessing
+
+def get_logical_cores():
+    try:
+        # 优先使用 multiprocessing.cpu_count()
+        return multiprocessing.cpu_count()
+    except (ImportError, NotImplementedError):
+        try:
+            # 回退到 os.cpu_count()
+            return os.cpu_count()
+        except (AttributeError, NotImplementedError):
+            # 如果都无法获取，返回默认值（通常为1）
+            return 1
+
+logical_cores = get_logical_cores()
+print(f"逻辑核心数量: {logical_cores}")
 
 
 # 示例使用

@@ -29,10 +29,7 @@ import tree  # pip install dm_tree
 import ray
 from ray import tune
 from ray.air.integrations.wandb import WandbLoggerCallback, WANDB_ENV_VAR
-from ray.rllib.core import DEFAULT_MODULE_ID, Columns
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
-from ray.rllib.env.wrappers.atari_wrappers import is_atari, wrap_deepmind
-from ray.rllib.utils.annotations import OldAPIStack
 from ray.rllib.utils.framework import try_import_jax, try_import_tf, try_import_torch
 from ray.rllib.utils.metrics import (
     DIFF_NUM_GRAD_UPDATES_VS_SAMPLER_POLICY,
@@ -43,15 +40,14 @@ from ray.rllib.utils.metrics import (
     NUM_ENV_STEPS_SAMPLED_LIFETIME,
 )
 from ray.rllib.utils.typing import ResultDict
-from ray.rllib.utils.error import UnsupportedSpaceException
 from ray.tune import CLIReporter
 from ray.tune.result import TRAINING_ITERATION
 
 from config import ConfigSingleton
+from ray.rllib.algorithms import Algorithm, AlgorithmConfig
+from ray.rllib.offline.dataset_reader import DatasetReader
 
-if TYPE_CHECKING:
-    from ray.rllib.algorithms import Algorithm, AlgorithmConfig
-    from ray.rllib.offline.dataset_reader import DatasetReader
+from envs.env_0 import Env_0
 
 jax, _ = try_import_jax()
 tf1, tf, tfv = try_import_tf()
@@ -383,12 +379,13 @@ def register_env():
         register(
             id='Env_'+str(version),
             # entry_point='core.envs.circuit_env:CircuitEnv',
-            entry_point='env.env_v'+str(version)+':CircuitEnv_v'+str(version),
+            entry_point='envs.env_'+str(version)+':Env_'+str(version),
             #max_episode_steps=999999,
         )
-def evaluate(results):
-    args = ConfigSingleton().get_config()
 
+def evaluate(results):
+    args = ConfigSingleton().get_args()
+    register_env()
     if  not isinstance(results, str):
         checkpoint = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
         checkpoint = checkpoint.to_directory()
@@ -397,35 +394,8 @@ def evaluate(results):
     else:
         algo = Algorithm.from_checkpoint(path=results)
 
-    env = gym.make('Env_'+str(args.env_version))
+    env = Env_0()
     obs, info = env.reset()
-    episode_reward = 0.0
-    trace = []
-    trace.append(deepcopy(info['occupy']))
-
-
-    #attention  start
-    # In case the model needs previous-reward/action inputs, keep track of
-    # these via these variables here (we'll have to pass them into the
-    # compute_actions methods below).
-    init_prev_a = prev_a = None
-    init_prev_r = prev_r = None
-    # Set attention net's initial internal state.
-    num_transformers = int(args.attention_num_transformer_units)
-    memory_inference =  int(args.attention_memory_inference)
-    attention_dim =  int(args.attention_dim)
-    init_state = state = [
-        np.zeros([memory_inference, attention_dim], np.float32)
-        for _ in range(num_transformers)
-    ]
-    # need prev-action/reward as part of the input?
-    if args.prev_n_actions:
-        init_prev_a = prev_a = np.array([0] * int(args.prev_n_actions))
-    if args.prev_n_rewards:
-        init_prev_r = prev_r = np.array([0.0] * int(args.prev_n_rewards))
-    #attention end
-
-
 
     #####################
 
@@ -437,6 +407,7 @@ def evaluate(results):
     # Create an instance of the default RLModule used by PPO.
     module = algo.get_module('policy_1')
     action_dist_class = module.get_inference_action_dist_cls()
+    terminated = False
     while not terminated:
         fwd_ins = {"obs": torch.Tensor([obs])}
         fwd_outputs = module.forward_inference(fwd_ins)
@@ -445,47 +416,32 @@ def evaluate(results):
             fwd_outputs["action_dist_inputs"]
         )
         action = action_dist.sample()[0].numpy()
+        print(action)
         obs, reward, terminated, truncated, info = env.step(action)
-
+        print(reward)
 
     #######################
-    for i in range(10):
-        a, state_out, _ = algo.compute_single_action(
-            observation=obs,
-            state=state,
-            prev_action=prev_a,
-            prev_reward=prev_r,
-            explore=args.explore_during_inference,
-            policy_id="default_policy",  # <- default value
-        )
+    # for i in range(10):
+    #     obs, reward, done, truncated, info = env.step(action)
+    #     #trace
+    #
+    #     print('done = %r, action = %r, reward = %r,  info = %r \n' % (done,a, reward,info['occupy']))
+    #     episode_reward *=args.gamma
+    #     episode_reward += reward
 
-        obs, reward, done, truncated, info = env.step(a)
-        #trace
+        # if done:
+        #     print('env done = %r, action = %r, reward = %r  occupy =  {%r} ' % (done,a, reward, info['occupy']))
+        #     print(f"Episode done: Total reward = {episode_reward}")
+        #     break
 
-        print('done = %r, action = %r, reward = %r,  info = %r \n' % (done,a, reward,info['occupy']))
-        episode_reward *=args.gamma
-        episode_reward += reward
-
-        if done:
-            print('env done = %r, action = %r, reward = %r  occupy =  {%r} ' % (done,a, reward, info['occupy']))
-            print(f"Episode done: Total reward = {episode_reward}")
-            break
-        else:
-            # Append the just received state-out (most recent timestep) to the
-            # cascade (memory) of our state-ins and drop the oldest state-in.
-            state[0] = np.roll(state[0], -1, axis=0)
-            state[0][-1, :] = state_out[0]
-
-            if init_prev_a is not None:
-                prev_a = np.roll(prev_a, -1,axis=0)
-                prev_a[-1, :] = a
-            if init_prev_r is not None:
-                prev_r = np.roll(prev_r, -1)
-                prev_r[-1] = a
     algo.stop()
-    trace = np.array(trace)
+
+    trace = []
     # if args.show_trace:
     #     show_trace(trace.transpose())
+
+
+
 
 def test_trail(results,args, success_metric: Optional[Dict] = None,stop=None):
     '''
@@ -575,3 +531,6 @@ def test_trail(results,args, success_metric: Optional[Dict] = None,stop=None):
             raise ValueError(
                 f"`{success_metric_key}` of {success_metric_value} not reached!"
             )
+
+if __name__ == '__main__':
+    evaluate(r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_ecdba2f2107445bba129010d9834a024')
