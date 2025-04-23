@@ -1,6 +1,9 @@
 from hydra import initialize, compose
 from omegaconf import OmegaConf
 
+from config import ConfigSingleton
+from utils.experiment_helper import train
+
 
 def policy_mapping_fn(agent_id, episode, **kwargs):
     """
@@ -31,22 +34,11 @@ from ray.tune.registry import get_trainable_cls, register_env  # noqa
 
 from envs.env_0 import Env_0
 
-args = None
-# 手动初始化 Hydra
-with initialize(config_path="conf", job_name="config",version_base="1.2"):
-    # 加载配置文件
-    confs = compose(config_name="config")
-    args = OmegaConf.create({})
-    for key in confs.keys():
-        args = OmegaConf.merge(args, confs[key])
-    for key, value in args.items():
-        if str(value).lower() == 'none':
-            # 如果值是字符串 'none'（忽略大小写），则替换为 None
-            args[key] = None
-# Map "agent_n" to "policy_n" in
+
 
 if __name__ == "__main__":
-    args.num_agents = 2
+    # ConfigSingleton().add('num_agents' ,2)
+    args = ConfigSingleton().get_args()
 
     # You can also register the envs creator function explicitly with:
     # register_env("envs", lambda cfg: RockPaperScissors({"sheldon_cooper_mode": False}))
@@ -79,4 +71,4 @@ if __name__ == "__main__":
         )
     )
 
-    run_rllib_example_script_experiment(base_config, args)
+    train(base_config, args)

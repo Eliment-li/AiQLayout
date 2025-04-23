@@ -1,19 +1,17 @@
-#The default value for the --stop-reward option.
-#The default value for the --stop-iters option.
-#The default value for the --stop-timesteps option.
 
-default_reward: 100.0
-default_iters: 200
-default_timesteps: 100000
-
-###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters: 200  # Default: default_iters
+env_version: 0
+num_agents: 2
 verbose: 1
 #Stopping
+
 #the reward for multi-agent is the total sum (not the mean) over the agents.
 stop_reward: 100.0
+
 #One call to envs.step() is one timestep.
 stop_timesteps: 100000  # Default: default_timesteps
+
+###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
+stop_iters: 2  # Default: default_iters
 
 as_test: false
 as_release_test: false
