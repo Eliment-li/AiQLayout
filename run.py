@@ -5,6 +5,7 @@ from hydra import initialize, compose
 from omegaconf import OmegaConf
 from ray.rllib.core import DEFAULT_MODULE_ID
 from ray.rllib.core.rl_module import RLModule
+from sympy import pprint
 
 from config import ConfigSingleton
 from utils.run_helper import train, evaluate
@@ -26,7 +27,7 @@ from ray.rllib.utils.test_utils import (
     run_rllib_example_script_experiment,
 )
 from ray.tune.registry import get_trainable_cls
-
+from ray.rllib.algorithms import Algorithm, AlgorithmConfig
 torch, _ = try_import_torch()
 def policy_mapping_fn(agent_id, episode, **kwargs):
     """
@@ -60,26 +61,33 @@ from envs.env_0 import Env_0
 def inference(base_config, args, results):
 
     #base_config = get_trainable_cls(args.algo).get_default_config()
-
-    print("Training completed. Restoring new RLModule for action inference.")
     # Get the last checkpoint from the above training run.
     # best_result = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
     #
     # best_path = best_result.to_directory()
-    best_path = r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_ecdba2f2107445bba129010d9834a024'
+    best_path = r'd:\checkpoint'
     # Create new RLModule and restore its state from the last algo checkpoint.
     # Note that the checkpoint for the RLModule can be found deeper inside the algo
     # checkpoint's subdirectories ([algo dir] -> "learner/" -> "module_state/" ->
     # "[module ID]):
-    rl_module = RLModule.from_checkpoint(
-        os.path.join(
-            best_path,
-            "learner_group",
-            "learner",
-            "rl_module",
-            'policy_1',
-        )
-    )
+    # rl_module = RLModule.from_checkpoint(
+    #     os.path.join(
+    #         best_path,
+    #         "learner_group",
+    #         "learner",
+    #         "rl_module",
+    #         'policy_1',
+    #     )
+    # )
+
+    if  not isinstance(results, str):
+        checkpoint = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
+        checkpoint = checkpoint.to_directory()
+        print(f'best checkpoint: {checkpoint}')
+        algo = Algorithm.from_checkpoint(path=checkpoint)
+    else:
+        algo = Algorithm.from_checkpoint(path=results)
+
 
     # Create an env to do inference in.
     #env = gym.make(args.env,disable_env_checker = True)
@@ -90,34 +98,19 @@ def inference(base_config, args, results):
     episode_return = 0.0
 
     while num_episodes < 10:
-        obs = obs['agent_1']
-        # Compute an action using a B=1 observation "batch".
-        input_dict = {Columns.OBS: torch.from_numpy(obs).unsqueeze(0)}
-        # No exploration.
-        if not args.explore_during_inference:
-            rl_module_out = rl_module.forward_inference(input_dict)
-        # Using exploration.
-        else:
-            rl_module_out = rl_module.forward_exploration(input_dict)
-
-        # For discrete action spaces used here, normally, an RLModule "only"
-        # produces action logits, from which we then have to sample.
-        # However, you can also write custom RLModules that output actions
-        # directly, performing the sampling step already inside their
-        # `forward_...()` methods.
-        logits = convert_to_numpy(rl_module_out[Columns.ACTION_DIST_INPUTS])
-        # Perform the sampling step in numpy for simplicity.
-        action = np.random.choice(env.action_space.n, p=softmax(logits[0]))
-        # Send the computed action `a` to the env.
-        obs, reward, terminated, truncated, _ = env.step(action)
-        obs = obs['agent_1']
-        episode_return += reward
-        # Is the episode `done`? -> Reset.
-        if terminated or truncated:
-            print(f"Episode done: Total reward = {episode_return}")
-            obs, info = env.reset()
-            num_episodes += 1
-            episode_return = 0.0
+        obs1 = obs['agent_1']
+        a = algo.compute_single_action(
+            observation=obs1,
+            explore=None,
+            policy_id="policy_1",  # <- default value
+        )
+        num_episodes += 1
+        obs, reward, done,terminated, truncated, info = env.step(a)
+        # if terminated or truncated:
+        #     print(f"Episode done: Total reward = {episode_return}")
+        #     obs, info = env.reset()
+        #     num_episodes += 1
+        #     episode_return = 0.0
 
     print(f"Done performing action inference through {num_episodes} Episodes")
 if __name__ == "__main__":
@@ -162,4 +155,4 @@ if __name__ == "__main__":
     )
 
     #results = train(base_config, args)
-    inference(base_config,args,None)
+    inference(base_config,args,r'd:/checkpoint')
