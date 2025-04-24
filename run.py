@@ -3,10 +3,42 @@ import os
 from gymnasium import register
 from hydra import initialize, compose
 from omegaconf import OmegaConf
+from ray.rllib.connectors.common.module_to_agent_unmapping import ModuleToAgentUnmapping
 from ray.rllib.core import DEFAULT_MODULE_ID
-from ray.rllib.core.rl_module import RLModule
+from ray.rllib.core.rl_module import RLModule, MultiRLModule
+from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
+from ray.rllib.examples.envs.classes.stateless_cartpole import StatelessCartPole
 from sympy import pprint
+import os
 
+from ray.rllib.connectors.env_to_module import EnvToModulePipeline
+from ray.rllib.connectors.module_to_env import ModuleToEnvPipeline
+from ray.rllib.core import (
+    COMPONENT_ENV_RUNNER,
+    COMPONENT_ENV_TO_MODULE_CONNECTOR,
+    COMPONENT_MODULE_TO_ENV_CONNECTOR,
+    COMPONENT_LEARNER_GROUP,
+    COMPONENT_LEARNER,
+    COMPONENT_RL_MODULE,
+    DEFAULT_MODULE_ID,
+)
+from ray.rllib.core.columns import Columns
+from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
+from ray.rllib.core.rl_module.rl_module import RLModule
+from ray.rllib.env.single_agent_episode import SingleAgentEpisode
+from ray.rllib.examples.envs.classes.stateless_cartpole import StatelessCartPole
+from ray.rllib.utils.framework import try_import_torch
+from ray.rllib.utils.metrics import (
+    ENV_RUNNER_RESULTS,
+    EPISODE_RETURN_MEAN,
+)
+from ray.rllib.utils.test_utils import (
+    add_rllib_example_script_args,
+    run_rllib_example_script_experiment,
+)
+from ray.tune.registry import get_trainable_cls, register_env
+
+torch, _ = try_import_torch()
 from config import ConfigSingleton
 from utils.run_helper import train, evaluate
 import gymnasium as gym
@@ -55,9 +87,10 @@ from ray.rllib.utils.test_utils import (
     run_rllib_example_script_experiment,
 )
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
-
+def new_env():
+    return  Env_0()
 from envs.env_0 import Env_0
-
+register_env("Env_0", new_env)
 def inference(base_config, args, results):
 
     #base_config = get_trainable_cls(args.algo).get_default_config()
@@ -80,37 +113,105 @@ def inference(base_config, args, results):
     #     )
     # )
 
-    if  not isinstance(results, str):
-        checkpoint = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
-        checkpoint = checkpoint.to_directory()
-        print(f'best checkpoint: {checkpoint}')
-        algo = Algorithm.from_checkpoint(path=checkpoint)
-    else:
-        algo = Algorithm.from_checkpoint(path=results)
 
 
     # Create an env to do inference in.
-    #env = gym.make(args.env,disable_env_checker = True)
+    print("Env ...", end="")
     env = Env_0()
-    obs, info = env.reset()
+    print(" ok")
 
-    num_episodes = 0
-    episode_return = 0.0
-
-    while num_episodes < 10:
-        obs1 = obs['agent_1']
-        a = algo.compute_single_action(
-            observation=obs1,
-            explore=None,
-            policy_id="policy_1",  # <- default value
+    # Create the env-to-module pipeline from the checkpoint.
+    print("Restore env-to-module connector from checkpoint ...", end="")
+    env_to_module = EnvToModulePipeline.from_checkpoint(
+        os.path.join(
+            best_path,
+            COMPONENT_ENV_RUNNER,
+            COMPONENT_ENV_TO_MODULE_CONNECTOR,
         )
+    )
+    print(" ok")
+
+    print("Restore RLModule from checkpoint ...", end="")
+    # Create RLModule from a checkpoint.
+    #rl_module = RLModule.from_checkpoint(
+    rl_module = MultiRLModule.from_checkpoint(
+        os.path.join(
+            best_path,
+            COMPONENT_LEARNER_GROUP,
+            COMPONENT_LEARNER,
+            COMPONENT_RL_MODULE,
+
+           #'policy_1' # DEFAULT_MODULE_ID,
+        )
+    )
+    print(" ok")
+
+    # For the module-to-env pipeline, we will use the convenient config utility.
+    print("Restore module-to-env connector from checkpoint ...", end="")
+    module_to_env = ModuleToEnvPipeline.from_checkpoint(
+        os.path.join(
+            best_path,
+            COMPONENT_ENV_RUNNER,
+            COMPONENT_MODULE_TO_ENV_CONNECTOR,
+        )
+    )
+    module_to_env.prepend(ModuleToAgentUnmapping())
+    obs, _ = env.reset()
+    num_episodes = 0
+    episode = MultiAgentEpisode(
+        observations=[obs],
+        observation_space=env.observation_spaces,
+        action_space=env.action_spaces,
+    )
+    print(episode)
+    while num_episodes < 1:
         num_episodes += 1
-        obs, reward, done,terminated, truncated, info = env.step(a)
-        # if terminated or truncated:
-        #     print(f"Episode done: Total reward = {episode_return}")
-        #     obs, info = env.reset()
-        #     num_episodes += 1
-        #     episode_return = 0.0
+        shared_data = {}
+        input_dict = env_to_module(
+            episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
+            rl_module=rl_module,
+            explore=args.explore_during_inference,
+            shared_data=shared_data,
+        )
+
+        # No exploration.
+        # if not args.explore_during_inference:
+        #     rl_module_out = rl_module.forward_inference(input_dict)
+        # # Using exploration.
+        # else:
+        #     rl_module_out = rl_module.forward_exploration(input_dict)
+        new_dict = {}
+        for i, tensor in enumerate(input_dict['default_policy']['obs']):
+            print(tensor)
+            key = f'policy_{i}'
+            new_dict[key] = {'obs':tensor}
+
+        print(new_dict)
+        rl_module_out = rl_module._forward_inference(new_dict)
+        print(rl_module_out)
+        to_env = module_to_env(
+            batch=rl_module_out,
+            episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
+            rl_module=rl_module,
+            explore=args.explore_during_inference,
+            shared_data=shared_data,
+        )
+
+        # Send the computed action to the env. Note that the RLModule and the
+        # connector pipelines work on batched data (B=1 in this case), whereas the Env
+        # is not vectorized here, so we need to use `action[0]`.
+        action = to_env.pop(Columns.ACTIONS)[0]
+        obs, reward, terminated, truncated, _ = env.step(action)
+        # Keep our `SingleAgentEpisode` instance updated at all times.
+        episode.add_env_step(
+            obs,
+            action,
+            reward,
+            terminated=terminated,
+            truncated=truncated,
+            # Same here: [0] b/c RLModule output is batched (w/ B=1).
+            extra_model_outputs={k: v[0] for k, v in to_env.items()},
+        )
 
     print(f"Done performing action inference through {num_episodes} Episodes")
 if __name__ == "__main__":

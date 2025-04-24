@@ -120,7 +120,7 @@ def _env_creator(cfg):
 register_env("stateless-cart", _env_creator)
 
 
-parser = add_rllib_example_script_args(default_reward=200.0)
+parser = add_rllib_example_script_args(default_reward=20.0)
 parser.set_defaults(
     # Script only runs on new API stack.
     enable_new_api_stack=True,
@@ -151,7 +151,7 @@ if __name__ == "__main__":
         get_trainable_cls(args.algo)
         .get_default_config()
         .training(
-            num_epochs=6,
+            num_epochs=3,
             lr=0.0003,
             vf_loss_coeff=0.01,
         )
