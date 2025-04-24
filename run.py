@@ -141,7 +141,7 @@ def inference(base_config, args, results):
             COMPONENT_LEARNER,
             COMPONENT_RL_MODULE,
 
-           #'policy_1' # DEFAULT_MODULE_ID,
+           # 'policy_1' # DEFAULT_MODULE_ID,
         )
     )
     print(" ok")
@@ -155,10 +155,11 @@ def inference(base_config, args, results):
             COMPONENT_MODULE_TO_ENV_CONNECTOR,
         )
     )
-    module_to_env.prepend(ModuleToAgentUnmapping())
+    #module_to_env.prepend(ModuleToAgentUnmapping())
     obs, _ = env.reset()
     num_episodes = 0
     episode = MultiAgentEpisode(
+    #episode = SingleAgentEpisode(
         observations=[obs],
         observation_space=env.observation_spaces,
         action_space=env.action_spaces,
@@ -180,17 +181,25 @@ def inference(base_config, args, results):
         # # Using exploration.
         # else:
         #     rl_module_out = rl_module.forward_exploration(input_dict)
+
         new_dict = {}
         for i, tensor in enumerate(input_dict['default_policy']['obs']):
             print(tensor)
-            key = f'policy_{i}'
+            key = f'policy_{i+1}'
             new_dict[key] = {'obs':tensor}
 
         print(new_dict)
         rl_module_out = rl_module._forward_inference(new_dict)
-        print(rl_module_out)
+        #rl_module_out = rl_module._forward_inference(input_dict)
+        new_out  = {}
+        i = 1
+        for key in rl_module_out.keys():
+            new_out[f'agent_{i}'] = rl_module_out[key]
+            i +=1
+        # todo agent_1 和 policy_1 总是对不上， 把两个名字改成一样的试试
+        print(new_out)
         to_env = module_to_env(
-            batch=rl_module_out,
+            batch=new_out,
             episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
             rl_module=rl_module,
             explore=args.explore_during_inference,

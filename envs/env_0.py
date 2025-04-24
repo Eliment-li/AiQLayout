@@ -3,7 +3,7 @@ from pprint import pprint
 import gymnasium as gym
 import numpy as np
 from gymnasium import register
-from ray.rllib.env.multi_agent_env import MultiAgentEnv
+from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 
 
 class Env_0(MultiAgentEnv):
