@@ -6,6 +6,9 @@ gymnasium[atari,accept-rom-license,mujoco]
 matplotlib
 numpy
 pandas
-hydra-core
 pettingzoo
 gputil
+
+tianshou == 1.1.0
+hydra-core == 1.3.2
+pygame ==2.6.1

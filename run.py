@@ -40,6 +40,7 @@ from ray.tune.registry import get_trainable_cls, register_env
 from torch.distributed.pipelining import pipeline
 
 from config import ConfigSingleton
+from utils.evaluate import plot_reward
 from utils.run_helper import train, evaluate
 import gymnasium as gym
 import numpy as np
@@ -92,35 +93,14 @@ from envs.env_0 import Env_0
 register_env("Env_0", new_env)
 def inference(base_config, args, results):
 
-    #base_config = get_trainable_cls(args.algo).get_default_config()
-    # Get the last checkpoint from the above training run.
     if isinstance(results,str):
         best_path = results
     else:
         best_result = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
         best_path = best_result.to_directory()
         print('best_path=', best_path)
-    #best_path = r'd:\checkpoint'
-    # Create new RLModule and restore its state from the last algo checkpoint.
-    # Note that the checkpoint for the RLModule can be found deeper inside the algo
-    # checkpoint's subdirectories ([algo dir] -> "learner/" -> "module_state/" ->
-    # "[module ID]):
-    # rl_module = RLModule.from_checkpoint(
-    #     os.path.join(
-    #         best_path,
-    #         "learner_group",
-    #         "learner",
-    #         "rl_module",
-    #         'policy_1',
-    #     )
-    # )
-
-
-
-    # Create an env to do inference in.
-    print("Env ...", end="")
+    # Create the env.
     env = Env_0()
-    print(" ok")
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
@@ -134,8 +114,6 @@ def inference(base_config, args, results):
     print(" ok")
 
     print("Restore RLModule from checkpoint ...", end="")
-    # Create RLModule from a checkpoint.
-    #rl_module = RLModule.from_checkpoint(
     rl_module = MultiRLModule.from_checkpoint(
         os.path.join(
             best_path,
@@ -150,7 +128,6 @@ def inference(base_config, args, results):
 
     # For the module-to-env pipeline, we will use the convenient config utility.
     print("Restore module-to-env connector from checkpoint ...", end="")
-
     #This class does nothing, need fix, see EnvToModulePipeline
     module_to_env = ModuleToEnvPipeline.from_checkpoint(
         os.path.join(
@@ -159,8 +136,8 @@ def inference(base_config, args, results):
             COMPONENT_MODULE_TO_ENV_CONNECTOR,
         )
     )
-    #module_to_env.prepend(ModuleToAgentUnmapping())
-    pipelines_unuse = [
+    #remove default pipeline that incompatible with multi-agent case
+    incompatible_pipelines = [
         'UnBatchToIndividualItems',
         'ModuleToAgentUnmapping',
         'RemoveSingleTsTimeRankFromBatch',
@@ -168,25 +145,23 @@ def inference(base_config, args, results):
         'ListifyDataForVectorEnv',
         'ModuleToEnvPipeline',
     ]
-    for pipeline in pipelines_unuse:
+    for pipeline in incompatible_pipelines:
         module_to_env.remove(pipeline)
 
-    obs, _ = env.reset()
-    num_episodes = 0
+    rewrads = []
+    distance = []
 
-    #multiAgent
+    obs, _ = env.reset()
     terminated, truncated = False, False
-    max_steps = 10
-    while not (terminated and truncated) and max_steps > 0:
-        max_steps -= 1
+    stop_timesteps = args.stop_timesteps
+    while True:
+
         shared_data = {}
         episode = MultiAgentEpisode(
             observations=[obs],
             observation_space=env.observation_spaces,
             action_space=env.action_spaces,
         )
-        print('episode=\n', episode)
-        print('episode_end')
         input_dict = env_to_module(
             episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
             rl_module=rl_module,
@@ -201,27 +176,26 @@ def inference(base_config, args, results):
         # else:
         #     rl_module_out = rl_module.forward_exploration(input_dict)
 
-        new_dict = {}
+        new_input = {}
         for i, tensor in enumerate(input_dict['default_policy']['obs']):
-            print(tensor)
             key = f'policy_{i+1}'
-            new_dict[key] = {'obs':tensor}
+            new_input[key] = {'obs':tensor}
 
-        print(new_dict)
-        rl_module_out = rl_module._forward_inference(new_dict)
+        module_out = rl_module._forward_inference(new_input)
+        #Using exploration.
+        # rl_module_out = rl_module.forward_exploration(input_dict)
 
-        #rl_module_out = rl_module._forward_inference(input_dict)
-        new_out  = {}
-        i = 1
-        for key in rl_module_out.keys():
-            new_out[f'policy_{i}'] = rl_module_out[key]
-            i +=1
-        # module_to_env 定义或使用的有问题，导致后续报错
-        print(new_out)
-
-
+        # new_out  = {}
+        # i = 1
+        # print('###',module_out.keys())
+        # for key in module_out.keys():
+        #     new_out[f'policy_{i}'] = module_out[key]
+        #     i +=1
+        # # module_to_env 定义或使用的有问题，导致后续报错
+        # print(new_out)
+        print(module_out)
         to_env = module_to_env(
-            batch=new_out,
+            batch=module_out,
             episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
             rl_module=rl_module,
             explore=args.explore_during_inference,
@@ -238,23 +212,34 @@ def inference(base_config, args, results):
         #action = to_env.pop(Columns.ACTIONS)[0]
 
         obs, reward, terminated, truncated, _ = env.step(actions)
-        print(f'####obs {max_steps} ###\n')
-        print(obs['agent_1'])
-        print(f'####reward{max_steps} ###\n')
-        print(reward)
-        # Keep our `SingleAgentEpisode` instance updated at all times.
-        # episode.add_env_step(
-        #     obs,
-        #     action,
-        #     reward,
-        #     terminated=terminated,
-        #     truncated=truncated,
-        #     # Same here: [0] b/c RLModule output is batched (w/ B=1).
-        #     extra_model_outputs={k: v[0] for k, v in to_env.items()},
-        # )
+        rewrads.append(reward['agent_1'])
+        # print(f'####obs {max_steps} ###\n')
+        # print(obs['agent_1'])
+        # print(f'####reward{max_steps} ###\n')
+        # print(reward)
+
+        # Keep our `Episode` instance updated at all times.
+        # update_episode()
+        stop_timesteps -= 1
+        if  terminated['__all__'] or truncated or stop_timesteps <= 0:
+            print(f'{terminated},{truncated},{stop_timesteps}')
+            break
+    print(rewrads)
+    plot_reward([rewrads])
 
 
-    print(f"Done performing action inference through {num_episodes} Episodes")
+def update_episode(episode,obs,action,rewrad, terminated,truncated,to_env):
+    # Keep our `Episode` instance updated at all times.
+    episode.add_env_step(
+        obs,
+        action,
+        rewrad,
+        terminated=terminated,
+        truncated=truncated,
+        # Same here: [0] b/c RLModule output is batched (w/ B=1).
+        extra_model_outputs={k: v[0] for k, v in to_env.items()},
+    )
+
 if __name__ == "__main__":
     # ConfigSingleton().add('num_agents' ,2)
     args = ConfigSingleton().get_args()
