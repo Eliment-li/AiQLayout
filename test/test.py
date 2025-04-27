@@ -1,15 +1,8 @@
-from pettingzoo.butterfly import pistonball_v6
+import pickle
 
-from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.env.wrappers.pettingzoo_env import PettingZooEnv
-from ray.tune.registry import register_env
+# 读取.pkl文件
+with open(r'D:\checkpoint\env_runner\module_to_env_connector\class_and_ctor_args.pkl', 'rb') as f:
+    data = pickle.load(f)
 
-register_env(
-    "pistonball",
-    lambda cfg: PettingZooEnv(pistonball_v6.env(num_floors=cfg.get("n_pistons", 20))),
-)
-
-config = (
-    PPOConfig()
-    .environment("pistonball", env_config={"n_pistons": 30})
-)
+# 使用读取的数据
+print(data)

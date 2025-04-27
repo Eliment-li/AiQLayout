@@ -181,10 +181,10 @@ def train(
 
     # Log results using WandB.
     tune_callbacks = tune_callbacks or []
-    if hasattr(args, "wandb_key") and (
-        args.wandb_key is not None or WANDB_ENV_VAR in os.environ
-    ):
-        append_wandb(tune_callbacks,args,config)
+    # if hasattr(args, "wandb_key") and (
+    #     args.wandb_key is not None or WANDB_ENV_VAR in os.environ
+    # ):
+    #     append_wandb(tune_callbacks,args,config)
 
 
     if progress_reporter is None and args.num_agents > 0:

@@ -37,14 +37,11 @@ from ray.rllib.utils.test_utils import (
     run_rllib_example_script_experiment,
 )
 from ray.tune.registry import get_trainable_cls, register_env
-
-torch, _ = try_import_torch()
 from config import ConfigSingleton
 from utils.run_helper import train, evaluate
 import gymnasium as gym
 import numpy as np
 import os
-
 from ray.rllib.core import DEFAULT_MODULE_ID
 from ray.rllib.core.columns import Columns
 from ray.rllib.core.rl_module.rl_module import RLModule
@@ -95,10 +92,13 @@ def inference(base_config, args, results):
 
     #base_config = get_trainable_cls(args.algo).get_default_config()
     # Get the last checkpoint from the above training run.
-    # best_result = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
-    #
-    # best_path = best_result.to_directory()
-    best_path = r'd:\checkpoint'
+    if  os.path.isdir(results):
+        best_path = results
+    else:
+        best_result = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
+        best_path = best_result.to_directory()
+        print('best_path=', best_path)
+    #best_path = r'd:\checkpoint'
     # Create new RLModule and restore its state from the last algo checkpoint.
     # Note that the checkpoint for the RLModule can be found deeper inside the algo
     # checkpoint's subdirectories ([algo dir] -> "learner/" -> "module_state/" ->
@@ -148,6 +148,8 @@ def inference(base_config, args, results):
 
     # For the module-to-env pipeline, we will use the convenient config utility.
     print("Restore module-to-env connector from checkpoint ...", end="")
+
+    #This class does nothing, need fix, see EnvToModulePipeline
     module_to_env = ModuleToEnvPipeline.from_checkpoint(
         os.path.join(
             best_path,
@@ -158,13 +160,15 @@ def inference(base_config, args, results):
     #module_to_env.prepend(ModuleToAgentUnmapping())
     obs, _ = env.reset()
     num_episodes = 0
+
+    #multiAgent
     episode = MultiAgentEpisode(
     #episode = SingleAgentEpisode(
         observations=[obs],
         observation_space=env.observation_spaces,
         action_space=env.action_spaces,
     )
-    print(episode)
+    print('episode=',episode)
     while num_episodes < 1:
         num_episodes += 1
         shared_data = {}
@@ -190,13 +194,26 @@ def inference(base_config, args, results):
 
         print(new_dict)
         rl_module_out = rl_module._forward_inference(new_dict)
+
+        ######
+        # action = {}
+        # for agent_id, agent_obs in obs.items():
+        #     policy_id = self.config['multiagent']['policy_mapping_fn'](agent_id)
+        #     action[agent_id] = self.agent.compute_action(agent_obs, policy_id=policy_id)
+        # obs, reward, done, info = env.step(action)
+        # done = done['__all__']
+        # # sum up reward for all agents
+        # episode_reward += sum(reward.values())
+        ######
+
+
         #rl_module_out = rl_module._forward_inference(input_dict)
         new_out  = {}
         i = 1
         for key in rl_module_out.keys():
-            new_out[f'agent_{i}'] = rl_module_out[key]
+            new_out[f'policy_{i}'] = rl_module_out[key]
             i +=1
-        # todo agent_1 和 policy_1 总是对不上， 把两个名字改成一样的试试
+        # module_to_env 定义或使用的有问题，导致后续报错
         print(new_out)
         to_env = module_to_env(
             batch=new_out,
@@ -264,5 +281,6 @@ if __name__ == "__main__":
     # )
     )
 
-    #results = train(base_config, args)
-    inference(base_config,args,r'd:/checkpoint')
+    results = train(base_config, args)
+    #inference(base_config,args,results)
+    #inference(base_config,args,r'd:/checkpoint')
