@@ -237,6 +237,7 @@ def enhance_config(config,args):
         config.environment(args.env)
 
     # Disable the new API stack?
+    # @see https://docs.ray.io/en/latest/rllib/package_ref/doc/ray.rllib.algorithms.algorithm_config.AlgorithmConfig.api_stack.html#ray-rllib-algorithms-algorithm-config-algorithmconfig-api-stack
     if not args.enable_new_api_stack:
         config.api_stack(
             enable_rl_module_and_learner=False,

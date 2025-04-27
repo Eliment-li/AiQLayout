@@ -37,6 +37,8 @@ from ray.rllib.utils.test_utils import (
     run_rllib_example_script_experiment,
 )
 from ray.tune.registry import get_trainable_cls, register_env
+from torch.distributed.pipelining import pipeline
+
 from config import ConfigSingleton
 from utils.run_helper import train, evaluate
 import gymnasium as gym
@@ -92,7 +94,7 @@ def inference(base_config, args, results):
 
     #base_config = get_trainable_cls(args.algo).get_default_config()
     # Get the last checkpoint from the above training run.
-    if  os.path.isdir(results):
+    if isinstance(results,str):
         best_path = results
     else:
         best_result = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
@@ -158,20 +160,33 @@ def inference(base_config, args, results):
         )
     )
     #module_to_env.prepend(ModuleToAgentUnmapping())
+    pipelines_unuse = [
+        'UnBatchToIndividualItems',
+        'ModuleToAgentUnmapping',
+        'RemoveSingleTsTimeRankFromBatch',
+        'NormalizeAndClipActions',
+        'ListifyDataForVectorEnv',
+        'ModuleToEnvPipeline',
+    ]
+    for pipeline in pipelines_unuse:
+        module_to_env.remove(pipeline)
+
     obs, _ = env.reset()
     num_episodes = 0
 
     #multiAgent
-    episode = MultiAgentEpisode(
-    #episode = SingleAgentEpisode(
-        observations=[obs],
-        observation_space=env.observation_spaces,
-        action_space=env.action_spaces,
-    )
-    print('episode=',episode)
-    while num_episodes < 1:
-        num_episodes += 1
+    terminated, truncated = False, False
+    max_steps = 10
+    while not (terminated and truncated) and max_steps > 0:
+        max_steps -= 1
         shared_data = {}
+        episode = MultiAgentEpisode(
+            observations=[obs],
+            observation_space=env.observation_spaces,
+            action_space=env.action_spaces,
+        )
+        print('episode=\n', episode)
+        print('episode_end')
         input_dict = env_to_module(
             episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
             rl_module=rl_module,
@@ -195,18 +210,6 @@ def inference(base_config, args, results):
         print(new_dict)
         rl_module_out = rl_module._forward_inference(new_dict)
 
-        ######
-        # action = {}
-        # for agent_id, agent_obs in obs.items():
-        #     policy_id = self.config['multiagent']['policy_mapping_fn'](agent_id)
-        #     action[agent_id] = self.agent.compute_action(agent_obs, policy_id=policy_id)
-        # obs, reward, done, info = env.step(action)
-        # done = done['__all__']
-        # # sum up reward for all agents
-        # episode_reward += sum(reward.values())
-        ######
-
-
         #rl_module_out = rl_module._forward_inference(input_dict)
         new_out  = {}
         i = 1
@@ -215,6 +218,8 @@ def inference(base_config, args, results):
             i +=1
         # module_to_env 定义或使用的有问题，导致后续报错
         print(new_out)
+
+
         to_env = module_to_env(
             batch=new_out,
             episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
@@ -226,18 +231,28 @@ def inference(base_config, args, results):
         # Send the computed action to the env. Note that the RLModule and the
         # connector pipelines work on batched data (B=1 in this case), whereas the Env
         # is not vectorized here, so we need to use `action[0]`.
-        action = to_env.pop(Columns.ACTIONS)[0]
-        obs, reward, terminated, truncated, _ = env.step(action)
+        actions = {
+            'agent_1':to_env['policy_1']['actions'],
+            'agent_2':to_env['policy_2']['actions']
+        }
+        #action = to_env.pop(Columns.ACTIONS)[0]
+
+        obs, reward, terminated, truncated, _ = env.step(actions)
+        print(f'####obs {max_steps} ###\n')
+        print(obs['agent_1'])
+        print(f'####reward{max_steps} ###\n')
+        print(reward)
         # Keep our `SingleAgentEpisode` instance updated at all times.
-        episode.add_env_step(
-            obs,
-            action,
-            reward,
-            terminated=terminated,
-            truncated=truncated,
-            # Same here: [0] b/c RLModule output is batched (w/ B=1).
-            extra_model_outputs={k: v[0] for k, v in to_env.items()},
-        )
+        # episode.add_env_step(
+        #     obs,
+        #     action,
+        #     reward,
+        #     terminated=terminated,
+        #     truncated=truncated,
+        #     # Same here: [0] b/c RLModule output is batched (w/ B=1).
+        #     extra_model_outputs={k: v[0] for k, v in to_env.items()},
+        # )
+
 
     print(f"Done performing action inference through {num_episodes} Episodes")
 if __name__ == "__main__":
@@ -281,6 +296,6 @@ if __name__ == "__main__":
     # )
     )
 
-    results = train(base_config, args)
-    #inference(base_config,args,results)
+    #results = train(base_config, args)
+    inference(base_config,args,r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_cd5c59fcbcf14af0938ac85326156ca6')
     #inference(base_config,args,r'd:/checkpoint')
