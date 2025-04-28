@@ -1,6 +1,6 @@
 
 env_version: 0
-num_agents: 2
+num_agents: 10
 verbose: 1
 #lstm
 use_lstm: True
@@ -46,8 +46,11 @@ debug: False
 
 
 explore_during_inference: False
+
+
+
 #attention start
-use_attention: True
+use_attention: False
 
 # The number of transformer units within GTrXL.
 # A transformer unit in GTrXL consists of :

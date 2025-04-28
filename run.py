@@ -30,6 +30,10 @@ def get_model_config():
 if __name__ == "__main__":
 
     args = ConfigSingleton().get_args()
+    policies = {}
+    for i in range(int(args.num_agents)):
+        policies.add('policy_{}'.format(i+1))
+
     base_config = (
         get_trainable_cls(args.algo_class)
         .get_default_config()
@@ -49,16 +53,16 @@ if __name__ == "__main__":
         .env_runners(
             env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
         )
-        .rl_module(
-            rl_module_spec=MultiRLModuleSpec(rl_module_specs={
-                "policy_1": RLModuleSpec(),
-                "policy_2": RLModuleSpec(),
-            }),
-            model_config=get_model_config()
-        )
+        # .rl_module(
+        #     rl_module_spec=MultiRLModuleSpec(rl_module_specs={
+        #         "policy_1": RLModuleSpec(),
+        #         "policy_2": RLModuleSpec(),
+        #     }),
+        #     model_config=get_model_config()
+        # )
         .multi_agent(
             # Define two policies.
-            policies={"policy_1", "policy_2"},
+            policies=policies,
             # Map agent "player1" to policy "player1" and agent "player2" to policy
             # "player2".
             policy_mapping_fn=policy_mapping_fn
