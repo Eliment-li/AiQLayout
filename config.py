@@ -1,5 +1,7 @@
 from datetime import datetime
 from pathlib import Path
+
+import ray
 import torch
 from hydra import initialize, compose
 from threading import Lock
@@ -77,7 +79,69 @@ def get_logical_cores():
             return 1
 
 
-10-4-5003
+# config:
+def enhance_base_config(config,args):
+
+    # Disable the new API stack
+    # @see https://docs.ray.io/en/latest/rllib/package_ref/doc/ray.rllib.algorithms.algorithm_config.AlgorithmConfig.api_stack.html#ray-rllib-algorithms-algorithm-config-algorithmconfig-api-stack
+
+    if args.num_env_runners is not None:
+        config.env_runners(num_env_runners=args.num_env_runners)
+    if args.num_envs_per_env_runner is not None:
+        config.env_runners(num_envs_per_env_runner=args.num_envs_per_env_runner)
+
+    args.num_learners = 0
+    # New stack.
+    if args.enable_new_api_stack:
+        # GPUs available in the cluster?
+        num_gpus_available = ray.cluster_resources().get("GPU", 0)
+        print("num_gpus_available: ", num_gpus_available)
+        num_gpus_requested = args.num_gpus_per_learner * args.num_learners
+
+        # Define compute resources used.
+        #config.resources(num_gpus=num_gpus_available)  # old API stack setting
+
+        #set num_learners and num_gpus_per_learner
+        config.learners(num_learners=args.num_learners)
+        if num_gpus_available >= num_gpus_requested:
+            # All required GPUs are available -> Use them.
+            config.learners(num_gpus_per_learner=args.num_gpus_per_learner)
+        else:
+            config.learners(num_gpus_per_learner=0)
+            print(
+                "Warning! You are running your script with --num-learners="
+                f"{args.num_learners} and --num-gpus-per-learner="
+                f"{args.num_gpus_per_learner}, but your cluster only has "
+                f"{num_gpus_available} GPUs!"
+            )
+        # Set CPUs per Learner.
+        if args.num_cpus_per_learner is not None:
+            config.learners(num_cpus_per_learner=args.num_cpus_per_learner)
+
+    else:
+        config.api_stack(
+            enable_rl_module_and_learner=False,
+            enable_env_runner_and_connector_v2=False,
+        )
+
+    # Evaluation setup.
+    if args.evaluation_interval > 0:
+        config.evaluation(
+            evaluation_num_env_runners=args.evaluation_num_env_runners,
+            evaluation_interval=args.evaluation_interval,
+            evaluation_duration=args.evaluation_duration,
+            evaluation_duration_unit=args.evaluation_duration_unit,
+            evaluation_parallel_to_training=args.evaluation_parallel_to_training,
+        )
+
+    # Set the log-level (if applicable).
+    if args.log_level is not None:
+        config.debugging(log_level=args.log_level)
+
+    # Set the output dir (if applicable).
+    if args.output is not None:
+        config.offline_data(output=args.output)
+
 
 # test code
 if __name__ == "__main__":

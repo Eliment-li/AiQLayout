@@ -43,7 +43,7 @@ from ray.rllib.utils.typing import ResultDict
 from ray.tune import CLIReporter
 from ray.tune.result import TRAINING_ITERATION
 
-from config import ConfigSingleton
+from config import ConfigSingleton, enhance_base_config
 from ray.rllib.algorithms import Algorithm, AlgorithmConfig
 from ray.rllib.offline.dataset_reader import DatasetReader
 
@@ -133,16 +133,14 @@ def train(
     )
 
     stop = {
-            # the results does not contail the metric EPISODE_RETURN_MEAN
-            # f"{ENV_RUNNER_RESULTS}/{EPISODE_RETURN_MEAN}": args.stop_reward,
             f"{ENV_RUNNER_RESULTS}/{NUM_ENV_STEPS_SAMPLED_LIFETIME}": (
                 args.stop_timesteps
             ),
             TRAINING_ITERATION: args.stop_iters,
     }
 
-    enhance_config(config,args)
-    print(config)
+    enhance_base_config(config,args)
+    #print(config)
 
     # Run the experiment using Ray Tune.
     # Log results using WandB.
@@ -187,71 +185,8 @@ def train(
             "Running the example script resulted in one or more errors! "
             f"{[e.args[0].args[2] for e in results.errors]}"
         )
-
     return results
 
-def enhance_config(config,args):
-    config.framework(args.framework)
-
-    # Disable the new API stack
-    # @see https://docs.ray.io/en/latest/rllib/package_ref/doc/ray.rllib.algorithms.algorithm_config.AlgorithmConfig.api_stack.html#ray-rllib-algorithms-algorithm-config-algorithmconfig-api-stack
-
-    if args.num_env_runners is not None:
-        config.env_runners(num_env_runners=args.num_env_runners)
-    if args.num_envs_per_env_runner is not None:
-        config.env_runners(num_envs_per_env_runner=args.num_envs_per_env_runner)
-
-    args.num_learners = 0
-    # New stack.
-    if args.enable_new_api_stack:
-        # GPUs available in the cluster?
-        num_gpus_available = ray.cluster_resources().get("GPU", 0)
-        print("num_gpus_available: ", num_gpus_available)
-        num_gpus_requested = args.num_gpus_per_learner * args.num_learners
-
-        # Define compute resources used.
-        #config.resources(num_gpus=num_gpus_available)  # old API stack setting
-
-        #set num_learners and num_gpus_per_learner
-        config.learners(num_learners=args.num_learners)
-        if num_gpus_available >= num_gpus_requested:
-            # All required GPUs are available -> Use them.
-            config.learners(num_gpus_per_learner=args.num_gpus_per_learner)
-        else:
-            config.learners(num_gpus_per_learner=0)
-            print(
-                "Warning! You are running your script with --num-learners="
-                f"{args.num_learners} and --num-gpus-per-learner="
-                f"{args.num_gpus_per_learner}, but your cluster only has "
-                f"{num_gpus_available} GPUs!"
-            )
-        # Set CPUs per Learner.
-        if args.num_cpus_per_learner is not None:
-            config.learners(num_cpus_per_learner=args.num_cpus_per_learner)
-
-    else:
-        config.api_stack(
-            enable_rl_module_and_learner=False,
-            enable_env_runner_and_connector_v2=False,
-        )
-
-    # Evaluation setup.
-    if args.evaluation_interval > 0:
-        config.evaluation(
-            evaluation_num_env_runners=args.evaluation_num_env_runners,
-            evaluation_interval=args.evaluation_interval,
-            evaluation_duration=args.evaluation_duration,
-            evaluation_duration_unit=args.evaluation_duration_unit,
-            evaluation_parallel_to_training=args.evaluation_parallel_to_training,
-        )
-
-    # Set the log-level (if applicable).
-    if args.log_level is not None:
-        config.debugging(log_level=args.log_level)
-
-    # Set the output dir (if applicable).
-    if args.output is not None:
-        config.offline_data(output=args.output)
 
 def append_wandb(tune_callbacks,args,config):
     wandb_key = args.wandb_key or os.environ[WANDB_ENV_VAR]
@@ -291,6 +226,8 @@ def cli_reporter(config):
         },
     )
 
+def trial_str_creator(trial):
+    return "{}_{}".format(trial.trainable_name, trial.trial_id)
 def register_env():
     for version in range(1):
         register(
@@ -301,203 +238,7 @@ def register_env():
         )
 
 
-def test_trail(results,args, success_metric: Optional[Dict] = None,stop=None):
-    '''
-          success_metric: Only relevant if `args.as_test` is True.
-            A dict mapping a single(!) ResultDict key string (using "/" in
-            case of nesting, e.g. "env_runners/episode_return_mean" for referring
-            to `result_dict['env_runners']['episode_return_mean']` to a single(!)
-            minimum value to be reached in order for the experiment to count as
-            successful. If `args.as_test` is True AND this `success_metric` is not
-            reached with the bounds defined by `stop`, will raise an Exception.
 
-            stop: An optional dict mapping ResultDict key strings (using "/" in case of
-            nesting, e.g. "env_runners/episode_return_mean" for referring to
-            `result_dict['env_runners']['episode_return_mean']` to minimum
-            values, reaching of which will stop the experiment). Default is:
-            {
-            "env_runners/episode_return_mean": args.stop_reward,
-            "training_iteration": args.stop_iters,
-            "num_env_steps_sampled_lifetime": args.stop_timesteps,
-            }
-    '''
-    if stop is None:
-        stop = {
-            f"{ENV_RUNNER_RESULTS}/{EPISODE_RETURN_MEAN}": args.stop_reward,
-            f"{ENV_RUNNER_RESULTS}/{NUM_ENV_STEPS_SAMPLED_LIFETIME}": (
-                args.stop_timesteps
-            ),
-            TRAINING_ITERATION: args.stop_iters,
-        }
-    # If run as a test, check whether we reached the specified success criteria.
-    test_passed = False
-    if args.as_test:
-        # Success metric not provided, try extracting it from `stop`.
-        if success_metric is None:
-            for try_it in [
-                f"{EVALUATION_RESULTS}/{ENV_RUNNER_RESULTS}/{EPISODE_RETURN_MEAN}",
-                f"{ENV_RUNNER_RESULTS}/{EPISODE_RETURN_MEAN}",
-            ]:
-                if try_it in stop:
-                    success_metric = {try_it: stop[try_it]}
-                    break
-            if success_metric is None:
-                success_metric = {
-                    f"{ENV_RUNNER_RESULTS}/{EPISODE_RETURN_MEAN}": args.stop_reward,
-                }
-        # TODO (sven): Make this work for more than one metric (AND-logic?).
-        # Get maximum value of `metric` over all trials
-        # (check if at least one trial achieved some learning, not just the final one).
-        success_metric_key, success_metric_value = next(iter(success_metric.items()))
-        best_value = max(
-            row[success_metric_key] for _, row in results.get_dataframe().iterrows()
-        )
-        if best_value >= success_metric_value:
-            test_passed = True
-            print(f"`{success_metric_key}` of {success_metric_value} reached! ok")
-
-        if args.as_release_test:
-            trial = results._experiment_analysis.trials[0]
-            stats = trial.last_result
-            stats.pop("config", None)
-            json_summary = {
-                # "time_taken": float(time_taken),
-                "trial_states": [trial.status],
-                "last_update": float(time.time()),
-                "stats": stats,
-                "passed": [test_passed],
-                "not_passed": [not test_passed],
-                "failures": {str(trial): 1} if not test_passed else {},
-            }
-            with open(
-                os.environ.get("TEST_OUTPUT_JSON", "/tmp/learning_test.json"),
-                "wt",
-            ) as f:
-                try:
-                    json.dump(json_summary, f)
-                # Something went wrong writing json. Try again w/ simplified stats.
-                except Exception:
-                    from ray.rllib.algorithms.algorithm import Algorithm
-
-                    simplified_stats = {
-                        k: stats[k] for k in Algorithm._progress_metrics if k in stats
-                    }
-                    json_summary["stats"] = simplified_stats
-                    json.dump(json_summary, f)
-
-        if not test_passed:
-            raise ValueError(
-                f"`{success_metric_key}` of {success_metric_value} not reached!"
-            )
-
-def enhance_1(config, args):
-    # Set the framework.
-    config.framework(args.framework)
-
-    # Add an envs specifier (only if not already set in config)?
-    # if args.env is not None and config.env is None:
-    #     config.environment(args.env)
-
-    # Disable the new API stack?
-    if not args.enable_new_api_stack:
-        config.api_stack(
-            enable_rl_module_and_learner=False,
-            enable_env_runner_and_connector_v2=False,
-        )
-
-    # Define EnvRunner scaling and behavior.
-    if args.num_env_runners is not None:
-        config.env_runners(num_env_runners=args.num_env_runners)
-    if args.num_envs_per_env_runner is not None:
-        config.env_runners(num_envs_per_env_runner=args.num_envs_per_env_runner)
-
-    # Define compute resources used automatically (only using the --num-learners
-    # and --num-gpus-per-learner args).
-    # New stack.
-    if config.enable_rl_module_and_learner:
-        if args.num_gpus is not None and args.num_gpus > 0:
-            raise ValueError(
-                "--num-gpus is not supported on the new API stack! To train on "
-                "GPUs, use the command line options `--num-gpus-per-learner=1` and "
-                "`--num-learners=[your number of available GPUs]`, instead."
-            )
-
-        # Do we have GPUs available in the cluster?
-        num_gpus_available = ray.cluster_resources().get("GPU", 0)
-        # Number of actual Learner instances (including the local Learner if
-        # `num_learners=0`).
-        num_actual_learners = (
-                                  args.num_learners
-                                  if args.num_learners is not None
-                                  else config.num_learners
-                              ) or 1  # 1: There is always a local Learner, if num_learners=0.
-        # How many were hard-requested by the user
-        # (through explicit `--num-gpus-per-learner >= 1`).
-
-        num_gpus_requested = (args.num_gpus_per_learner or 0) * num_actual_learners
-        # Number of GPUs needed, if `num_gpus_per_learner=None` (auto).
-        num_gpus_needed_if_available = (
-                                           args.num_gpus_per_learner
-                                           if args.num_gpus_per_learner is not None
-                                           else 1
-                                       ) * num_actual_learners
-        # Define compute resources used.
-        config.resources(num_gpus=0)  # old API stack setting
-        if args.num_learners is not None:
-            config.learners(num_learners=args.num_learners)
-
-        # User wants to use aggregator actors per Learner.
-        # if args.num_aggregator_actors_per_learner is not None:
-        #     config.learners(
-        #         num_aggregator_actors_per_learner=(
-        #             args.num_aggregator_actors_per_learner
-        #         )
-        #     )
-
-        # User wants to use GPUs if available, but doesn't hard-require them.
-        if args.num_gpus_per_learner is None:
-            if num_gpus_available >= num_gpus_needed_if_available:
-                config.learners(num_gpus_per_learner=1)
-            else:
-                config.learners(num_gpus_per_learner=0)
-        # User hard-requires n GPUs, but they are not available -> Error.
-        elif num_gpus_available < num_gpus_requested:
-            raise ValueError(
-                "You are running your script with --num-learners="
-                f"{args.num_learners} and --num-gpus-per-learner="
-                f"{args.num_gpus_per_learner}, but your cluster only has "
-                f"{num_gpus_available} GPUs!"
-            )
-
-        # All required GPUs are available -> Use them.
-        else:
-            config.learners(num_gpus_per_learner=args.num_gpus_per_learner)
-
-        # Set CPUs per Learner.
-        if args.num_cpus_per_learner is not None:
-            config.learners(num_cpus_per_learner=args.num_cpus_per_learner)
-
-    # Old stack (override only if arg was provided by user).
-    elif args.num_gpus is not None:
-        config.resources(num_gpus=args.num_gpus)
-
-    # Evaluation setup.
-    if args.evaluation_interval > 0:
-        config.evaluation(
-            evaluation_num_env_runners=args.evaluation_num_env_runners,
-            evaluation_interval=args.evaluation_interval,
-            evaluation_duration=args.evaluation_duration,
-            evaluation_duration_unit=args.evaluation_duration_unit,
-            evaluation_parallel_to_training=args.evaluation_parallel_to_training,
-        )
-
-    # Set the log-level (if applicable).
-    if args.log_level is not None:
-        config.debugging(log_level=args.log_level)
-
-    # Set the output dir (if applicable).
-    if args.output is not None:
-        config.offline_data(output=args.output)
 
 if __name__ == '__main__':
     pass

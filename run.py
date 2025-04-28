@@ -1,42 +1,13 @@
-from ray.rllib.core.rl_module import MultiRLModule
-from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
-
-from ray.rllib.connectors.env_to_module import EnvToModulePipeline
-from ray.rllib.connectors.module_to_env import ModuleToEnvPipeline
-from ray.rllib.core import (
-    COMPONENT_ENV_RUNNER,
-    COMPONENT_ENV_TO_MODULE_CONNECTOR,
-    COMPONENT_MODULE_TO_ENV_CONNECTOR,
-    COMPONENT_LEARNER_GROUP,
-    COMPONENT_LEARNER,
-    COMPONENT_RL_MODULE,
-)
-
+from ray import tune
+from ray.rllib.core.rl_module import MultiRLModule, MultiRLModuleSpec, RLModuleSpec
+from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 from config import ConfigSingleton
-from results.plot_results import plot_reward
 import os
 from ray.rllib.utils.framework import try_import_torch
+from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
+from utils.evaluate import evaluate
 
 torch, _ = try_import_torch()
-def policy_mapping_fn(agent_id, episode, **kwargs):
-    """
-    Map agent IDs to policy names based on their numeric suffix.
-
-    Args:
-        agent_id (str): The ID of the agent (e.g., "agent_1").
-        episode (object): The current episode object (not used here).
-        **kwargs: Additional keyword arguments (not used here).
-
-    Returns:
-        str: The name of the policy corresponding to the agent ID (e.g., "policy_1").
-    """
-    # Extract the numeric suffix from the agent ID and map it to "policy_n"
-    try:
-        agent_number = agent_id.split('_')[1]  # Split and get the number part
-        return f"policy_{agent_number}"       # Return the mapped policy name
-    except IndexError:
-        raise ValueError(f"Invalid agent_id format: {agent_id}. Expected 'agent_n'.")
-
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
 from envs.env_0 import Env_0
@@ -45,134 +16,16 @@ from run_helper import train
 def new_env():
     return  Env_0()
 register_env("Env_0", new_env)
-def evaluate(base_config, args, results):
+def policy_mapping_fn(agent_id, episode, **kwargs):
+    try:
+        agent_number = agent_id.split('_')[1]  # Split and get the number part
+        return f"policy_{agent_number}"       # Return the mapped policy name
+    except IndexError:
+        raise ValueError(f"Invalid agent_id format: {agent_id}. Expected 'agent_n'.")
 
-    if isinstance(results,str):
-        best_path = results
-    else:
-        best_result = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
-        best_path = best_result.to_directory()
-        print('best_path=', best_path)
-    # Create the env.
-    env = Env_0()
-
-    # Create the env-to-module pipeline from the checkpoint.
-    print("Restore env-to-module connector from checkpoint ...", end="")
-    env_to_module = EnvToModulePipeline.from_checkpoint(
-        os.path.join(
-            best_path,
-            COMPONENT_ENV_RUNNER,
-            COMPONENT_ENV_TO_MODULE_CONNECTOR,
-        )
-    )
-    print(" ok")
-
-    print("Restore RLModule from checkpoint ...", end="")
-    rl_module = MultiRLModule.from_checkpoint(
-        os.path.join(
-            best_path,
-            COMPONENT_LEARNER_GROUP,
-            COMPONENT_LEARNER,
-            COMPONENT_RL_MODULE,
-
-           # 'policy_1' # DEFAULT_MODULE_ID,
-        )
-    )
-    print(" ok")
-
-    # For the module-to-env pipeline, we will use the convenient config utility.
-    print("Restore module-to-env connector from checkpoint ...", end="")
-    #This class does nothing, need fix, see EnvToModulePipeline
-    module_to_env = ModuleToEnvPipeline.from_checkpoint(
-        os.path.join(
-            best_path,
-            COMPONENT_ENV_RUNNER,
-            COMPONENT_MODULE_TO_ENV_CONNECTOR,
-        )
-    )
-    #remove default pipeline that incompatible with multi-agent case
-    incompatible_pipelines = [
-        'UnBatchToIndividualItems',
-        'ModuleToAgentUnmapping',
-        'RemoveSingleTsTimeRankFromBatch',
-        'NormalizeAndClipActions',
-        'ListifyDataForVectorEnv',
-        'ModuleToEnvPipeline',
-    ]
-    for pipeline in incompatible_pipelines:
-        module_to_env.remove(pipeline)
-
-    rewrads = []
-    distance = []
-
-    obs, _ = env.reset()
-    terminated, truncated = False, False
-    stop_timesteps = args.stop_timesteps
-    while True:
-
-        shared_data = {}
-        episode = MultiAgentEpisode(
-            observations=[obs],
-            observation_space=env.observation_spaces,
-            action_space=env.action_spaces,
-        )
-        input_dict = env_to_module(
-            episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
-            rl_module=rl_module,
-            explore=args.explore_during_inference,
-            shared_data=shared_data,
-        )
-
-        new_input = {}
-        for i, tensor in enumerate(input_dict['default_policy']['obs']):
-            key = f'policy_{i+1}'
-            new_input[key] = {'obs':tensor}
-        # No exploration.
-        module_out = rl_module._forward_inference(new_input)
-        #Using exploration.
-        # rl_module_out = rl_module.forward_exploration(input_dict)
-
-        print(module_out)
-        to_env = module_to_env(
-            batch=module_out,
-            episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
-            rl_module=rl_module,
-            explore=args.explore_during_inference,
-            shared_data=shared_data,
-        )
-
-        # Send the computed action to the env. Note that the RLModule and the
-        # connector pipelines work on batched data (B=1 in this case), whereas the Env
-        # is not vectorized here, so we need to use `action[0]`.
-        actions = {
-            'agent_1':to_env['policy_1']['actions'],
-            'agent_2':to_env['policy_2']['actions']
-        }
-
-        obs, reward, terminated, truncated, _ = env.step(actions)
-        rewrads.append(reward['agent_1'])
-
-        # Keep our `Episode` instance updated at all times.
-        # update_episode()
-        stop_timesteps -= 1
-        if  terminated['__all__'] or truncated or stop_timesteps <= 0:
-            print(f'{terminated},{truncated},{stop_timesteps}')
-            break
-    print(rewrads)
-    plot_reward([rewrads])
-
-
-def update_episode(episode,obs,action,rewrad, terminated,truncated,to_env):
-    # Keep our `Episode` instance updated at all times.
-    episode.add_env_step(
-        obs,
-        action,
-        rewrad,
-        terminated=terminated,
-        truncated=truncated,
-        # Same here: [0] b/c RLModule output is batched (w/ B=1).
-        extra_model_outputs={k: v[0] for k, v in to_env.items()},
-    )
+def get_model_config():
+    model_config = DefaultModelConfig(use_lstm=True)
+    return model_config
 
 if __name__ == "__main__":
 
@@ -184,8 +37,24 @@ if __name__ == "__main__":
             Env_0,
             env_config={"key": "value"},
         )
+        .training(
+            lr=tune.grid_search(args.lr_grid),
+            gamma=tune.grid_search(args.gamma_grid),
+            # step = iteration * 4000
+            #     lr_schedule= tune.grid_search([
+            #     [[0, 5.0e-5], [4000*100, 5.0e-5],[4000*200,1.0e-5]],
+            #    # [[0, 0.001], [1e9, 0.0005]],
+            # ]),
+        )
         .env_runners(
             env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
+        )
+        .rl_module(
+            rl_module_spec=MultiRLModuleSpec(rl_module_specs={
+                "policy_1": RLModuleSpec(),
+                "policy_2": RLModuleSpec(),
+            }),
+            model_config=get_model_config()
         )
         .multi_agent(
             # Define two policies.
@@ -194,14 +63,15 @@ if __name__ == "__main__":
             # "player2".
             policy_mapping_fn=policy_mapping_fn
         )
+
+    )
     # .rl_module(
     #     rl_module_spec=MultiRLModuleSpec(rl_module_specs={
     #         "learning_policy": RLModuleSpec(),
     #         "random_policy": RLModuleSpec(rl_module_class=RandomRLModule),
     #     }),
     # )
-    )
 
-    #results = train(base_config, args)
-    #evaluate(base_config,args,results)
-    evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_7e02affad47b4ffaa43c162e06205d31')
+    results = train(base_config, args)
+    evaluate(base_config,args,results)
+    #evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_7e02affad47b4ffaa43c162e06205d31')

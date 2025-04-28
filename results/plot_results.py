@@ -11,6 +11,7 @@ from utils.file_util import get_root_dir
 
 
 def plot_reward(data, save=True):
+    print('plot reward ...')
     '''
     # Example:
     data = [
