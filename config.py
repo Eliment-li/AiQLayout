@@ -41,7 +41,7 @@ class ConfigSingleton:
         self.args['num_gpus_per_learner'] = 1 if torch.cuda.is_available() else 0
         self.args['device'] = "cuda" if torch.cuda.is_available() else "cpu"
         self.args['time_id'] = datetime.now().strftime('%Y-%m-%d_%H-%M')
-        self.args['output'] = p / 'results' / 'ray'
+        self.args['output'] = None
         self.args['tensorboard_path'] = p / 'results' / 'tensorboard'
 
 

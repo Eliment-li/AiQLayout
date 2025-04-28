@@ -141,7 +141,7 @@ def train(
             TRAINING_ITERATION: args.stop_iters,
     }
 
-    enhance_config(config,args)
+    enhance_1(config,args)
     print(config)
 
     # Run the experiment using Ray Tune.
@@ -386,6 +386,114 @@ def test_trail(results,args, success_metric: Optional[Dict] = None,stop=None):
             raise ValueError(
                 f"`{success_metric_key}` of {success_metric_value} not reached!"
             )
+
+def enhance_1(config, args):
+    # Set the framework.
+    config.framework(args.framework)
+
+    # Add an envs specifier (only if not already set in config)?
+    # if args.env is not None and config.env is None:
+    #     config.environment(args.env)
+
+    # Disable the new API stack?
+    if not args.enable_new_api_stack:
+        config.api_stack(
+            enable_rl_module_and_learner=False,
+            enable_env_runner_and_connector_v2=False,
+        )
+
+    # Define EnvRunner scaling and behavior.
+    if args.num_env_runners is not None:
+        config.env_runners(num_env_runners=args.num_env_runners)
+    if args.num_envs_per_env_runner is not None:
+        config.env_runners(num_envs_per_env_runner=args.num_envs_per_env_runner)
+
+    # Define compute resources used automatically (only using the --num-learners
+    # and --num-gpus-per-learner args).
+    # New stack.
+    if config.enable_rl_module_and_learner:
+        if args.num_gpus is not None and args.num_gpus > 0:
+            raise ValueError(
+                "--num-gpus is not supported on the new API stack! To train on "
+                "GPUs, use the command line options `--num-gpus-per-learner=1` and "
+                "`--num-learners=[your number of available GPUs]`, instead."
+            )
+
+        # Do we have GPUs available in the cluster?
+        num_gpus_available = ray.cluster_resources().get("GPU", 0)
+        # Number of actual Learner instances (including the local Learner if
+        # `num_learners=0`).
+        num_actual_learners = (
+                                  args.num_learners
+                                  if args.num_learners is not None
+                                  else config.num_learners
+                              ) or 1  # 1: There is always a local Learner, if num_learners=0.
+        # How many were hard-requested by the user
+        # (through explicit `--num-gpus-per-learner >= 1`).
+        num_gpus_requested = (args.num_gpus_per_learner or 0) * num_actual_learners
+        # Number of GPUs needed, if `num_gpus_per_learner=None` (auto).
+        num_gpus_needed_if_available = (
+                                           args.num_gpus_per_learner
+                                           if args.num_gpus_per_learner is not None
+                                           else 1
+                                       ) * num_actual_learners
+        # Define compute resources used.
+        config.resources(num_gpus=0)  # old API stack setting
+        if args.num_learners is not None:
+            config.learners(num_learners=args.num_learners)
+
+        # User wants to use aggregator actors per Learner.
+        # if args.num_aggregator_actors_per_learner is not None:
+        #     config.learners(
+        #         num_aggregator_actors_per_learner=(
+        #             args.num_aggregator_actors_per_learner
+        #         )
+        #     )
+
+        # User wants to use GPUs if available, but doesn't hard-require them.
+        if args.num_gpus_per_learner is None:
+            if num_gpus_available >= num_gpus_needed_if_available:
+                config.learners(num_gpus_per_learner=1)
+            else:
+                config.learners(num_gpus_per_learner=0)
+        # User hard-requires n GPUs, but they are not available -> Error.
+        elif num_gpus_available < num_gpus_requested:
+            raise ValueError(
+                "You are running your script with --num-learners="
+                f"{args.num_learners} and --num-gpus-per-learner="
+                f"{args.num_gpus_per_learner}, but your cluster only has "
+                f"{num_gpus_available} GPUs!"
+            )
+
+        # All required GPUs are available -> Use them.
+        else:
+            config.learners(num_gpus_per_learner=args.num_gpus_per_learner)
+
+        # Set CPUs per Learner.
+        if args.num_cpus_per_learner is not None:
+            config.learners(num_cpus_per_learner=args.num_cpus_per_learner)
+
+    # Old stack (override only if arg was provided by user).
+    elif args.num_gpus is not None:
+        config.resources(num_gpus=args.num_gpus)
+
+    # Evaluation setup.
+    if args.evaluation_interval > 0:
+        config.evaluation(
+            evaluation_num_env_runners=args.evaluation_num_env_runners,
+            evaluation_interval=args.evaluation_interval,
+            evaluation_duration=args.evaluation_duration,
+            evaluation_duration_unit=args.evaluation_duration_unit,
+            evaluation_parallel_to_training=args.evaluation_parallel_to_training,
+        )
+
+    # Set the log-level (if applicable).
+    if args.log_level is not None:
+        config.debugging(log_level=args.log_level)
+
+    # Set the output dir (if applicable).
+    if args.output is not None:
+        config.offline_data(output=args.output)
 
 if __name__ == '__main__':
     pass

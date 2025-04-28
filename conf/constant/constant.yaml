@@ -4,9 +4,11 @@ no_tune: False
 algo_class: "PPO"
 enable_new_api_stack: True
 framework: "torch"
+
 num_env_runners: null
 num_envs_per_env_runner: null
 num_agents: 0
+env: null
 
 # Evaluation Options
 evaluation_num_env_runners: 0
@@ -32,9 +34,9 @@ wandb_run_name: null
 
 
 # Learner Scaling Options
-num_learners: 1
-num_cpus_per_learner: 1
-num_gpus_per_learner: 1
+num_learners: null
+num_cpus_per_learner: null
+num_gpus_per_learner: null
 
 # Ray Init Options
 num_cpus: 6
