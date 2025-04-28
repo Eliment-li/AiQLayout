@@ -1,5 +1,4 @@
-import os
-from ray.rllib.core.rl_module import RLModule, MultiRLModule
+from ray.rllib.core.rl_module import MultiRLModule
 from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
 
 from ray.rllib.connectors.env_to_module import EnvToModulePipeline
@@ -11,15 +10,11 @@ from ray.rllib.core import (
     COMPONENT_LEARNER_GROUP,
     COMPONENT_LEARNER,
     COMPONENT_RL_MODULE,
-    DEFAULT_MODULE_ID,
 )
 
 from config import ConfigSingleton
-from utils.evaluate import plot_reward
+from results.plot_results import plot_reward
 import os
-from ray.rllib.core import DEFAULT_MODULE_ID
-from ray.rllib.core.columns import Columns
-from ray.rllib.core.rl_module.rl_module import RLModule
 from ray.rllib.utils.framework import try_import_torch
 
 torch, _ = try_import_torch()
@@ -50,7 +45,7 @@ from run_helper import train
 def new_env():
     return  Env_0()
 register_env("Env_0", new_env)
-def inference(base_config, args, results):
+def evaluate(base_config, args, results):
 
     if isinstance(results,str):
         best_path = results
@@ -207,6 +202,6 @@ if __name__ == "__main__":
     # )
     )
 
-    results = train(base_config, args)
-    #inference(base_config,args,)
-    #inference(base_config,args,r'd:/checkpoint')
+    #results = train(base_config, args)
+    #evaluate(base_config,args,results)
+    evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_7e02affad47b4ffaa43c162e06205d31')

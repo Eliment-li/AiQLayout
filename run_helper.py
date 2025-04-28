@@ -141,7 +141,7 @@ def train(
             TRAINING_ITERATION: args.stop_iters,
     }
 
-    enhance_1(config,args)
+    enhance_config(config,args)
     print(config)
 
     # Run the experiment using Ray Tune.
@@ -201,11 +201,13 @@ def enhance_config(config,args):
     if args.num_envs_per_env_runner is not None:
         config.env_runners(num_envs_per_env_runner=args.num_envs_per_env_runner)
 
+    args.num_learners = 0
     # New stack.
     if args.enable_new_api_stack:
         # GPUs available in the cluster?
         num_gpus_available = ray.cluster_resources().get("GPU", 0)
-        num_gpus_requested = (args.num_gpus_per_learner or 0) * args.num_learners
+        print("num_gpus_available: ", num_gpus_available)
+        num_gpus_requested = args.num_gpus_per_learner * args.num_learners
 
         # Define compute resources used.
         #config.resources(num_gpus=num_gpus_available)  # old API stack setting
@@ -216,8 +218,9 @@ def enhance_config(config,args):
             # All required GPUs are available -> Use them.
             config.learners(num_gpus_per_learner=args.num_gpus_per_learner)
         else:
-            raise ValueError(
-                "You are running your script with --num-learners="
+            config.learners(num_gpus_per_learner=0)
+            print(
+                "Warning! You are running your script with --num-learners="
                 f"{args.num_learners} and --num-gpus-per-learner="
                 f"{args.num_gpus_per_learner}, but your cluster only has "
                 f"{num_gpus_available} GPUs!"
@@ -233,14 +236,14 @@ def enhance_config(config,args):
         )
 
     # Evaluation setup.
-    # if args.evaluation_interval > 0:
-    #     config.evaluation(
-    #         evaluation_num_env_runners=args.evaluation_num_env_runners,
-    #         evaluation_interval=args.evaluation_interval,
-    #         evaluation_duration=args.evaluation_duration,
-    #         evaluation_duration_unit=args.evaluation_duration_unit,
-    #         evaluation_parallel_to_training=args.evaluation_parallel_to_training,
-    #     )
+    if args.evaluation_interval > 0:
+        config.evaluation(
+            evaluation_num_env_runners=args.evaluation_num_env_runners,
+            evaluation_interval=args.evaluation_interval,
+            evaluation_duration=args.evaluation_duration,
+            evaluation_duration_unit=args.evaluation_duration_unit,
+            evaluation_parallel_to_training=args.evaluation_parallel_to_training,
+        )
 
     # Set the log-level (if applicable).
     if args.log_level is not None:
@@ -430,6 +433,7 @@ def enhance_1(config, args):
                               ) or 1  # 1: There is always a local Learner, if num_learners=0.
         # How many were hard-requested by the user
         # (through explicit `--num-gpus-per-learner >= 1`).
+
         num_gpus_requested = (args.num_gpus_per_learner or 0) * num_actual_learners
         # Number of GPUs needed, if `num_gpus_per_learner=None` (auto).
         num_gpus_needed_if_available = (

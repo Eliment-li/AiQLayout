@@ -1,11 +1,13 @@
 from datetime import datetime
 
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator  # 用于设置整数刻度
 from pathlib import Path
-
 from utils.file_util import get_root_dir
+
 
 
 def plot_reward(data, save=True):
@@ -60,12 +62,12 @@ def plot_reward(data, save=True):
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
     # Add labels and legend
     plt.title('reward')
-
+    #plt.show()
     if save:
         time_id = datetime.now().strftime('%Y-%m-%d_%H-%M')
-        path = Path(get_root_dir()) / 'result' / (time_id + '.png')
+        path = Path(get_root_dir()) / 'results' / (time_id + '.png')
         plt.savefig(path)
-    plt.show()
+
 
 if __name__ == '__main__':
     data = [
