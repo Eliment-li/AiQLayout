@@ -13,6 +13,7 @@ stop_timesteps: 10  # Default: default_timesteps
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
 stop_iters: 2  # Default: default_iters
 
+# If run --as-release-test, --as-test must also be set.
 as_test: false
 as_release_test: false
 
@@ -33,7 +34,7 @@ use_lstm: True
 
 
 
-no_tune: False
+
 local_mode: False
 framework: torch
 checkpoint_frequency: 10
@@ -41,9 +42,6 @@ checkpoint_at_end: True
 
 log_file_id: 0
 
-
-
-run: PPO
 #在config.py中有自动配置
 num_gpus: none
 #resume: False

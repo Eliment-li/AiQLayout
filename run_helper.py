@@ -55,16 +55,46 @@ torch, _ = try_import_torch()
 
 logger = logging.getLogger(__name__)
 
+
+def train_no_tune(args, config, stop: Optional[Dict] = None):
+    results = None
+    assert not args.as_test and not args.as_release_test
+    algo = config.build()
+    for i in range(stop.get(TRAINING_ITERATION, args.stop_iters)):
+        results = algo.train()
+        if ENV_RUNNER_RESULTS in results:
+            mean_return = results[ENV_RUNNER_RESULTS].get(
+                EPISODE_RETURN_MEAN, np.nan
+            )
+            print(f"iter={i} R={mean_return}", end="")
+        if EVALUATION_RESULTS in results:
+            Reval = results[EVALUATION_RESULTS][ENV_RUNNER_RESULTS][
+                EPISODE_RETURN_MEAN
+            ]
+            print(f" R(eval)={Reval}", end="")
+        print()
+        for key, threshold in stop.items():
+            val = results
+            for k in key.split("/"):
+                try:
+                    val = val[k]
+                except KeyError:
+                    val = None
+                    break
+            if val is not None and not np.isnan(val) and val >= threshold:
+                print(f"Stop criterium ({key}={threshold}) fulfilled!")
+
+                ray.shutdown()
+                return results
+
+    ray.shutdown()
+    return results
+
 def train(
-    base_config: "AlgorithmConfig",
+    config: "AlgorithmConfig",
     args: Optional[argparse.Namespace] = None,
-    *,
-    stop: Optional[Dict] = None,
-    trainable: Optional[Type] = None,
     tune_callbacks: Optional[List] = None,
-    keep_config: bool = False,
     scheduler=None,
-    progress_reporter=None,
 ) -> Union[ResultDict, tune.result_grid.ResultGrid]:
     """Given an algorithm config and some command line args, runs an experiment.
 
@@ -80,7 +110,7 @@ def train(
     of all supported command line options.
 
     Args:
-        base_config: The AlgorithmConfig object to use for this experiment. This base
+        config: The AlgorithmConfig object to use for this experiment. This base
             config will be automatically "extended" based on some of the provided
             `args`. For example, `args.num_env_runners` is used to set
             `config.num_env_runners`, etc..
@@ -88,97 +118,33 @@ def train(
             properties defined: `stop_iters`, `stop_reward`, `stop_timesteps`,
             `no_tune`, `verbose`, `checkpoint_freq`, `as_test`. Optionally, for WandB
             logging: `wandb_key`, `wandb_project`, `wandb_run_name`.
-        stop: An optional dict mapping ResultDict key strings (using "/" in case of
-            nesting, e.g. "env_runners/episode_return_mean" for referring to
-            `result_dict['env_runners']['episode_return_mean']` to minimum
-            values, reaching of which will stop the experiment). Default is:
-            {
-            "env_runners/episode_return_mean": args.stop_reward,
-            "training_iteration": args.stop_iters,
-            "num_env_steps_sampled_lifetime": args.stop_timesteps,
-            }
 
-        trainable: The Trainable sub-class to run in the tune.Tuner. If None (default),
-            use the registered RLlib Algorithm class specified by args.algo.
         tune_callbacks: A list of Tune callbacks to configure with the tune.Tuner.
             In case `args.wandb_key` is provided, appends a WandB logger to this
-            list.
-        keep_config: Set this to True, if you don't want this utility to change the
-            given `base_config` in any way and leave it as-is. This is helpful
-            for those example scripts which demonstrate how to set config settings
-            that are otherwise taken care of automatically in this function (e.g.
-            `num_env_runners`).
-
+            list
     Returns:
         The last ResultDict from a --no-tune run OR the tune.Tuner.fit()
         results.
     """
-
-    # If run --as-release-test, --as-test must also be set.
-    if args.as_release_test:
-        args.as_test = True
-
-    # Initialize Ray.
     ray.init(
         num_cpus=args.num_cpus or None,
         local_mode=args.local_mode,
         ignore_reinit_error=True,
     )
 
-    # Define one or more stopping criteria.
-    if stop is None:
-        stop = {
+    stop = {
             # the results does not contail the metric EPISODE_RETURN_MEAN
             # f"{ENV_RUNNER_RESULTS}/{EPISODE_RETURN_MEAN}": args.stop_reward,
             f"{ENV_RUNNER_RESULTS}/{NUM_ENV_STEPS_SAMPLED_LIFETIME}": (
                 args.stop_timesteps
             ),
             TRAINING_ITERATION: args.stop_iters,
-        }
+    }
 
-    config = base_config
-
-    # Enhance the `base_config`, based on provided `args`.
-    if not keep_config:
-        enhance_config(config,args)
-
-    # Run the experiment w/o Tune (directly operate on the RLlib Algorithm object).
-    if args.no_tune:
-        assert not args.as_test and not args.as_release_test
-        algo = config.build()
-        for i in range(stop.get(TRAINING_ITERATION, args.stop_iters)):
-            results = algo.train()
-            if ENV_RUNNER_RESULTS in results:
-                mean_return = results[ENV_RUNNER_RESULTS].get(
-                    EPISODE_RETURN_MEAN, np.nan
-                )
-                print(f"iter={i} R={mean_return}", end="")
-            if EVALUATION_RESULTS in results:
-                Reval = results[EVALUATION_RESULTS][ENV_RUNNER_RESULTS][
-                    EPISODE_RETURN_MEAN
-                ]
-                print(f" R(eval)={Reval}", end="")
-            print()
-            for key, threshold in stop.items():
-                val = results
-                for k in key.split("/"):
-                    try:
-                        val = val[k]
-                    except KeyError:
-                        val = None
-                        break
-                if val is not None and not np.isnan(val) and val >= threshold:
-                    print(f"Stop criterium ({key}={threshold}) fulfilled!")
-
-                    ray.shutdown()
-                    return results
-
-
-        ray.shutdown()
-        return results
+    enhance_config(config,args)
+    print(config)
 
     # Run the experiment using Ray Tune.
-
     # Log results using WandB.
     tune_callbacks = tune_callbacks or []
     # if hasattr(args, "wandb_key") and (
@@ -186,16 +152,14 @@ def train(
     # ):
     #     append_wandb(tune_callbacks,args,config)
 
-
-    if progress_reporter is None and args.num_agents > 0:
-        progress_reporter =cli_reporter(config)
-
-
+    progress_reporter =cli_reporter(config)
+    if args.no_tune:
+        return train_no_tune(args, config, stop=stop)
 
     # Run the actual experiment (using Tune).
     start_time = time.time()
     results = tune.Tuner(
-        trainable or config.algo_class,
+        config.algo_class,
         param_space=config,
         run_config=tune.RunConfig(
             stop=stop,
@@ -214,8 +178,7 @@ def train(
         ),
     ).fit()
     time_taken = time.time() - start_time
-    print('time_taken=',str(time_taken/60))
-
+    print('time_taken ',str(time_taken/60))
     ray.shutdown()
 
     # Error out, if Tuner.fit() failed to run.
@@ -225,109 +188,59 @@ def train(
             f"{[e.args[0].args[2] for e in results.errors]}"
         )
 
-
     return results
 
 def enhance_config(config,args):
-    # Set the framework.
     config.framework(args.framework)
 
-    # Add an env specifier (only if not already set in config)?
-    if args.env is not None and config.env is None:
-        config.environment(args.env)
-
-    # Disable the new API stack?
+    # Disable the new API stack
     # @see https://docs.ray.io/en/latest/rllib/package_ref/doc/ray.rllib.algorithms.algorithm_config.AlgorithmConfig.api_stack.html#ray-rllib-algorithms-algorithm-config-algorithmconfig-api-stack
-    if not args.enable_new_api_stack:
-        config.api_stack(
-            enable_rl_module_and_learner=False,
-            enable_env_runner_and_connector_v2=False,
-        )
 
-    # Define EnvRunner scaling and behavior.
     if args.num_env_runners is not None:
         config.env_runners(num_env_runners=args.num_env_runners)
     if args.num_envs_per_env_runner is not None:
         config.env_runners(num_envs_per_env_runner=args.num_envs_per_env_runner)
 
-    # Define compute resources used automatically (only using the --num-learners
-    # and --num-gpus-per-learner args).
     # New stack.
-    if config.enable_rl_module_and_learner:
-        if args.num_gpus is not None and args.num_gpus > 0:
-            raise ValueError(
-                "--num-gpus is not supported on the new API stack! To train on "
-                "GPUs, use the command line options `--num-gpus-per-learner=1` and "
-                "`--num-learners=[your number of available GPUs]`, instead."
-            )
-
-        # Do we have GPUs available in the cluster?
+    if args.enable_new_api_stack:
+        # GPUs available in the cluster?
         num_gpus_available = ray.cluster_resources().get("GPU", 0)
-        # Number of actual Learner instances (including the local Learner if
-        # `num_learners=0`).
-        num_actual_learners = (
-                                  args.num_learners
-                                  if args.num_learners is not None
-                                  else config.num_learners
-                              ) or 1  # 1: There is always a local Learner, if num_learners=0.
-        # How many were hard-requested by the user
-        # (through explicit `--num-gpus-per-learner >= 1`).
-        num_gpus_requested = (args.num_gpus_per_learner or 0) * num_actual_learners
-        # Number of GPUs needed, if `num_gpus_per_learner=None` (auto).
-        num_gpus_needed_if_available = (
-                                           args.num_gpus_per_learner
-                                           if args.num_gpus_per_learner is not None
-                                           else 1
-                                       ) * num_actual_learners
+        num_gpus_requested = (args.num_gpus_per_learner or 0) * args.num_learners
+
         # Define compute resources used.
-        config.resources(num_gpus=0)  # old API stack setting
-        if args.num_learners is not None:
-            config.learners(num_learners=args.num_learners)
+        #config.resources(num_gpus=num_gpus_available)  # old API stack setting
 
-        # User wants to use aggregator actors per Learner.
-        if args.num_aggregator_actors_per_learner is not None:
-            config.learners(
-                num_aggregator_actors_per_learner=(
-                    args.num_aggregator_actors_per_learner
-                )
-            )
-
-        # User wants to use GPUs if available, but doesn't hard-require them.
-        if args.num_gpus_per_learner is None:
-            if num_gpus_available >= num_gpus_needed_if_available:
-                config.learners(num_gpus_per_learner=1)
-            else:
-                config.learners(num_gpus_per_learner=0)
-        # User hard-requires n GPUs, but they are not available -> Error.
-        elif num_gpus_available < num_gpus_requested:
+        #set num_learners and num_gpus_per_learner
+        config.learners(num_learners=args.num_learners)
+        if num_gpus_available >= num_gpus_requested:
+            # All required GPUs are available -> Use them.
+            config.learners(num_gpus_per_learner=args.num_gpus_per_learner)
+        else:
             raise ValueError(
                 "You are running your script with --num-learners="
                 f"{args.num_learners} and --num-gpus-per-learner="
                 f"{args.num_gpus_per_learner}, but your cluster only has "
                 f"{num_gpus_available} GPUs!"
             )
-
-        # All required GPUs are available -> Use them.
-        else:
-            config.learners(num_gpus_per_learner=args.num_gpus_per_learner)
-
         # Set CPUs per Learner.
         if args.num_cpus_per_learner is not None:
             config.learners(num_cpus_per_learner=args.num_cpus_per_learner)
 
-    # Old stack (override only if arg was provided by user).
-    elif args.num_gpus is not None:
-        config.resources(num_gpus=args.num_gpus)
+    else:
+        config.api_stack(
+            enable_rl_module_and_learner=False,
+            enable_env_runner_and_connector_v2=False,
+        )
 
     # Evaluation setup.
-    if args.evaluation_interval > 0:
-        config.evaluation(
-            evaluation_num_env_runners=args.evaluation_num_env_runners,
-            evaluation_interval=args.evaluation_interval,
-            evaluation_duration=args.evaluation_duration,
-            evaluation_duration_unit=args.evaluation_duration_unit,
-            evaluation_parallel_to_training=args.evaluation_parallel_to_training,
-        )
+    # if args.evaluation_interval > 0:
+    #     config.evaluation(
+    #         evaluation_num_env_runners=args.evaluation_num_env_runners,
+    #         evaluation_interval=args.evaluation_interval,
+    #         evaluation_duration=args.evaluation_duration,
+    #         evaluation_duration_unit=args.evaluation_duration_unit,
+    #         evaluation_parallel_to_training=args.evaluation_parallel_to_training,
+    #     )
 
     # Set the log-level (if applicable).
     if args.log_level is not None:
@@ -383,65 +296,6 @@ def register_env():
             entry_point='envs.env_'+str(version)+':Env_'+str(version),
             #max_episode_steps=999999,
         )
-
-def evaluate(results):
-    args = ConfigSingleton().get_args()
-    register_env()
-    if  not isinstance(results, str):
-        checkpoint = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
-        checkpoint = checkpoint.to_directory()
-        print(f'best checkpoint: {checkpoint}')
-        algo = Algorithm.from_checkpoint(path=checkpoint)
-    else:
-        algo = Algorithm.from_checkpoint(path=results)
-
-    env = Env_0()
-    obs, info = env.reset()
-
-    #####################
-
-    from ray.rllib.algorithms.ppo.torch.default_ppo_torch_rl_module import (
-        DefaultPPOTorchRLModule
-    )
-    from ray.rllib.algorithms.ppo.ppo_catalog import PPOCatalog
-
-    # Create an instance of the default RLModule used by PPO.
-    module = algo.get_module('policy_1')
-    action_dist_class = module.get_inference_action_dist_cls()
-    terminated = False
-    while not terminated:
-        fwd_ins = {"obs": torch.Tensor([obs])}
-        fwd_outputs = module.forward_inference(fwd_ins)
-        # this can be either deterministic or stochastic distribution
-        action_dist = action_dist_class.from_logits(
-            fwd_outputs["action_dist_inputs"]
-        )
-        action = action_dist.sample()[0].numpy()
-        print(action)
-        obs, reward, terminated, truncated, info = env.step(action)
-        print(reward)
-
-    #######################
-    # for i in range(10):
-    #     obs, reward, done, truncated, info = env.step(action)
-    #     #trace
-    #
-    #     print('done = %r, action = %r, reward = %r,  info = %r \n' % (done,a, reward,info['occupy']))
-    #     episode_reward *=args.gamma
-    #     episode_reward += reward
-
-        # if done:
-        #     print('env done = %r, action = %r, reward = %r  occupy =  {%r} ' % (done,a, reward, info['occupy']))
-        #     print(f"Episode done: Total reward = {episode_reward}")
-        #     break
-
-    algo.stop()
-
-    trace = []
-    # if args.show_trace:
-    #     show_trace(trace.transpose())
-
-
 
 
 def test_trail(results,args, success_metric: Optional[Dict] = None,stop=None):
@@ -534,4 +388,4 @@ def test_trail(results,args, success_metric: Optional[Dict] = None,stop=None):
             )
 
 if __name__ == '__main__':
-    evaluate(r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_ecdba2f2107445bba129010d9834a024')
+    pass

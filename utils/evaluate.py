@@ -1,8 +1,14 @@
+from datetime import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator  # 用于设置整数刻度
+from pathlib import Path
 
-def plot_reward(data, save=False):
+from utils.file_util import get_root_dir
+
+
+def plot_reward(data, save=True):
     '''
     # Example:
     data = [
@@ -10,9 +16,7 @@ def plot_reward(data, save=False):
         [0, 342, 200, 500, 600],
         [3, 4, 5, 6, 7]
     ]
-    label = ['Metric 1', 'Metric 2', 'Metric 3']
-
-    plot_reward(data, label)
+    plot_reward(data)
     '''
 
     # 创建一个图形和一个坐标轴
@@ -52,15 +56,15 @@ def plot_reward(data, save=False):
     # lines_2, labels_2 = ax2.get_legend_handles_labels()
     # ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left')
 
-    # 设置横轴刻度为整数
+    # set xaxis to integer
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
     # Add labels and legend
     plt.title('reward')
 
-    # if save:
-    #     path = Path(get_root_dir()) / 'data' / 'result' / (args.time_id + '.png')
-    #     plt.savefig(path)
-    # Show the plot
+    if save:
+        time_id = datetime.now().strftime('%Y-%m-%d_%H-%M')
+        path = Path(get_root_dir()) / 'result' / (time_id + '.png')
+        plt.savefig(path)
     plt.show()
 
 if __name__ == '__main__':
@@ -69,6 +73,5 @@ if __name__ == '__main__':
         [0, 342, 200, 500, 600],
         [3, 4, 5, 6, 7]
     ]
-    label = ['Metric 1', 'Metric 2', 'Metric 3']
 
-    plot_reward(data, label)
+    plot_reward(data)

@@ -1,12 +1,15 @@
+from datetime import datetime
+from pathlib import Path
+import torch
 from hydra import initialize, compose
 from threading import Lock
-
 from omegaconf import OmegaConf
-
+from utils.file_util import get_root_dir
 
 class ConfigSingleton:
     _instance = None
     _lock = Lock()
+
 
     def __new__(cls, config_path="conf", job_name="config",version_base="1.2"):
         # 使用线程锁确保线程安全
@@ -28,9 +31,18 @@ class ConfigSingleton:
                 if str(value).lower() == 'none':
                     # 如果值是字符串 'none'（忽略大小写），则替换为 None
                     self.args[key] = None
+            # 处理其他配置项
+        self.enhance_configure()
 
-    def custom_configure(self):
-        pass
+    def enhance_configure(self):
+        p = Path(get_root_dir())
+        #0.8 * logical_cpu_cores
+        # default number_learner is 1, thus  set num_gpus_per_learner to 1 is fine
+        self.args['num_gpus_per_learner'] = 1 if torch.cuda.is_available() else 0
+        self.args['device'] = "cuda" if torch.cuda.is_available() else "cpu"
+        self.args['time_id'] = datetime.now().strftime('%Y-%m-%d_%H-%M')
+        self.args['output'] = p / 'results' / 'ray'
+        self.args['tensorboard_path'] = p / 'results' / 'tensorboard'
 
 
     def get_args(self):
@@ -64,20 +76,21 @@ def get_logical_cores():
             # 如果都无法获取，返回默认值（通常为1）
             return 1
 
-logical_cores = get_logical_cores()
-print(f"逻辑核心数量: {logical_cores}")
 
+10-4-5003
 
-# 示例使用
+# test code
 if __name__ == "__main__":
     # 第一次初始化
     global_config = ConfigSingleton()
-    config = global_config.get_args()
-    print(config)
-
-    # 再次获取，确保是同一个实例
+    args = global_config.get_args()
+    args.num_gpus_per_learner = 2
+    print(args.num_gpus_per_learner)
+    # get again
     another_config_instance = ConfigSingleton()
     print(another_config_instance.get_args())
 
-    # 验证单例
-    print(global_config is another_config_instance)  # 输出: True
+    # verify Singleton
+    print(global_config is another_config_instance)  # True
+
+
