@@ -38,6 +38,7 @@ from ray.rllib.core.rl_module import MultiRLModule
 from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
 
 from envs.env_0 import Env_0
+from envs.env_1 import Env_1
 from results.plot_results import plot_reward
 
 
@@ -50,7 +51,7 @@ def evaluate(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_0()
+    env = Env_1()
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
@@ -121,7 +122,7 @@ def evaluate(base_config, args, results):
 
         new_input = {}
         for i, tensor in enumerate(input_dict['default_policy']['obs']):
-            key = f'policy_{i}'
+            key = f'policy_{i+1}'
             new_input[key] = {'obs':tensor}
         # No exploration.
         module_out = rl_module._forward_inference(new_input)
@@ -142,7 +143,7 @@ def evaluate(base_config, args, results):
         #     'agent_1':to_env['policy_1']['actions'],
         #     'agent_2':to_env['policy_2']['actions']
         # }
-        actions = {f'agent_{i}':to_env[f'policy_{i}']['actions'] for i in range(len(to_env))}
+        actions = {f'agent_{i+1}':to_env[f'policy_{i+1}']['actions'] for i in range(len(to_env))}
 
         obs, reward, terminated, truncated, _ = env.step(actions)
         rewrads.append(reward['agent_1'])

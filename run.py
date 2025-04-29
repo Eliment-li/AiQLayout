@@ -11,10 +11,11 @@ torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
 from envs.env_0 import Env_0
+from envs.env_1 import Env_1
 from run_helper import train
 
 def new_env():
-    return  Env_0()
+    return  Env_1()
 register_env("Env_0", new_env)
 def policy_mapping_fn(agent_id, episode, **kwargs):
     try:
@@ -31,13 +32,13 @@ if __name__ == "__main__":
 
     args = ConfigSingleton().get_args()
     #policy_1, policy_2 ... policy_args.num_agents
-    policies = {'policy_{}'.format(i) for i in range(int(args.num_qubits))}
+    policies = {'policy_{}'.format(i+1) for i in range(int(args.num_qubits))}
 
     base_config = (
         get_trainable_cls(args.algo_class)
         .get_default_config()
         .environment(
-            Env_0,
+            Env_1,
             env_config={"key": "value"},
         )
         .training(
@@ -75,6 +76,6 @@ if __name__ == "__main__":
     #     }),
     # )
 
-    results = train(base_config, args)
-    evaluate(base_config,args,results)
-    #evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_811b0b397f104d0f90051df969227d6b')
+    #results = train(base_config, args)
+    #evaluate(base_config,args,results)
+    evaluate(base_config,args,r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_1e17bed0284347cf9f1f69b517f24213')

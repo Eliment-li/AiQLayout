@@ -1,8 +1,6 @@
-import pickle
-
-# 读取.pkl文件
-with open(r'D:\checkpoint\env_runner\module_to_env_connector\class_and_ctor_args.pkl', 'rb') as f:
-    data = pickle.load(f)
-
-# 使用读取的数据
-print(data)
+path_len = [1,2,3,4]
+rewards = {}
+for i in range(4 ):
+    r = (5 - path_len[i])
+    rewards.update({f'agent_{i + 1}': r})
+print('rewards :', rewards)
