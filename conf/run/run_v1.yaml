@@ -1,8 +1,8 @@
 
 env_version: 0
-num_qubits: 2
-chip_size_w: 3
-chip_size_h: 3
+num_qubits: 4
+chip_size_w: 5
+chip_size_h: 5
 verbose: 1
 #lstm
 use_lstm: True
@@ -11,10 +11,10 @@ use_lstm: True
 stop_reward: 100.0
 
 #One call to envs.step() is one timestep.
-stop_timesteps: 10  # Default: default_timesteps
+stop_timesteps: 10000  # Default: default_timesteps
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters: 2  # Default: default_iters
+stop_iters: 20  # Default: default_iters
 
 # If run --as-release-test, --as-test must also be set.
 as_test: false

@@ -75,6 +75,6 @@ if __name__ == "__main__":
     #     }),
     # )
 
-    #results = train(base_config, args)
-    #evaluate(base_config,args,results)
-    evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_811b0b397f104d0f90051df969227d6b')
+    results = train(base_config, args)
+    evaluate(base_config,args,results)
+    #evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_811b0b397f104d0f90051df969227d6b')

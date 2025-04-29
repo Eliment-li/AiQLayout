@@ -3,7 +3,7 @@ import argparse
 import json
 import logging
 import os
-import pprint
+from pprint import pprint
 import random
 import re
 import time
@@ -103,7 +103,7 @@ def evaluate(base_config, args, results):
 
     obs, _ = env.reset()
     terminated, truncated = False, False
-    stop_timesteps = args.stop_timesteps
+    stop_timesteps = 100
     while True:
 
         shared_data = {}
@@ -151,6 +151,7 @@ def evaluate(base_config, args, results):
         # update_episode()
         stop_timesteps -= 1
         if  terminated['__all__'] or truncated or stop_timesteps <= 0:
+            pprint(obs)
             #print(f'{terminated},{truncated},{stop_timesteps}')
             break
     # print(rewrads)
