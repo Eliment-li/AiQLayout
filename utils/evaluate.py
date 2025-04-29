@@ -121,7 +121,7 @@ def evaluate(base_config, args, results):
 
         new_input = {}
         for i, tensor in enumerate(input_dict['default_policy']['obs']):
-            key = f'policy_{i+1}'
+            key = f'policy_{i}'
             new_input[key] = {'obs':tensor}
         # No exploration.
         module_out = rl_module._forward_inference(new_input)
@@ -138,10 +138,11 @@ def evaluate(base_config, args, results):
         # Send the computed action to the env. Note that the RLModule and the
         # connector pipelines work on batched data (B=1 in this case), whereas the Env
         # is not vectorized here, so we need to use `action[0]`.
-        actions = {
-            'agent_1':to_env['policy_1']['actions'],
-            'agent_2':to_env['policy_2']['actions']
-        }
+        # actions = {
+        #     'agent_1':to_env['policy_1']['actions'],
+        #     'agent_2':to_env['policy_2']['actions']
+        # }
+        actions = {f'agent_{i}':to_env[f'policy_{i}']['actions'] for i in range(len(to_env))}
 
         obs, reward, terminated, truncated, _ = env.step(actions)
         rewrads.append(reward['agent_1'])

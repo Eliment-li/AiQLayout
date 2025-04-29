@@ -1,6 +1,8 @@
 
 env_version: 0
-num_agents: 10
+num_qubits: 2
+chip_size_w: 3
+chip_size_h: 3
 verbose: 1
 #lstm
 use_lstm: True

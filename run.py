@@ -30,9 +30,8 @@ def get_model_config():
 if __name__ == "__main__":
 
     args = ConfigSingleton().get_args()
-    policies = {}
-    for i in range(int(args.num_agents)):
-        policies.add('policy_{}'.format(i+1))
+    #policy_1, policy_2 ... policy_args.num_agents
+    policies = {'policy_{}'.format(i) for i in range(int(args.num_qubits))}
 
     base_config = (
         get_trainable_cls(args.algo_class)
@@ -76,6 +75,6 @@ if __name__ == "__main__":
     #     }),
     # )
 
-    results = train(base_config, args)
-    evaluate(base_config,args,results)
-    #evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_7e02affad47b4ffaa43c162e06205d31')
+    #results = train(base_config, args)
+    #evaluate(base_config,args,results)
+    evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_811b0b397f104d0f90051df969227d6b')

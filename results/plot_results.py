@@ -65,6 +65,7 @@ def plot_reward(data, save=True):
     plt.title('reward')
     #plt.show()
     if save:
+        print('save figure ...')
         time_id = datetime.now().strftime('%Y-%m-%d_%H-%M')
         path = Path(get_root_dir()) / 'results' / (time_id + '.png')
         plt.savefig(path)
