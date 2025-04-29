@@ -11,10 +11,15 @@ from config import ConfigSingleton
 args = ConfigSingleton().get_args()
 
 '''
-This env is to test our code,
-The further the distance between the agents, the higher the reward.
+actions:
+
+hold on
+
+use nearest path
+use second-optimal pathways
+use third-optimal pathways
 '''
-class Env_0(MultiAgentEnv):
+class Env_1(MultiAgentEnv):
 
     def __init__(self, config=None):
         super().__init__()
@@ -33,11 +38,7 @@ class Env_0(MultiAgentEnv):
         )
         self.observation_spaces = {f"agent_{i}": self.obs_spaces for i in range(self.num_qubits)}
         self.action_spaces = {f"agent_{i}": gym.spaces.Discrete(4) for i in range(self.num_qubits)}
-        # {
-        #     # up down left right
-        #     "agent_1": gym.spaces.Discrete(4),
-        #     "agent_2": gym.spaces.Discrete(4),
-        # }
+
 
         #use config from outside
         # if config.get("sheldon_cooper_mode"):
@@ -144,7 +145,7 @@ def calculate_total_distance(coords):
 
     return total_distance
 if __name__ == '__main__':
-    # env = Env_0()
+    # env = Env_1()
     # obs,_ = env.reset()
     # pprint(obs)
     print(gym.spaces.Box(
