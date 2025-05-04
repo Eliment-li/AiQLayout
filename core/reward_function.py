@@ -16,7 +16,7 @@ class RewardFunction:
             '''
             防止 agent 通过distance的波动获取 reward
             '''
-            r = -3.5 * (math.pow((1 - k2), 2) - 1) * (1 - np.tanh(k1))
+            r = -3.5 * (math.pow((1 - k2), 2) - 1) * (1 - np.tanh(k1)) - 2
             if distance - env.last_distance <= 1:
                 r *= 1.25
         else:

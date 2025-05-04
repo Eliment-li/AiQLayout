@@ -49,6 +49,7 @@ class Chip():
 
     def reset(self):
        self._state = np.zeros((args.chip_size_h, args.chip_size_w), dtype=np.int32)
+       self._init_magic_state()
        self._init_qubits_layout()
 
     def _init_magic_state(self):

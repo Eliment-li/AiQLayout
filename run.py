@@ -14,9 +14,9 @@ from envs.env_0 import Env_0
 from envs.env_1 import Env_1
 from run_helper import train
 
-def new_env():
-    return  Env_1()
-register_env("Env_0", new_env)
+# def new_env():
+#     return  Env_1()
+# register_env("Env_0", new_env)
 def policy_mapping_fn(agent_id, episode, **kwargs):
     try:
         agent_number = agent_id.split('_')[1]  # Split and get the number part
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         get_trainable_cls(args.algo_class)
         .get_default_config()
         .environment(
-            Env_1,
+            Env_0,
             env_config={"key": "value"},
         )
         .training(
@@ -76,6 +76,6 @@ if __name__ == "__main__":
     #     }),
     # )
 
-    #results = train(base_config, args)
-    #evaluate(base_config,args,results)
-    evaluate(base_config,args,r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_1e17bed0284347cf9f1f69b517f24213')
+    results = train(base_config, args)
+    evaluate(base_config,args,results)
+    #evaluate(base_config,args,r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_56027a96e59e4569b769ba2c96165951')

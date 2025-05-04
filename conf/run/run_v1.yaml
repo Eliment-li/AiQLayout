@@ -11,10 +11,10 @@ use_lstm: True
 stop_reward: 100.0
 
 #One call to envs.step() is one timestep.
-stop_timesteps: 10000  # Default: default_timesteps
+stop_timesteps: 800  # Default: default_timesteps
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters: 80  # Default: default_iters
+stop_iters: 320  # Default: default_iters
 
 # If run --as-release-test, --as-test must also be set.
 as_test: false

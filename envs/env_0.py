@@ -61,29 +61,27 @@ class Env_0(MultiAgentEnv):
         terminateds = {"__all__": False}
         truncated = {}
         infos = {f'agent_{i+1}': distance for i in range(self.num_qubits)}
-
         return self._get_obs(),rewards,terminateds,truncated,infos
 
 
     def reward_function(self):
         rewards = {}
         distance = calculate_total_distance(self.chip._positions)
+        rf_name = f"rfv{args.rf_version}"
+        function_to_call = getattr(rfunctions, rf_name, None)
+        r = -1
+        if callable(function_to_call):
+            r = function_to_call(self, distance)
+        else:
+            print(f"Function {rf_name} does not exist.")
         for i in range(1, self.num_qubits+1):
-            rf_name = f"rfv{args.rf_version}"
-            function_to_call = getattr(rfunctions, rf_name, None)
-            r = -1
-            if callable(function_to_call):
-                r = function_to_call(self,distance)
-            else:
-                print(f"Function {rf_name} does not exist.")
             rewards.update({f'agent_{i}':r})
         return rewards,distance
 
 
-def calculate_total_distance(coords):
+def calculate_total_distance(coords) -> float:
     """
     计算所有二维坐标之间的距离总和
-
     :param coords: 坐标列表，每个元素为一个元组 (x, y)
     :return: 距离总和
     """
