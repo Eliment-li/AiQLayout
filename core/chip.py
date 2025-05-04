@@ -14,10 +14,11 @@ class Chip():
         self._n_qubits = args.num_qubits
         self._positions=[]
         self._state=np.zeros((args.chip_size_h,args.chip_size_w), dtype=np.int32)
-        self._init_qubits_layout()
-        #magic state
         self._magic_state = []
         self._init_magic_state()
+        self._init_qubits_layout()
+        #magic state
+
 
     def _init_qubits_layout(self):
         # vaild value start from _position[1] , -1 only for occupy
@@ -30,6 +31,9 @@ class Chip():
                 self._state[x][y] = i
                 self._positions.append((x, y))
                 i += 1
+            else:
+                continue
+
     def reset(self):
        self._init_qubits_layout()
 
@@ -58,7 +62,7 @@ class Chip():
         #if new_post out of matrix
         if ( new_x < 0 or new_x >= args.chip_size_w or new_y < 0 or new_y >= args.chip_size_h or
                 self._state[new_x,new_y] != 0):
-            #print("Invalid move")
+            print("Invalid move")
             return False
         else:
             self._positions[player] = (new_x, new_y)
@@ -77,16 +81,33 @@ class Chip():
 
         path_len,path = bfs_find_target(self._state, px, py)
         return path_len
+
     def all_path_len(self):
         '''
         :return: all path to magic state
         '''
         path_len = []
-        for i in range(self._n_qubits):
+        for i in range(1,self._n_qubits+1):
             px, py = self._positions[i+1]
             len, path  = bfs_find_target(self._state, px, py)
             path_len.append(len)
         return path_len
+
+    def distance_to_others(self,player):
+        '''
+        :param player:
+        :return: the distance to other qubits
+        '''
+        px, py = self._positions[player]
+        distance = []
+        for i in range(1,self._n_qubits+1):
+            if i == player:
+                continue
+            x, y = self._positions[i]
+            distance.append(abs(px - x) + abs(py - y))
+        #sum distance
+        return sum(distance)
+
     def __str__(self):
         return f"Chip(name={self._name}"
 
@@ -112,4 +133,4 @@ if __name__ == '__main__':
     print(chip.position)
 
     print('routing length  = ', chip.route_to_magic_state(1))
-    print('length  = ', chip.all_path_len())
+    print('length  = ', chip.distance_to_others(4))
