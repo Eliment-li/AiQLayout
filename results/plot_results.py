@@ -45,19 +45,19 @@ def plot_reward(data, save=True):
         ax1.axvline(x=x, ymin=0, ymax=(y - plt.ylim()[0]) / (plt.ylim()[1] - plt.ylim()[0]), color=colors[0],
                     linestyle='--', linewidth=0.5)
 
-    # x2 = np.arange(len(data[1]))
-    # y2 = data[1]
-    # 创建第二个坐标轴，共享x轴
-    # ax2 = ax1.twinx()
-    # ax2.plot(x2, y2, label='distance', color='#f16569', marker='v')
-    # ax2.set_ylabel('distance', color='#f16569')
-    # for x, y in zip(x2, y2):
-    #     # Annotate each point with its value
-    #     ax2.annotate(f'{y:.0f}', (x, y), textcoords="offset points", xytext=(0, 10), ha='center')
-    #
-    # lines_1, labels_1 = ax1.get_legend_handles_labels()
-    # lines_2, labels_2 = ax2.get_legend_handles_labels()
-    # ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left')
+    x2 = np.arange(len(data[1]))
+    y2 = data[1]
+    #创建第二个坐标轴，共享x轴
+    ax2 = ax1.twinx()
+    ax2.plot(x2, y2, label='distance', color='#f16569', marker='v')
+    ax2.set_ylabel('distance', color='#f16569')
+    for x, y in zip(x2, y2):
+        # Annotate each point with its value
+        ax2.annotate(f'{y:.2f}', (x, y), textcoords="offset points", xytext=(0, 10), ha='center')
+
+    lines_1, labels_1 = ax1.get_legend_handles_labels()
+    lines_2, labels_2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left')
 
     # set xaxis to integer
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
@@ -74,8 +74,7 @@ def plot_reward(data, save=True):
 if __name__ == '__main__':
     data = [
         [10, 20, 30, 40, 50],
-        [0, 342, 200, 500, 600],
-        [3, 4, 5, 6, 7]
+        [200, 200, 200, 500, 600],
     ]
 
     plot_reward(data)
