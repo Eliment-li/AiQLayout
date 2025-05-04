@@ -16,9 +16,9 @@ actions:
 
 hold on
 
-use nearest path
-use second-optimal pathways
-use third-optimal pathways
+use nearest path ?
+use second-optimal pathways ?
+use third-optimal pathways ?
 '''
 class Env_1(MultiAgentEnv):
 
@@ -28,7 +28,6 @@ class Env_1(MultiAgentEnv):
         # define chip
         self.channel = 1  # RGB 图像
         self.chip: Chip = None
-        self.positions = []
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
 
         self.obs_spaces = gym.spaces.Box(
@@ -75,13 +74,11 @@ class Env_1(MultiAgentEnv):
         pass
 
     def reward_function(self):
-        #todo call rfx
-        #reward = (self.positions[0][0]-self.positions[1][0])**2 + (self.positions[0][1]-self.positions[1][1])**2
-        path_len = self.chip.all_path_len()
         rewards = {}
-        for i in range(self.num_qubits):
-            r = (5 - path_len[i])
-            rewards.update({f'agent_{i+1}':r})
+        for i in range(1, self.num_qubits+1):
+            distance = self.chip.distance_to_others(i)
+            r = math.log(distance+1, 2)
+            rewards.update({f'agent_{i}':r})
         return rewards
 
 
