@@ -51,7 +51,7 @@ def evaluate(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_1()
+    env = Env_0()
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
@@ -104,7 +104,7 @@ def evaluate(base_config, args, results):
 
     obs, _ = env.reset()
     terminated, truncated = False, False
-    stop_timesteps = 100
+    stop_timesteps = 20
     while True:
 
         shared_data = {}
@@ -145,9 +145,9 @@ def evaluate(base_config, args, results):
         # }
         actions = {f'agent_{i+1}':to_env[f'policy_{i+1}']['actions'] for i in range(len(to_env))}
 
-        obs, reward, terminated, truncated, _ = env.step(actions)
+        obs, reward, terminated, truncated, info = env.step(actions)
         rewrads.append(reward['agent_1'])
-
+        distance.append(info['agent_1'])
         # Keep our `Episode` instance updated at all times.
         # update_episode()
         stop_timesteps -= 1
@@ -155,8 +155,11 @@ def evaluate(base_config, args, results):
             pprint(obs)
             #print(f'{terminated},{truncated},{stop_timesteps}')
             break
+
     # print(rewrads)
-    plot_reward([rewrads])
+    plot_reward([rewrads,distance])
+    print(env.chip.position)
+    print(env.chip.state)
 
 
 def update_episode(episode,obs,action,rewrad, terminated,truncated,to_env):
@@ -259,3 +262,6 @@ def test_trail(results,args, success_metric: Optional[Dict] = None,stop=None):
             raise ValueError(
                 f"`{success_metric_key}` of {success_metric_value} not reached!"
             )
+
+if __name__ == '__main__':
+    pass

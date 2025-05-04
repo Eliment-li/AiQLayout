@@ -1,4 +1,5 @@
 #representing a quantum computing device chip
+import math
 import random
 
 import numpy as np
@@ -14,13 +15,13 @@ class Chip():
         self._n_qubits = args.num_qubits
         self._positions=[]
         self._state=np.zeros((args.chip_size_h,args.chip_size_w), dtype=np.int32)
+        # magic state
         self._magic_state = []
         self._init_magic_state()
         self._init_qubits_layout()
-        #magic state
+        self.last_distance=[]
 
-
-    def _init_qubits_layout(self):
+    def random_init(self):
         # vaild value start from _position[1] , -1 only for occupy
         self._positions = [-1]
         i = 1
@@ -34,7 +35,20 @@ class Chip():
             else:
                 continue
 
+    def _init_qubits_layout(self):
+       # random init qubits layout
+       # init qubits one by one
+        self._positions = [-1]
+        for r in range(args.chip_size_h):
+            for c in range(args.chip_size_w):
+                if self._state[r][c] == 0:
+                    self._positions.append((r, c))
+                    self._state[r][c] = len(self._positions)-1
+                    if len(self._positions)-1 == self._n_qubits:
+                        return
+
     def reset(self):
+       self._state = np.zeros((args.chip_size_h, args.chip_size_w), dtype=np.int32)
        self._init_qubits_layout()
 
     def _init_magic_state(self):
@@ -51,22 +65,29 @@ class Chip():
     def move(self, player: int, act:int):
         old_x,old_y = self._positions[player]
         if act == 0:
-            new_x,new_y = old_x - 1, old_y  # up
+            new_x,new_y = old_x - 1, old_y  # left
         elif act == 1:
-            new_x,new_y  = old_x + 1, old_y   # down
+            new_x,new_y  = old_x + 1, old_y   # right
         elif act == 2:
-            new_x,new_y  = old_x, old_y - 1 # left
+            new_x,new_y  = old_x, old_y - 1 # up
         elif act == 3:
-            new_x,new_y  = old_x, old_y + 1  # right
+            new_x,new_y  = old_x, old_y + 1  # down
         #print(f"old_x:{old_x}, old_y:{old_y}, new_x:{new_x}, new_y:{new_y}")
         #if new_post out of matrix
-        if ( new_x < 0 or new_x >= args.chip_size_w or new_y < 0 or new_y >= args.chip_size_h or
-                self._state[new_x,new_y] != 0):
+        if (
+                new_x < 0
+                or new_x >= args.chip_size_w
+                or new_y < 0
+                or new_y >= args.chip_size_h
+                or self._state[new_x,new_y] != 0):
+
             print("Invalid move")
             return False
         else:
-            self._positions[player] = (new_x, new_y)
+            #free the old position
             self._state[old_x, old_y] = 0
+            #occupy the new position
+            self._positions[player] = (new_x, new_y)
             self._state[new_x, new_y] = player
 
             return True
@@ -122,15 +143,27 @@ class Chip():
     def plot(self):
         pass
 
+#test code
 if __name__ == '__main__':
     chip = Chip("chip")
     print(chip)
     print(chip.state)
     print(chip.position)
-    chip.move(1, 0)
-    chip.move(1, 2)
+    for i in range(1000):
+        player = random.randint(1, chip._n_qubits)
+        act  = random.randint(0, 3)
+        chip.move(player, act)
     print(chip.state)
     print(chip.position)
 
     print('routing length  = ', chip.route_to_magic_state(1))
     print('length  = ', chip.distance_to_others(4))
+
+    # rewards = {}
+    # for i in range(1, chip._n_qubits + 1):
+    #     distance = chip.distance_to_others(i)
+    #     print(distance)
+    #     r = math.log(distance +1, 2)-3.5
+    #     rewards.update({f'agent_{i}': r})
+    #
+    # print(rewards)
