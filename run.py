@@ -1,4 +1,5 @@
 from ray import tune
+from ray.rllib.algorithms import PPOConfig
 from ray.rllib.core.rl_module import MultiRLModule, MultiRLModuleSpec, RLModuleSpec
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 from config import ConfigSingleton
@@ -53,20 +54,25 @@ if __name__ == "__main__":
         .env_runners(
             env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
         )
-        # .rl_module(
-        #     rl_module_spec=MultiRLModuleSpec(rl_module_specs={
-        #         "policy_1": RLModuleSpec(),
-        #         "policy_2": RLModuleSpec(),
-        #     }),
-        #     model_config=get_model_config()
-        # )
+
         .multi_agent(
             # Define two policies.
             policies=policies,
             # Map agent "player1" to policy "player1" and agent "player2" to policy
             # "player2".
-            policy_mapping_fn=policy_mapping_fn
+            policy_mapping_fn=policy_mapping_fn,
+            algorithm_config_overrides_per_module={
+                "policy_1": PPOConfig.overrides(gamma=0.85),
+                "policy_2": PPOConfig.overrides(lr=0.00001),
+            },
+        ).rl_module(
+            rl_module_spec=MultiRLModuleSpec(rl_module_specs={
+                "policy_1": RLModuleSpec(),
+                "policy_2": RLModuleSpec(),
+            }),
+            model_config=get_model_config()
         )
+
 
     )
     # .rl_module(
@@ -76,6 +82,6 @@ if __name__ == "__main__":
     #     }),
     # )
 
-    results = train(base_config, args)
-    evaluate(base_config,args,results)
-    #evaluate(base_config,args,r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_56027a96e59e4569b769ba2c96165951')
+    # results = train(base_config, args)
+    # evaluate(base_config,args,results)
+    evaluate(base_config,args,r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_7ed7298466044ad1b94c63640cf8b5ff')
