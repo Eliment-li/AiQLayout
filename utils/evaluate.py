@@ -147,7 +147,7 @@ def evaluate(base_config, args, results):
 
         obs, reward, terminated, truncated, info = env.step(actions)
         rewrads.append(reward['agent_1'])
-        distance.append(info['agent_1'])
+        distance.append(info['agent_1']['distance'])
         # Keep our `Episode` instance updated at all times.
         # update_episode()
         stop_timesteps -= 1

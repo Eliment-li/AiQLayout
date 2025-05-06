@@ -25,6 +25,14 @@ def policy_mapping_fn(agent_id, episode, **kwargs):
     except IndexError:
         raise ValueError(f"Invalid agent_id format: {agent_id}. Expected 'agent_n'.")
 
+'''
+DefaultModelConfig:
+MLP stacks
+Head configs (e.g. policy- or value function heads)
+Conv2D stacks
+Continuous action settings
+LSTM settings
+'''
 def get_model_config():
     model_config = DefaultModelConfig(use_lstm=True)
     return model_config
@@ -51,26 +59,25 @@ if __name__ == "__main__":
             #    # [[0, 0.001], [1e9, 0.0005]],
             # ]),
         )
-        .env_runners(
-            env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
-        )
-
         .multi_agent(
             # Define two policies.
             policies=policies,
             # Map agent "player1" to policy "player1" and agent "player2" to policy
             # "player2".
             policy_mapping_fn=policy_mapping_fn,
-            algorithm_config_overrides_per_module={
-                "policy_1": PPOConfig.overrides(gamma=0.85),
-                "policy_2": PPOConfig.overrides(lr=0.00001),
-            },
+
         ).rl_module(
             rl_module_spec=MultiRLModuleSpec(rl_module_specs={
                 "policy_1": RLModuleSpec(),
                 "policy_2": RLModuleSpec(),
             }),
-            model_config=get_model_config()
+            algorithm_config_overrides_per_module={
+                "policy_1": PPOConfig.overrides(gamma=0.85),
+                "policy_2": PPOConfig.overrides(lr=0.00001),
+            },
+            #model_config=get_model_config()
+        ).env_runners(
+            env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
         )
 
 
@@ -82,6 +89,6 @@ if __name__ == "__main__":
     #     }),
     # )
 
-    # results = train(base_config, args)
-    # evaluate(base_config,args,results)
-    evaluate(base_config,args,r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_7ed7298466044ad1b94c63640cf8b5ff')
+    results = train(base_config, args)
+    evaluate(base_config,args,results)
+    #evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_2a7882f0dd954ac381bbfc4f890c08d7')

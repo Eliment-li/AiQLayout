@@ -60,7 +60,7 @@ class Env_0(MultiAgentEnv):
         rewards,distance = self.reward_function()
         terminateds = {"__all__": False}
         truncated = {}
-        infos = {f'agent_{i+1}': distance for i in range(self.num_qubits)}
+        infos = {f'agent_{i+1}':{'distance': distance} for i in range(self.num_qubits)}
         return self._get_obs(),rewards,terminateds,truncated,infos
 
 
