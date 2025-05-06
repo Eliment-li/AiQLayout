@@ -34,7 +34,14 @@ Continuous action settings
 LSTM settings
 '''
 def get_model_config():
-    model_config = DefaultModelConfig(use_lstm=True)
+    model_config = DefaultModelConfig(
+        use_lstm=False,
+        #conv_filters= [[16, 4, 2], [32, 4, 2], [64, 4, 2], [128, 4, 2]]
+        # conv_activation='relu',
+        # fcnet_hiddens=[256,256],
+        # fcnet_activation='relu',
+
+    )
     return model_config
 
 if __name__ == "__main__":
@@ -68,13 +75,17 @@ if __name__ == "__main__":
 
         ).rl_module(
             rl_module_spec=MultiRLModuleSpec(rl_module_specs={
-                "policy_1": RLModuleSpec(),
-                "policy_2": RLModuleSpec(),
+                "policy_1": RLModuleSpec(model_config = get_model_config()),
+                "policy_2": RLModuleSpec(model_config = get_model_config()),
             }),
-            algorithm_config_overrides_per_module={
-                "policy_1": PPOConfig.overrides(gamma=0.85),
-                "policy_2": PPOConfig.overrides(lr=0.00001),
-            },
+            # algorithm_config_overrides_per_module={
+            #     "policy_1": PPOConfig.overrides(
+            #         gamma=0.85
+            #     ),
+            #     "policy_2": PPOConfig.overrides(
+            #         lr=0.00001
+            #     ),
+            # },
             #model_config=get_model_config()
         ).env_runners(
             env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
