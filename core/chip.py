@@ -53,15 +53,16 @@ class Chip():
        self._init_qubits_layout()
 
     def _init_magic_state(self):
-        self._magic_state = [
-            (0, 0),
-            (0, args.chip_size_w - 1),
-            (args.chip_size_h - 1, 0),
-            (args.chip_size_h - 1, args.chip_size_w - 1),
-        ]
-
-        for x, y in self._magic_state:
-            self._state[x][y] = -1
+        pass
+        # self._magic_state = [
+        #     (0, 0),
+        #     (0, args.chip_size_w - 1),
+        #     (args.chip_size_h - 1, 0),
+        #     (args.chip_size_h - 1, args.chip_size_w - 1),
+        # ]
+        #
+        # for x, y in self._magic_state:
+        #     self._state[x][y] = -1
 
     def move(self, player: int, act:int):
         old_x,old_y = self._positions[player]

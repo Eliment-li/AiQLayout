@@ -5,10 +5,20 @@ algo_class: "PPO"
 enable_new_api_stack: True
 framework: "torch"
 
+# RLlib Logging Options
+log_level: WARN  # Options: INFO, DEBUG, WARN, ERROR
+
+# env runner stack
 num_env_runners: null
 num_envs_per_env_runner: null
-num_agents: 0
-env: null
+
+#Number of CPUs to allocate per EnvRunner.
+num_cpus_per_env_runner: null
+
+#Number of GPUs to allocate per EnvRunner. This can
+#be fractional. This is usually needed only if your env itself requires a
+#GPU (i.e., it is a GPU-intensive video game), or model inference is unusually expensive.
+num_gpus_per_env_runner: 0
 
 # Evaluation Options
 evaluation_num_env_runners: 0
@@ -17,8 +27,6 @@ evaluation_duration: 10
 evaluation_duration_unit: "episodes"
 evaluation_parallel_to_training: false
 
-# RLlib Logging Options
-log_level: WARN  # Options: INFO, DEBUG, WARN, ERROR
 
 # tune.Tuner Options
 num_samples: 1
@@ -34,12 +42,21 @@ wandb_run_name: null
 
 
 # Learner Scaling Options
-num_learners: null
+num_learners: 1
+
+#Only necessary for custom processing pipeline inside each Learner
+#requiring multiple CPU cores.
+#If `num_learners=0`, RLlib creates only one local Learner instance and
+#the number of CPUs on the main process is
+#`max(num_cpus_per_learner, num_cpus_for_main_process)`.
 num_cpus_per_learner: null
+#Number of GPUs allocated per Learner worker. If`num_learners=0`,
+#any value greater than 0 runs the training on a single GPU on the main process,
+# while a value of 0 runs the training on main process CPUs.
 num_gpus_per_learner: null
 
 # Ray Init Options
-num_cpus: null
+num_cpus: 6
 local_mode: false
 
 # Old API Stack Config

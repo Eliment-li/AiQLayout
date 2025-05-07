@@ -15,6 +15,7 @@ from envs.env_0 import Env_0
 from envs.env_1 import Env_1
 from run_helper import train
 
+args = ConfigSingleton().get_args()
 # def new_env():
 #     return  Env_1()
 # register_env("Env_0", new_env)
@@ -34,7 +35,9 @@ Continuous action settings
 LSTM settings
 '''
 def get_model_config():
+
     model_config = DefaultModelConfig(
+        # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False,
         #conv_filters= [[16, 4, 2], [32, 4, 2], [64, 4, 2], [128, 4, 2]]
         # conv_activation='relu',
@@ -44,12 +47,19 @@ def get_model_config():
     )
     return model_config
 
+    # specific the rl module
+def get_rl_module_specs():
+    rl_module_specs = {
+            'policy_{}'.format(i): RLModuleSpec(model_config=get_model_config()) for i in
+            range(1, int(args.num_qubits) + 1)
+    }
+    return rl_module_specs
+
+def get_policys():
+    policies = {'policy_{}'.format(i) for i in range(1, int(args.num_qubits) + 1)}
+    return policies
+
 if __name__ == "__main__":
-
-    args = ConfigSingleton().get_args()
-    #policy_1, policy_2 ... policy_args.num_agents
-    policies = {'policy_{}'.format(i+1) for i in range(int(args.num_qubits))}
-
     base_config = (
         get_trainable_cls(args.algo_class)
         .get_default_config()
@@ -68,16 +78,13 @@ if __name__ == "__main__":
         )
         .multi_agent(
             # Define two policies.
-            policies=policies,
+            policies=get_policys(),
             # Map agent "player1" to policy "player1" and agent "player2" to policy
             # "player2".
             policy_mapping_fn=policy_mapping_fn,
 
         ).rl_module(
-            rl_module_spec=MultiRLModuleSpec(rl_module_specs={
-                "policy_1": RLModuleSpec(model_config = get_model_config()),
-                "policy_2": RLModuleSpec(model_config = get_model_config()),
-            }),
+            rl_module_spec=MultiRLModuleSpec(rl_module_specs=get_rl_module_specs()),
             # algorithm_config_overrides_per_module={
             #     "policy_1": PPOConfig.overrides(
             #         gamma=0.85
@@ -89,9 +96,12 @@ if __name__ == "__main__":
             #model_config=get_model_config()
         ).env_runners(
             env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
-        )
-
-
+            num_gpus_per_env_runner = 0
+            #num_env_runners=args.num_env_runners,
+        ).learners(
+            num_learners=args.num_learners,
+            num_gpus_per_learner= args.num_gpus_per_learner
+                   )
     )
     # .rl_module(
     #     rl_module_spec=MultiRLModuleSpec(rl_module_specs={

@@ -1,6 +1,6 @@
 rf_version: 1
 env_version: 0
-num_qubits: 2
+num_qubits: 4
 
 #chip
 chip_size_w: 5
@@ -41,6 +41,7 @@ log_file_id: 0
 #在config.py中有自动配置
 num_gpus: none
 #resume: False
+
 checkpoint: none
 
 #the save path of check_point zip file
@@ -48,10 +49,7 @@ check_point_zip_path: none
 
 debug: False
 
-
 explore_during_inference: False
-
-
 
 #attention start
 use_attention: False

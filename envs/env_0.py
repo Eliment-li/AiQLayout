@@ -20,6 +20,8 @@ class Env_0(MultiAgentEnv):
 
     def __init__(self, config=None):
         super().__init__()
+        self.steps = 0
+        self.max_step = 100
         self.num_qubits = args.num_qubits
         # define chip
         self.channel = 1  # RGB 图像
@@ -42,6 +44,7 @@ class Env_0(MultiAgentEnv):
         #     #do something
 
     def reset(self, *, seed=None, options=None):
+        self.steps = 0
         self.chip.reset()
         self.default_distance = calculate_total_distance(self.chip._positions)
         self.last_distance = self.default_distance
@@ -53,12 +56,14 @@ class Env_0(MultiAgentEnv):
         return obs
 
     def step(self, action_dict):
+        self.steps += 1
         for i in range(1, self.num_qubits + 1):
             act = action_dict[f'agent_{i}']
             self.chip.move(i,act)
 
         rewards,distance = self.reward_function()
-        terminateds = {"__all__": False}
+
+        terminateds = {"__all__": False} if self.steps <= self.max_step else {"__all__": True}
         truncated = {}
         infos = {f'agent_{i+1}':{'distance': distance} for i in range(self.num_qubits)}
         return self._get_obs(),rewards,terminateds,truncated,infos
