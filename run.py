@@ -6,7 +6,7 @@ from config import ConfigSingleton
 import os
 from ray.rllib.utils.framework import try_import_torch
 from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
-from utils.evaluate import evaluate
+from utils.evaluate import evaluate, evaluate_v2
 
 torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
@@ -35,17 +35,23 @@ Continuous action settings
 LSTM settings
 '''
 def get_model_config():
+    ConvFilterSpec = [
+        [16, 3, 1],  # 第一层：32 个过滤器，卷积核大小为 3x3，步幅为 1x1
+        [32, 3, 2],  # 第二层：64 个过滤器，卷积核大小为 3x3，步幅为 2x2
+        [64, 5, 1]  # 第三层：128 个过滤器，卷积核大小为 5x5，步幅为 1x1
+    ]
 
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False,
-        #conv_filters= [[16, 4, 2], [32, 4, 2], [64, 4, 2], [128, 4, 2]]
+        conv_filters= ConvFilterSpec
         # conv_activation='relu',
         # fcnet_hiddens=[256,256],
         # fcnet_activation='relu',
 
     )
     return model_config
+
 
     # specific the rl module
 def get_rl_module_specs():
@@ -64,7 +70,7 @@ if __name__ == "__main__":
         get_trainable_cls(args.algo_class)
         .get_default_config()
         .environment(
-            Env_0,
+            env=Env_1,
             env_config={"key": "value"},
         )
         .training(
@@ -111,5 +117,5 @@ if __name__ == "__main__":
     # )
 
     results = train(base_config, args)
-    evaluate(base_config,args,results)
-    #evaluate(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_2a7882f0dd954ac381bbfc4f890c08d7')
+    evaluate_v2(base_config,args,results)
+   #evaluate(base_config,args,r' C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_401a2ef542b54ea89809efa61c22f277')

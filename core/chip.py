@@ -66,6 +66,7 @@ class Chip():
 
     def move(self, player: int, act:int):
         old_x,old_y = self._positions[player]
+        assert act >= 0 and act <= 3, f"act:{act} is not in [0,3]"
         if act == 0:
             new_x,new_y = old_x - 1, old_y  # left
         elif act == 1:

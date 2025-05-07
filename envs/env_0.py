@@ -14,6 +14,7 @@ rfunctions = RewardFunction()
 '''
 This env is to test our code,
 The further the distance between the agents, the higher the reward.
+agent acts simultaneously
 '''
 class Env_0(MultiAgentEnv):
 
@@ -21,7 +22,7 @@ class Env_0(MultiAgentEnv):
     def __init__(self, config=None):
         super().__init__()
         self.steps = 0
-        self.max_step = 100
+        self.max_step = args.env_max_step
         self.num_qubits = args.num_qubits
         # define chip
         self.channel = 1  # RGB 图像

@@ -42,6 +42,128 @@ from envs.env_1 import Env_1
 from results.plot_results import plot_reward
 
 
+def evaluate_v2(base_config, args, results):
+    if isinstance(results, str):
+        best_path = results
+    else:
+        best_result = results.get_best_result(metric='env_runners/episode_reward_mean', mode='max').checkpoint
+        best_path = best_result.to_directory()
+        print('best_path=', best_path)
+    # Create the env.
+    env = Env_1()
+
+    # Create the env-to-module pipeline from the checkpoint.
+    print("Restore env-to-module connector from checkpoint ...", end="")
+    env_to_module = EnvToModulePipeline.from_checkpoint(
+        os.path.join(
+            best_path,
+            COMPONENT_ENV_RUNNER,
+            COMPONENT_ENV_TO_MODULE_CONNECTOR,
+        )
+    )
+    print(" ok")
+
+    print("Restore RLModule from checkpoint ...", end="")
+    rl_module = MultiRLModule.from_checkpoint(
+        os.path.join(
+            best_path,
+            COMPONENT_LEARNER_GROUP,
+            COMPONENT_LEARNER,
+            COMPONENT_RL_MODULE,
+
+            # 'policy_1' # DEFAULT_MODULE_ID,
+        )
+    )
+    print(" ok")
+
+    # For the module-to-env pipeline, we will use the convenient config utility.
+    print("Restore module-to-env connector from checkpoint ...", end="")
+    # This class does nothing, need fix, see EnvToModulePipeline
+    module_to_env = ModuleToEnvPipeline.from_checkpoint(
+        os.path.join(
+            best_path,
+            COMPONENT_ENV_RUNNER,
+            COMPONENT_MODULE_TO_ENV_CONNECTOR,
+        )
+    )
+    # remove default pipeline that incompatible with multi-agent case
+    incompatible_pipelines = [
+        'UnBatchToIndividualItems',
+        'ModuleToAgentUnmapping',
+        'RemoveSingleTsTimeRankFromBatch',
+        'NormalizeAndClipActions',
+        'ListifyDataForVectorEnv',
+        'ModuleToEnvPipeline',
+    ]
+    for pipeline in incompatible_pipelines:
+        module_to_env.remove(pipeline)
+
+    rewrads = [[] for i in range(env.num_qubits)]
+    distance = [[] for i in range(env.num_qubits)]
+
+    obs, _ = env.reset()
+    terminated, truncated = False, False
+    stop_timesteps = 20
+    while True:
+
+        shared_data = {}
+        episode = MultiAgentEpisode(
+            observations=[obs],
+            observation_space=env.observation_spaces,
+            action_space=env.action_spaces,
+        )
+        input_dict = env_to_module(
+            episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
+            rl_module=rl_module,
+            explore=args.explore_during_inference,
+            shared_data=shared_data,
+        )
+
+        new_input = {}
+        obs = input_dict['default_policy']['obs'][0]
+        new_input[ f'policy_{env.player_now}'] = {'obs': obs}
+
+        # No exploration.
+        module_out = rl_module._forward_inference(new_input)
+        # Using exploration.
+        # rl_module_out = rl_module.forward_exploration(input_dict)
+        to_env = module_to_env(
+            batch=module_out,
+            episodes=[episode],  # ConnectorV2 pipelines operate on lists of episodes.
+            rl_module=rl_module,
+            explore=args.explore_during_inference,
+            shared_data=shared_data,
+        )
+
+        # Send the computed action to the env. Note that the RLModule and the
+        # connector pipelines work on batched data (B=1 in this case), whereas the Env
+        # is not vectorized here, so we need to use `action[0]`.
+        # actions = {
+        #     'agent_1':to_env['policy_1']['actions'],
+        #     'agent_2':to_env['policy_2']['actions']
+        # }
+        #actions = {f'agent_{i + 1}': to_env[f'policy_{i + 1}']['actions'] for i in range(len(to_env))}
+        actions = {f'agent_{env.player_now}': to_env[f'policy_{env.player_now}']['actions']}
+
+        last_player = env.player_now
+        obs, reward, terminated, truncated, info = env.step(actions)
+        rewrads.append(reward['agent_1'])
+        rewrads[last_player - 1].append(reward)
+
+        distance[last_player - 1].append(info[f'agent_{last_player}']['distance'])
+        # Keep our `Episode` instance updated at all times.
+        # update_episode()
+        stop_timesteps -= 1
+        if terminated['__all__'] or truncated or stop_timesteps <= 0:
+            pprint(obs)
+            # print(f'{terminated},{truncated},{stop_timesteps}')
+            break
+
+    # print(rewrads)
+    plot_reward([rewrads, distance])
+    print(env.chip.position)
+    print(env.chip.state)
+
 def evaluate(base_config, args, results):
 
     if isinstance(results,str):
@@ -51,7 +173,7 @@ def evaluate(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_0()
+    env = Env_1()
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")

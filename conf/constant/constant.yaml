@@ -49,7 +49,7 @@ num_learners: 1
 #If `num_learners=0`, RLlib creates only one local Learner instance and
 #the number of CPUs on the main process is
 #`max(num_cpus_per_learner, num_cpus_for_main_process)`.
-num_cpus_per_learner: null
+num_cpus_per_learner: 8
 #Number of GPUs allocated per Learner worker. If`num_learners=0`,
 #any value greater than 0 runs the training on a single GPU on the main process,
 # while a value of 0 runs the training on main process CPUs.
