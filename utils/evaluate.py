@@ -147,8 +147,7 @@ def evaluate_v2(base_config, args, results):
 
         last_player = env.player_now
         obs, reward, terminated, truncated, info = env.step(actions)
-        rewrads.append(reward['agent_1'])
-        rewrads[last_player - 1].append(reward)
+        rewrads[last_player - 1].append(reward[f'agent_{last_player}'])
 
         distance[last_player - 1].append(info[f'agent_{last_player}']['distance'])
         # Keep our `Episode` instance updated at all times.
@@ -159,8 +158,9 @@ def evaluate_v2(base_config, args, results):
             # print(f'{terminated},{truncated},{stop_timesteps}')
             break
 
-    # print(rewrads)
-    plot_reward([rewrads, distance])
+    print(rewrads)
+    print(distance)
+    #plot_reward([rewrads, distance])
     print(env.chip.position)
     print(env.chip.state)
 
