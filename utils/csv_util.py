@@ -2,8 +2,11 @@ import csv
 import datetime
 import os
 from pathlib import Path
-from utils.file.file_util import get_root_dir,get_encoding
+
 import chardet
+
+from utils.file_util import get_root_dir, get_encoding
+
 rootdir = Path(get_root_dir())
 
 
