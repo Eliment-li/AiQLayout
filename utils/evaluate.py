@@ -100,6 +100,7 @@ def evaluate_v2(base_config, args, results):
 
     rewrads = [[] for i in range(env.num_qubits)]
     distance = [[] for i in range(env.num_qubits)]
+    actions = [[] for i in range(env.num_qubits)]
 
     obs, _ = env.reset()
     terminated, truncated = False, False
@@ -143,13 +144,16 @@ def evaluate_v2(base_config, args, results):
         #     'agent_2':to_env['policy_2']['actions']
         # }
         #actions = {f'agent_{i + 1}': to_env[f'policy_{i + 1}']['actions'] for i in range(len(to_env))}
-        actions = {f'agent_{env.player_now}': to_env[f'policy_{env.player_now}']['actions']}
+        act = {f'agent_{env.player_now}': to_env[f'policy_{env.player_now}']['actions']}
+
 
         last_player = env.player_now
-        obs, reward, terminated, truncated, info = env.step(actions)
-        rewrads[last_player - 1].append(reward[f'agent_{last_player}'])
+        actions[last_player - 1].append()
+        obs, reward, terminated, truncated, info = env.step(act) # this will switch the player
 
+        rewrads[last_player - 1].append(reward[f'agent_{last_player}'])
         distance[last_player - 1].append(info[f'agent_{last_player}']['distance'])
+
         # Keep our `Episode` instance updated at all times.
         # update_episode()
         stop_timesteps -= 1
@@ -163,6 +167,7 @@ def evaluate_v2(base_config, args, results):
     #plot_reward([rewrads, distance])
     print(env.chip.position)
     print(env.chip.state)
+
 
 def evaluate(base_config, args, results):
 
