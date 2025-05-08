@@ -20,7 +20,7 @@ class ChipAction(Enum):
 TODO: use enum to warp action
 '''
 class Chip():
-    def __init__(self,cols: int, rows: int, disable:list = []):
+    def __init__(self,num_qubits,cols: int, rows: int, disable:list = []):
         '''
         :param rows:
         :param cols:
@@ -29,10 +29,13 @@ class Chip():
 
         self._cols = cols
         self._rows = rows
-        self._num_qubits = args.num_qubits
+        if num_qubits:
+            self._num_qubits = num_qubits
+        else:
+            self._num_qubits = args.num_qubits
         #start from index 1
         self._positions=[]
-        self._state=np.zeros((self.rows,self.cols), dtype=np.int32)
+        self._state=np.zeros(( self._rows,self._cols), dtype=np.int32)
         # magic state
         self._magic_state = []
         self._init_magic_state()
@@ -85,36 +88,37 @@ class Chip():
         #     self._state[x][y] = -1
 
     def move(self, player: int, act:int):
-        old_x,old_y = self._positions[player]
+        old_r,old_c = self._positions[player]
 
         assert act in ChipAction, f"{act} is not a valid action"
 
-        if act == ChipAction.LEFT:
-            new_x,new_y = old_x - 1, old_y  # left
-        elif act == ChipAction.RIGHT:
-            new_x,new_y  = old_x + 1, old_y   # right
-        elif act == ChipAction.UP:
-            new_x,new_y  = old_x, old_y - 1 # up
+        if act == ChipAction.LEFT.value:
+            new_c,new_r = old_c - 1, old_r  # left
+        elif act == ChipAction.RIGHT.value:
+            new_c,new_r  = old_c + 1, old_r   # right
+        elif act == ChipAction.UP.value:
+            new_c,new_r  = old_c, old_r - 1 # up
         else:
             #act == ChipAction.DOWN:
-            new_x,new_y  = old_x, old_y + 1  # down
-        #print(f"old_x:{old_x}, old_y:{old_y}, new_x:{new_x}, new_y:{new_y}")
+            new_c,new_r  = old_c, old_r + 1  # down
+        #print(f"old_x:{old_x}, old_y:{old_y}, new_c:{new_c}, new_r:{new_r}")
         #if new_post out of matrix
         if (
-                new_x < 0
-                or new_x >= self._cols
-                or new_y < 0
-                or new_y >= self._rows
-                or self._state[new_x,new_y] != 0):
+                new_c < 0
+                or new_c >= self._cols
+                or new_r < 0
+                or new_r >= self._rows
+                or self._state[new_r,new_c] != 0):
 
             print("Invalid move")
             return False
         else:
+            print(f'player{player} move {act} ')
             #free the old position
-            self._state[old_x, old_y] = 0
+            self._state[old_r, old_c] = 0
             #occupy the new position
-            self._positions[player] = (new_x, new_y)
-            self._state[new_x, new_y] = player
+            self._positions[player] = (new_r, new_c)
+            self._state[new_r, new_c] = player
 
             return True
 
