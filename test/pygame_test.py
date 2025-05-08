@@ -10,16 +10,8 @@ import pygame
 import sys
 from os import path
 
-from core.chip import Chip
+from core.chip import Chip, ChipAction
 from utils.file_util import get_root_dir
-
-
-# Actions the Robot is capable of performing i.e. go in a certain direction
-class RobotAction(Enum):
-    LEFT = 0
-    DOWN = 1
-    RIGHT = 2
-    UP = 3
 
 
 # The Warehouse is divided into a grid. Use these 'tiles' to represent the objects on the grid.
@@ -132,56 +124,24 @@ class WarehouseRobot:
             random.randint(1, self.grid_cols - 1)
         ]
 
-    def perform_action(self, robot_action: RobotAction):
-        self.last_action = robot_action
-
-        # Move Robot to the next cell
-        if robot_action == RobotAction.LEFT:
-            if self.robot_pos[1] > 0:
-                self.robot_pos[1] -= 1
-        elif robot_action == RobotAction.RIGHT:
-            if self.robot_pos[1] < self.grid_cols - 1:
-                self.robot_pos[1] += 1
-        elif robot_action == RobotAction.UP:
-            if self.robot_pos[0] > 0:
-                self.robot_pos[0] -= 1
-        elif robot_action == RobotAction.DOWN:
-            if self.robot_pos[0] < self.grid_rows - 1:
-                self.robot_pos[0] += 1
+    def perform_action(self, player: int, action: ChipAction):
+        print('perform action:', player, action)
+        self.chip.move(player,action)
 
 
     def render(self):
-        # Print current state on console
-        # for r in range(self.grid_rows):
-        #     for c in range(self.grid_cols):
-        #
-        #         if ([r, c] == self.robot_pos):
-        #             print(GridTile.ROBOT, end=' ')
-        #         elif ([r, c] == self.target_pos):
-        #             print(GridTile.TARGET, end=' ')
-        #         else:
-        #             print(GridTile._FLOOR, end=' ')
-        #
-        #     print()  # new line
-        # print()  # new line
-
         self._process_events()
 
         # clear to white background, otherwise text with varying length will leave behind prior rendered portions
         self.window_surface.fill((255, 255, 255))
 
-        # Print current state on console
+        # Draw floor
         for r in range(self.grid_rows):
             for c in range(self.grid_cols):
-
-                # Draw floor
                 pos = (c * self.cell_width, r * self.cell_height)
                 self.window_surface.blit(self.floor_img, pos)
 
-                # if ([r, c] == self.robot_pos):
-                #     # Draw robot
-                #     self.window_surface.blit(self.robot_img, pos)
-
+        #render the qubits
         print('position:', chip.position)
         for i in range(0, chip.num_qubits):
             r,c = chip.position[i+1]
@@ -215,15 +175,14 @@ class WarehouseRobot:
     def render_trace(self):
         pass
 
-# For unit testing
+#test code
 if __name__ == "__main__":
-    chip = Chip(5, 5)
-    warehouseRobot = WarehouseRobot(chip)
+    chip = Chip(10, 5)
+    warehouseRobot = WarehouseRobot(chip,fps=3)
     warehouseRobot.render()
 
     while (True):
-        rand_action = random.choice(list(RobotAction))
-        print(rand_action)
-
-        warehouseRobot.perform_action(rand_action)
+        rand_action = random.choice(list(ChipAction))
+        player = random.randint(1, chip.num_qubits)
+        warehouseRobot.perform_action(player,rand_action)
         warehouseRobot.render()

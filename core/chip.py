@@ -88,6 +88,7 @@ class Chip():
         old_x,old_y = self._positions[player]
 
         assert act in ChipAction, f"{act} is not a valid action"
+
         if act == ChipAction.LEFT:
             new_x,new_y = old_x - 1, old_y  # left
         elif act == ChipAction.RIGHT:
