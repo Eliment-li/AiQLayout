@@ -29,7 +29,8 @@ class Chip():
 
         self._cols = cols
         self._rows = rows
-        self._n_qubits = args.num_qubits
+        self._num_qubits = args.num_qubits
+        #start from index 1
         self._positions=[]
         self._state=np.zeros((self.rows,self.cols), dtype=np.int32)
         # magic state
@@ -44,7 +45,7 @@ class Chip():
         # vaild value start from _position[1] , -1 only for occupy
         self._positions = [-1]
         i = 1
-        while i <= self._n_qubits:
+        while i <= self._num_qubits:
             x = random.randint(0, self._rows - 1)
             y = random.randint(0, self._cols - 1)
             if self._state[x][y] == 0:
@@ -63,7 +64,7 @@ class Chip():
                 if self._state[r][c] == 0:
                     self._positions.append((r, c))
                     self._state[r][c] = len(self._positions)-1
-                    if len(self._positions)-1 == self._n_qubits:
+                    if len(self._positions)-1 == self._num_qubits:
                         return
 
     def reset(self):
@@ -93,7 +94,8 @@ class Chip():
             new_x,new_y  = old_x + 1, old_y   # right
         elif act == ChipAction.UP:
             new_x,new_y  = old_x, old_y - 1 # up
-        elif act == ChipAction.DOWN:
+        else:
+            #act == ChipAction.DOWN:
             new_x,new_y  = old_x, old_y + 1  # down
         #print(f"old_x:{old_x}, old_y:{old_y}, new_x:{new_x}, new_y:{new_y}")
         #if new_post out of matrix
@@ -131,7 +133,7 @@ class Chip():
         :return: all path to magic state
         '''
         path_len = []
-        for i in range(1,self._n_qubits+1):
+        for i in range(1,self._num_qubits+1):
             px, py = self._positions[i+1]
             len, path  = bfs_find_target(self._state, px, py)
             path_len.append(len)
@@ -144,7 +146,7 @@ class Chip():
         '''
         px, py = self._positions[player]
         distance = []
-        for i in range(1,self._n_qubits+1):
+        for i in range(1,self._num_qubits+1):
             if i == player:
                 continue
             x, y = self._positions[i]
@@ -156,6 +158,7 @@ class Chip():
         return self._state.__str__()
 
     @property
+    # start from index 1
     def position(self):
         return self._positions
 
@@ -170,6 +173,10 @@ class Chip():
     def cols(self):
         return self._cols
 
+    @property
+    def num_qubits(self):
+        return self._num_qubits
+
 
     def plot(self):
         pass
@@ -181,7 +188,7 @@ if __name__ == '__main__':
     print(chip.state)
     print(chip.position)
     for i in range(3):
-        player = random.randint(1, chip._n_qubits)
+        player = random.randint(1, chip._num_qubits)
         act  = random.randint(0, 3)
         chip.move(player, act)
     print(chip.state)
@@ -191,7 +198,7 @@ if __name__ == '__main__':
     print('length  = ', chip.distance_to_others(4))
 
     # rewards = {}
-    # for i in range(1, chip._n_qubits + 1):
+    # for i in range(1, chip._num_qubits + 1):
     #     distance = chip.distance_to_others(i)
     #     print(distance)
     #     r = math.log(distance +1, 2)-3.5
