@@ -14,7 +14,9 @@ from ray.tune.registry import get_trainable_cls, register_env  # noqa
 from envs.env_0 import Env_0
 from envs.env_1 import Env_1
 from run_helper import train
-
+'''
+Gaming the Quantum bit Placement with AI
+'''
 args = ConfigSingleton().get_args()
 # def new_env():
 #     return  Env_1()
@@ -36,19 +38,17 @@ LSTM settings
 '''
 def get_model_config():
     ConvFilterSpec = [
-        [16, 3, 1],  # 第一层：32 个过滤器，卷积核大小为 3x3，步幅为 1x1
-        [32, 3, 2],  # 第二层：64 个过滤器，卷积核大小为 3x3，步幅为 2x2
-        [64, 5, 1]  # 第三层：128 个过滤器，卷积核大小为 5x5，步幅为 1x1
+        [16, 3, 2],  # 过滤器数量，卷积核大小 步幅
+        [32, 5, 3],  # 过滤器数量，卷积核大小 步幅
     ]
 
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
-        use_lstm=False,
-        conv_filters= ConvFilterSpec
+        use_lstm=False
+        ,conv_filters= ConvFilterSpec
         # conv_activation='relu',
-        # fcnet_hiddens=[256,256],
+        ,fcnet_hiddens=[512,256,256,128],
         # fcnet_activation='relu',
-
     )
     return model_config
 

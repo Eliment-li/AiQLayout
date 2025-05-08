@@ -26,14 +26,14 @@ class Env_1(MultiAgentEnv):
         self.max_step = args.env_max_step * self.num_qubits
         # define chip
         self.channel = 1  # RGB 图像
-        self.chip: Chip = Chip()
+        self.chip = Chip(args.chip_rows, args.chip_cols)
         self.positions = []
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
 
         self.obs_spaces = gym.spaces.Box(
             low=-2,
             high=128,
-            shape=(args.chip_size_h,args.chip_size_w),
+            shape=(args.chip_rows,args.chip_cols),
             dtype=np.int32
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
@@ -59,7 +59,7 @@ class Env_1(MultiAgentEnv):
 
     def step(self, action):
         self.steps += 1
-        print(f"step {self.steps} player {self.player_now} action {action}")
+        # print(f"step {self.steps} player {self.player_now} action {action}")
         act = action[f'agent_{self.player_now}']
         self.chip.move(self.player_now,act)
 
