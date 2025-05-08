@@ -37,6 +37,7 @@ from ray.rllib.core import COMPONENT_ENV_RUNNER, COMPONENT_ENV_TO_MODULE_CONNECT
 from ray.rllib.core.rl_module import MultiRLModule
 from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
 
+from core.chip_visualizer import show_trace
 from envs.env_0 import Env_0
 from envs.env_1 import Env_1
 from results.plot_results import plot_reward
@@ -104,7 +105,7 @@ def evaluate_v2(base_config, args, results):
 
     obs, _ = env.reset()
     terminated, truncated = False, False
-    stop_timesteps = 20
+    stop_timesteps = 1000
     while True:
 
         shared_data = {}
@@ -144,12 +145,13 @@ def evaluate_v2(base_config, args, results):
         #     'agent_2':to_env['policy_2']['actions']
         # }
         #actions = {f'agent_{i + 1}': to_env[f'policy_{i + 1}']['actions'] for i in range(len(to_env))}
-        act = {f'agent_{env.player_now}': to_env[f'policy_{env.player_now}']['actions']}
+        act=  to_env[f'policy_{env.player_now}']['actions']
+        warpped_act = {f'agent_{env.player_now}': to_env[f'policy_{env.player_now}']['actions']}
 
+        actions[env.player_now - 1].append(act)
 
         last_player = env.player_now
-        actions[last_player - 1].append()
-        obs, reward, terminated, truncated, info = env.step(act) # this will switch the player
+        obs, reward, terminated, truncated, info = env.step(warpped_act) # after step, env.player_now  will turn to next
 
         rewrads[last_player - 1].append(reward[f'agent_{last_player}'])
         distance[last_player - 1].append(info[f'agent_{last_player}']['distance'])
@@ -157,16 +159,22 @@ def evaluate_v2(base_config, args, results):
         # Keep our `Episode` instance updated at all times.
         # update_episode()
         stop_timesteps -= 1
-        if terminated['__all__'] or truncated or stop_timesteps <= 0:
+        if terminated['__all__'] or truncated:
+            print('terminated or truncated')
+            break
+        elif  stop_timesteps <= 0:
+            print('stop_timesteps end')
             pprint(obs)
             # print(f'{terminated},{truncated},{stop_timesteps}')
             break
 
     print(rewrads)
     print(distance)
+    print(actions)
     #plot_reward([rewrads, distance])
-    print(env.chip.position)
+    # print(env.chip.position)
     print(env.chip.state)
+    show_trace(actions)
 
 
 def evaluate(base_config, args, results):

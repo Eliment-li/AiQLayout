@@ -20,7 +20,7 @@ class ChipAction(Enum):
 TODO: use enum to warp action
 '''
 class Chip():
-    def __init__(self,num_qubits,cols: int, rows: int, disable:list = []):
+    def __init__(self,rows: int,cols: int, num_qubits=None, disable:list = []):
         '''
         :param rows:
         :param cols:

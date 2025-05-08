@@ -178,7 +178,7 @@ class ChipVisualizer:
 
 def show_trace(trace:list):
     chip = Chip(num_qubits=len(trace),cols=args.chip_cols,rows=args.chip_rows)
-    CV = ChipVisualizer(chip, fps=1)
+    CV = ChipVisualizer(chip, fps=2)
     CV.render()
     for j in range(len(trace[0])):
          for i in range( len(trace)):
@@ -198,10 +198,5 @@ if __name__ == "__main__":
     #     player = random.randint(1, chip.num_qubits)
     #     warehouseRobot.perform_action(player,rand_action)
     #     warehouseRobot.render()
-    trace = [
-        [3,1,2,0],
-        [3,1,2,0],
-        [3,1,2,0],
-        [3,1,2,0],
-    ]
+    trace = [[3, 1, 1, 1, 3], [3, 3, 3, 3, 3], [3, 1, 1, 1, 1], [3, 3, 3, 3, 3]]
     show_trace(trace)
