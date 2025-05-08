@@ -38,8 +38,9 @@ LSTM settings
 '''
 def get_model_config():
     ConvFilterSpec = [
-        [16, 3, 2],  # 过滤器数量，卷积核大小 步幅
-        [32, 5, 3],  # 过滤器数量，卷积核大小 步幅
+        [16, 2, 1],  # 过滤器数量，卷积核大小 步幅
+        [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
+        [64, 3, 1],  # 过滤器数量，卷积核大小 步幅
     ]
 
     model_config = DefaultModelConfig(
@@ -47,7 +48,7 @@ def get_model_config():
         use_lstm=False
         ,conv_filters= ConvFilterSpec
         # conv_activation='relu',
-        ,fcnet_hiddens=[512,256,256,128],
+        ,fcnet_hiddens=[1024,512,256,128],
         # fcnet_activation='relu',
     )
     return model_config

@@ -3,8 +3,8 @@ env_version: 0
 num_qubits: 4
 env_max_step: 2000
 #chip
-chip_rows: 10
-chip_cols: 10
+chip_rows: 9
+chip_cols: 9
 verbose: 1
 #lstm
 use_lstm: True
