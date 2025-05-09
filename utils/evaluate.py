@@ -305,11 +305,11 @@ def evaluate(base_config, args, results):
 
 def save_results(actions,rewards,distance):
     args = ConfigSingleton().get_args()
-    path  = Path(args.results_evaluate_path, (args.time_id+'actions_.csv'))
+    path  = Path(args.results_evaluate_path, (args.time_id+'_actions.csv'))
     write_data(file_path =path,data= actions)
-    path  = Path(args.results_evaluate_path, (args.time_id+'rewards_.csv'))
+    path  = Path(args.results_evaluate_path, (args.time_id+'_rewards.csv'))
     write_data(file_path =path,data= rewards)
-    path  = Path(args.results_evaluate_path, (args.time_id+'distance_.csv'))
+    path  = Path(args.results_evaluate_path, (args.time_id+'_distance.csv'))
     write_data(file_path =path,data= distance)
 
 def update_episode(episode,obs,action,rewrad, terminated,truncated,to_env):
