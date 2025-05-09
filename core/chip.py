@@ -15,6 +15,7 @@ class ChipAction(Enum):
     RIGHT = 1
     UP = 2
     DOWN = 3
+    STAY = 4
 
 '''
 TODO: use enum to warp action
@@ -92,15 +93,20 @@ class Chip():
 
         assert act in ChipAction, f"{act} is not a valid action"
 
-        if act == ChipAction.LEFT.value:
-            new_c,new_r = old_c - 1, old_r  # left
-        elif act == ChipAction.RIGHT.value:
-            new_c,new_r  = old_c + 1, old_r   # right
-        elif act == ChipAction.UP.value:
-            new_c,new_r  = old_c, old_r - 1 # up
-        else:
-            #act == ChipAction.DOWN:
-            new_c,new_r  = old_c, old_r + 1  # down
+        match act:
+            case  ChipAction.LEFT.value:
+                new_c,new_r = old_c - 1, old_r  # left
+            case ChipAction.RIGHT.value:
+                new_c,new_r  = old_c + 1, old_r   # right
+            case  ChipAction.UP.value:
+                new_c,new_r  = old_c, old_r - 1 # up
+            case ChipAction.DOWN.value:
+                new_c,new_r  = old_c, old_r + 1  # down
+            case ChipAction.STAY.value:
+                return True
+            case _:
+                pass
+
         #print(f"old_x:{old_x}, old_y:{old_y}, new_c:{new_c}, new_r:{new_r}")
         #if new_post out of matrix
         if (
@@ -113,7 +119,7 @@ class Chip():
             print("Invalid move")
             return False
         else:
-            print(f'player{player} move {act} ')
+            #print(f'player{player} move {act} ')
             #free the old position
             self._state[old_r, old_c] = 0
             #occupy the new position
