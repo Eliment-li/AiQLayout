@@ -10,8 +10,31 @@ from utils.file_util import get_root_dir, get_encoding
 rootdir = Path(get_root_dir())
 
 
+def read_numeric_csv(file_path):
+    data = []
 
-def read(file_path):
+    with open(file_path, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            numeric_row = []
+            for cell in row:
+                try:
+                    # Try converting to float first (handles both int and float)
+                    num = float(cell)
+                    # Convert to int if it's a whole number for cleaner output
+                    if num.is_integer():
+                        num = int(num)
+                    numeric_row.append(num)
+                except ValueError:
+                    raise ValueError(f"Non-numeric value found: '{cell}' in row: {row}")
+            data.append(numeric_row)
+
+    return data
+
+def read(file_path,is_numeric=False):
+    if is_numeric:
+        return read_numeric_csv(file_path)
+
     data = []
     # 读取数据
     with open(file_path, 'r') as file:
@@ -73,4 +96,5 @@ def demo():
     write_data(csv_path,[['datetime', 'qasm', 'rl', 'qiskit', 'rl_qiskit', 'result', 'iter', 'remark', 'checkpoint'] ])
 if __name__ == '__main__':
 
-    read_df(relative_path=r'data/train_demo/ae40/env6.csv')
+   data =  read(is_numeric=True,file_path=r'D:\project\AiQLayout/results/evaluate/2025_05_09_10_32/2025_05_09_10_32.csv')
+   print(data)
