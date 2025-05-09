@@ -179,7 +179,7 @@ def evaluate_v2(base_config, args, results):
     print(env.chip.state)
     #show_trace(actions)
     print(actions)
-    save_results(actions)
+    save_results(actions,rewrads,distance)
 
 
 def evaluate(base_config, args, results):
@@ -303,10 +303,14 @@ def evaluate(base_config, args, results):
     # save_results(actions)
     # print(env.chip.state)
 
-def save_results(actions):
+def save_results(actions,rewards,distance):
     args = ConfigSingleton().get_args()
-    path  = Path(args.results_evaluate_path, (args.time_id+'.csv'))
+    path  = Path(args.results_evaluate_path, (args.time_id+'actions_.csv'))
     write_data(file_path =path,data= actions)
+    path  = Path(args.results_evaluate_path, (args.time_id+'rewards_.csv'))
+    write_data(file_path =path,data= rewards)
+    path  = Path(args.results_evaluate_path, (args.time_id+'distance_.csv'))
+    write_data(file_path =path,data= distance)
 
 def update_episode(episode,obs,action,rewrad, terminated,truncated,to_env):
     # Keep our `Episode` instance updated at all times.

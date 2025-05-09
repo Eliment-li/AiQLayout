@@ -7,11 +7,12 @@ from hydra import initialize, compose
 from threading import Lock
 from omegaconf import OmegaConf
 from utils.file_util import get_root_dir
+from shared_memory_dict import SharedMemoryDict
 
 class ConfigSingleton:
     _instance = None
     _lock = Lock()
-
+    smd = SharedMemoryDict(name='ConfigSingleton', size=1024)
 
     def __new__(cls, config_path="conf", job_name="config",version_base="1.2"):
         # 使用线程锁确保线程安全
@@ -46,9 +47,13 @@ class ConfigSingleton:
         self.args['output'] = None
         self.args['tensorboard_path'] = p / 'results' / 'tensorboard'
 
-        path = Path(get_root_dir()) / 'results' / 'evaluate' / self.args.time_id
-        self.args['results_evaluate_path'] =path
-        os.makedirs(path, exist_ok=True)
+        if self.smd['results_evaluate_path']:
+            self.args['results_evaluate_path'] = self.smd['results_evaluate_path']
+        else:
+            path = Path(get_root_dir()) / 'results' / 'evaluate' / self.args.time_id
+            self.args['results_evaluate_path'] = path
+            self.smd['results_evaluate_path'] = path
+            os.makedirs(path, exist_ok=True)
 
 
     def get_args(self):

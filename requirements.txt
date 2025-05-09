@@ -12,3 +12,4 @@ hydra-core
 pygame
 chardet
 openpyxl
+shared-memory-dict
