@@ -7,7 +7,7 @@ from gymnasium import register
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 
 from config import ConfigSingleton
-from core.chip import Chip
+from core.chip import Chip, ChipAction
 from core.reward_function import RewardFunction
 args = ConfigSingleton().get_args()
 rfunctions = RewardFunction()
@@ -37,7 +37,7 @@ class Env_1(MultiAgentEnv):
             dtype=np.int32
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
-        self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(4) for i in range(self.num_qubits)}
+        self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(5) for i in range(self.num_qubits)}
 
         self.player_now = 1  # index of the current agent
         #use config from outside
@@ -62,8 +62,11 @@ class Env_1(MultiAgentEnv):
         # print(f"step {self.steps} player {self.player_now} action {action}")
         act = action[f'agent_{self.player_now}']
         self.chip.move(self.player_now,act)
-
-        rewards,distance = self.reward_function()
+        if act == ChipAction.STAY:
+            rewards = 0
+            distance = self.last_distance
+        else:
+            rewards, distance = self.reward_function()
 
         terminateds = {"__all__": False} if self.steps <= self.max_step else {"__all__": True}
         truncated = {}
