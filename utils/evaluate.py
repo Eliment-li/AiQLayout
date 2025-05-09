@@ -3,6 +3,7 @@ import argparse
 import json
 import logging
 import os
+from pathlib import Path
 from pprint import pprint
 import random
 import re
@@ -37,10 +38,13 @@ from ray.rllib.core import COMPONENT_ENV_RUNNER, COMPONENT_ENV_TO_MODULE_CONNECT
 from ray.rllib.core.rl_module import MultiRLModule
 from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
 
+from config import ConfigSingleton
 from core.chip_visualizer import show_trace
 from envs.env_0 import Env_0
 from envs.env_1 import Env_1
 from results.plot_results import plot_reward
+from utils.csv_util import write_data
+from utils.file_util import get_root_dir
 
 
 def evaluate_v2(base_config, args, results):
@@ -170,11 +174,12 @@ def evaluate_v2(base_config, args, results):
 
     print(rewrads)
     print(distance)
-    print(actions)
     #plot_reward([rewrads, distance])
     # print(env.chip.position)
     print(env.chip.state)
-    show_trace(actions)
+    #show_trace(actions)
+    print(actions)
+    save_results(actions)
 
 
 def evaluate(base_config, args, results):
@@ -292,10 +297,16 @@ def evaluate(base_config, args, results):
             break
 
     # print(rewrads)
-    plot_reward([rewrads,distance])
-    print(env.chip.position)
-    print(env.chip.state)
+    #plot_reward([rewrads,distance])
+    #print(env.chip.position)
 
+    # save_results(actions)
+    # print(env.chip.state)
+
+def save_results(actions):
+    args = ConfigSingleton().get_args()
+    path  = Path(args.results_evaluate_path, (args.time_id+'.csv'))
+    write_data(file_path =path,data= actions)
 
 def update_episode(episode,obs,action,rewrad, terminated,truncated,to_env):
     # Keep our `Episode` instance updated at all times.
