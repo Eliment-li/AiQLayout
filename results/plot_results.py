@@ -2,6 +2,9 @@ import os
 from datetime import datetime
 
 import matplotlib
+
+from config import ConfigSingleton
+
 if os.environ.get('DISPLAY', '') == '':
     print('No display found. Switching to Agg backend.')
     matplotlib.use('Agg')  # 无头模式
@@ -12,7 +15,7 @@ import numpy as np
 from matplotlib.ticker import MaxNLocator  # 用于设置整数刻度
 from pathlib import Path
 from utils.file_util import get_root_dir
-
+args = ConfigSingleton().get_args()
 
 
 def plot_reward(data, save=True):
@@ -71,12 +74,17 @@ def plot_reward(data, save=True):
     #plt.show()
     if save:
         print('save figure ...')
-        time_id = datetime.now().strftime('%Y-%m-%d_%H-%M')
-        path = Path(get_root_dir()) / 'results' / (time_id + '.png')
-        plt.savefig(path)
+        img_path = ( args.results_evaluate_path / (args.time_id  + '.png'))
+        plt.savefig(img_path)
 
 
 if __name__ == '__main__':
+    # path =Path(get_root_dir()) / 'results' / args.time_id
+    # print(path)
+    # try:
+    #
+    # except OSError as e:
+    #     print(f"创建目录失败: {e}")
     data = [
         [10, 20, 30, 40, 50],
         [200, 200, 200, 500, 600],
