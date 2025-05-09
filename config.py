@@ -42,9 +42,13 @@ class ConfigSingleton:
         # default number_learner is 1, thus  set num_gpus_per_learner to 1 is fine
         self.args['num_gpus_per_learner'] = 1 if torch.cuda.is_available() else 0
         self.args['device'] = "cuda" if torch.cuda.is_available() else "cpu"
-        self.args['time_id'] = datetime.now().strftime('%Y-%m-%d_%H-%M')
+        self.args['time_id'] = datetime.now().strftime('%Y_%m_%d_%H_%M')
         self.args['output'] = None
         self.args['tensorboard_path'] = p / 'results' / 'tensorboard'
+
+        path = Path(get_root_dir()) / 'results' / 'evaluate' / self.args.time_id
+        self.args['results_evaluate_path'] =path
+        os.makedirs(path, exist_ok=True)
 
 
     def get_args(self):
