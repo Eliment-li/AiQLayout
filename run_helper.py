@@ -142,13 +142,10 @@ def train(
     enhance_base_config(config,args)
     #print(config)
 
-    # Run the experiment using Ray Tune.
     # Log results using WandB.
     tune_callbacks = tune_callbacks or []
-    # if hasattr(args, "wandb_key") and (
-    #     args.wandb_key is not None or WANDB_ENV_VAR in os.environ
-    # ):
-    #     append_wandb(tune_callbacks,args,config)
+    if args.enable_wandb is not None and args.enable_wandb:
+        append_wandb(tune_callbacks,args,config)
 
     progress_reporter =cli_reporter(config)
     if args.no_tune:
@@ -167,7 +164,7 @@ def train(
                 checkpoint_frequency=args.checkpoint_freq,
                 checkpoint_at_end=args.checkpoint_at_end,
             ),
-            progress_reporter=progress_reporter,
+            #progress_reporter=progress_reporter,
         ),
         tune_config=tune.TuneConfig(
             num_samples=args.num_samples,#default to 1
@@ -177,7 +174,11 @@ def train(
     ).fit()
     time_taken = time.time() - start_time
     print('time_taken ',str(time_taken/60))
+
+
+
     ray.shutdown()
+
 
     # Error out, if Tuner.fit() failed to run.
     if results.errors:
@@ -189,16 +190,22 @@ def train(
 
 
 def append_wandb(tune_callbacks,args,config):
-    wandb_key = args.wandb_key or os.environ[WANDB_ENV_VAR]
+    wandb_key = args.wandb_key
+    # 设置环境变量，静默 wandb 输出
+    os.environ["WANDB_SILENT"] = "true"
     project = args.wandb_project or (
             args.algo.lower() + "-" + re.sub("\\W+", "-", str(config.env).lower())
     )
+    kwargs = {
+        "name": args.wandb_run_name if args.wandb_run_name else None,
+        #"silent": True
+    }
     tune_callbacks.append(
         WandbLoggerCallback(
             api_key=wandb_key,
             project=project,
-            upload_checkpoints=True,
-            **({"name": args.wandb_run_name} if args.wandb_run_name else {}),
+            upload_checkpoints=args.upload_checkpoints_to_wandb,
+            **kwargs,
         )
     )
 
