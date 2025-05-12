@@ -178,9 +178,9 @@ def evaluate_v2(base_config, args, results):
     #plot_reward([rewrads, distance])
     # print(env.chip.position)
     print(env.chip.state)
-    #show_trace(actions)
     print(actions)
     save_results(actions,rewrads,distance)
+    show_trace(actions)
     SharedMemoryDict(name='ConfigSingleton', size=1024).cleanup()
 
 

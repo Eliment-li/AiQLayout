@@ -88,11 +88,11 @@ class ChipVisualizer:
 
         img = pygame.image.load(file_name)
         self.floor_img = pygame.transform.scale(img, self.cell_size)
-
-        file_name = path.join(path.dirname(__file__), r"D:\sync\gym_custom_env-main\gym_custom_env-main\sprites\package.png")
-        img = pygame.image.load(file_name)
-        self.goal_img = pygame.transform.scale(img, self.cell_size)
-        self.goal_img = self.add_text_to_img(self.goal_img,1, )
+        #
+        # file_name = path.join(path.dirname(__file__), r"D:\sync\gym_custom_env-main\gym_custom_env-main\sprites\package.png")
+        # img = pygame.image.load(file_name)
+        # self.goal_img = pygame.transform.scale(img, self.cell_size)
+        # self.goal_img = self.add_text_to_img(self.goal_img,1, )
 
     def _draw_progress_bar(self):
         # 计算进度条的当前宽度
