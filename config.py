@@ -47,7 +47,7 @@ class ConfigSingleton:
         self.args['output'] = None
         self.args['tensorboard_path'] = p / 'results' / 'tensorboard'
 
-        if self.smd['results_evaluate_path']:
+        if 'results_evaluate_path' in self.smd:
             self.args['results_evaluate_path'] = self.smd['results_evaluate_path']
         else:
             path = Path(get_root_dir()) / 'results' / 'evaluate' / self.args.time_id
@@ -165,5 +165,7 @@ if __name__ == "__main__":
 
     # verify Singleton
     print(global_config is another_config_instance)  # True
+
+    print( args.wandb_key is not None)
 
 
