@@ -31,10 +31,10 @@ class Env_1(MultiAgentEnv):
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
 
         self.obs_spaces = gym.spaces.Box(
-            low=-2,
-            high=128,
+            low=-10,
+            high=16,
             shape=(args.chip_rows,args.chip_cols),
-            dtype=np.int32
+            dtype=np.int16
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
         self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(5) for i in range(self.num_qubits)}
@@ -54,7 +54,8 @@ class Env_1(MultiAgentEnv):
         return self._get_obs(),infos
 
     def _get_obs(self):
-        obs = {f'agent_{self.player_now}': self.chip.state}
+        padded_state =  np.pad(self.chip.state, pad_width=1, mode='constant', constant_values=-9)
+        obs = {f'agent_{self.player_now}': padded_state}
         return obs
 
     def step(self, action):
