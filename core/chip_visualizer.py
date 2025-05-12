@@ -66,6 +66,7 @@ class ChipVisualizer:
             self.cell_width * self.grid_cols, self.cell_height * self.grid_rows + self.action_info_height + 20)
 
         # Initialize game window
+        #self.window_surface = pygame.display.set_mode(self.window_size)
         self.window_surface = pygame.display.set_mode(self.window_size)
 
         # 进度条相关参数
@@ -81,8 +82,6 @@ class ChipVisualizer:
 
         # Load & resize objects(qubits, magic state, broken qubits, etc.)
         self.qubit_imgs = self.get_qubits_object()
-
-
 
 
         file_name =  img_path / 'tile_light_grey.png'
@@ -182,22 +181,35 @@ class ChipVisualizer:
 
         pygame.display.update()
 
+
+
         # Limit frames per second
         self.clock.tick(self.fps)
 
     def _process_events(self):
+
         # Process user events, key presses
         for event in pygame.event.get():
             # User clicked on X at the top right corner of window
             if event.type == pygame.QUIT:
+                # save window to img
+                if args.save_render_img:
+                    self.save_to_img()
                 pygame.quit()
                 sys.exit()
 
             if (event.type == pygame.KEYDOWN):
                 # User hit escape
                 if (event.key == pygame.K_ESCAPE):
+                    # save window to img
+                    if args.save_render_img:
+                        self.save_to_img()
                     pygame.quit()
                     sys.exit()
+    def save_to_img(self):
+        path = Path(args.results_evaluate_path, (args.time_id + 'render.png'))
+        print('saving to img:',path)
+        pygame.image.save(self.window_surface, path)
 
     def render_trace(self):
         pass
@@ -215,6 +227,7 @@ def show_trace(trace:list):
             player = i+1
             CV.perform_action(player, act)
          CV.render()
+    CV.save_to_img()
 
 #test code
 if __name__ == "__main__":
@@ -227,6 +240,11 @@ if __name__ == "__main__":
     #     player = random.randint(1, chip.num_qubits)
     #     warehouseRobot.perform_action(player,rand_action)
     #     warehouseRobot.render()
-    trace = [[3, 3, 3, 3, 0, 0, 0, 0, 2, 3, 0, 3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 1, 3, 0, 0, 3, 0, 3, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [3, 1, 1, 1, 3, 2, 1, 0, 3, 3, 3, 2, 1, 3, 0, 1, 3, 1, 0, 1, 0, 1, 0, 1, 0, 1, 3, 2, 0, 1, 3, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 1, 3, 1, 1, 0, 3, 1, 2, 1, 3, 0, 2, 2, 3, 0, 1, 1, 0, 0, 1, 3, 2, 1, 3, 1, 1, 2, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0], [2, 1, 1, 3, 1, 1, 0, 1, 2, 1, 2, 3, 3, 0, 3, 1, 2, 0, 2, 0, 2, 0, 2, 2, 0, 3, 1, 2, 2, 0, 1, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3]]
+    trace =[
+        [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, ],
+        [3, 3, 3, 3, 3, 3, 3, 3, 3, 3,],
+       [ 3, 1, 3, 3, 3, 0, 3, 3, 1, 3,],
+        [1, 1, 1, 1, 1, 0, 1, 0, 1, 0,],
 
+    ]
     show_trace(trace)
