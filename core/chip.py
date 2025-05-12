@@ -36,7 +36,7 @@ class Chip():
             self._num_qubits = args.num_qubits
         #start from index 1
         self._positions=[]
-        self._state=np.zeros(( self._rows,self._cols), dtype=np.int32)
+        self._state=np.zeros(( self._rows,self._cols), dtype=np.int16)
         # magic state
         self._magic_state = []
         self._init_magic_state()
