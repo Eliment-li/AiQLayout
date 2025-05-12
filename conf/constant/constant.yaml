@@ -9,10 +9,20 @@ framework: "torch"
 log_level: WARN  # Options: INFO, DEBUG, WARN, ERROR
 
 # env runner stack
+#config.env_runners(num_env_runners=4)
+# Also use `num_envs_per_env_runner` to vectorize your environment on each EnvRunner actor.
+# Note that this option is only available in single-agent setups.
+#  The Ray Team is working on a solution for this restriction.
+#config.env_runners(num_envs_per_env_runner=10)
 num_env_runners: null
 num_envs_per_env_runner: null
 
 #Number of CPUs to allocate per EnvRunner.
+
+#Some environments may require substantial resources to initialize and run.
+#If your environments require more than 1 CPU per EnvRunner, you can provide
+#more resources for each actor by setting the following config options:
+#config.env_runners(num_cpus_per_env_runner=.., num_gpus_per_env_runner=..)
 num_cpus_per_env_runner: null
 
 #Number of GPUs to allocate per EnvRunner. This can
@@ -29,19 +39,25 @@ evaluation_parallel_to_training: false
 
 
 # tune.Tuner Options
+#Number of times to sample from the
+#hyperparameter space. Defaults to 1. If `grid_search` is
+#provided as an argument, the grid will be repeated
+#`num_samples` of times. If this is -1, (virtually) infinite
+#samples are generated until a stopping condition is met.
 num_samples: 1
 max_concurrent_trials: null
 verbose: 2
 checkpoint_freq: 0
 checkpoint_at_end: false
 
-# WandB Logging Options
-wandb_key: null
-wandb_project: null
-wandb_run_name: null
-
-
 # Learner Scaling Options
+#Number of Learner workers used for updating the RLModule.
+#A value of 0 means training takes place on a local Learner on
+#main process CPUs or 1 GPU (determined by num_gpus_per_learner).
+#For multi-gpu training, you have to set num_learners to > 1 and
+#set num_gpus_per_learner accordingly (e.g., 4 GPUs total and model
+#fits on 1 GPU: num_learners=4; num_gpus_per_learner=1 OR 4 GPUs total
+#and model requires 2 GPUs: num_learners=2; num_gpus_per_learner=2).
 num_learners: 1
 
 #Only necessary for custom processing pipeline inside each Learner
@@ -49,7 +65,7 @@ num_learners: 1
 #If `num_learners=0`, RLlib creates only one local Learner instance and
 #the number of CPUs on the main process is
 #`max(num_cpus_per_learner, num_cpus_for_main_process)`.
-num_cpus_per_learner: 8
+num_cpus_per_learner: null
 #Number of GPUs allocated per Learner worker. If`num_learners=0`,
 #any value greater than 0 runs the training on a single GPU on the main process,
 # while a value of 0 runs the training on main process CPUs.
