@@ -1,6 +1,7 @@
 #representing a quantum computing device chip
 import math
 import random
+from copy import deepcopy
 from enum import Enum
 
 import numpy as np
@@ -175,7 +176,11 @@ class Chip():
 
     @property
     def state(self):
-        return  self._state
+        state = deepcopy(self._state)
+        for i in range(1,self._num_qubits+1):
+            x,y = self._positions[i]
+            state[x][y] = i*100
+        return  state
     @property
     def rows(self):
         return self._rows

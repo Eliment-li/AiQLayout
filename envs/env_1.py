@@ -47,9 +47,9 @@ class Env_1(MultiAgentEnv):
     def reset(self, *, seed=None, options=None):
         self.steps = 0
         self.chip.reset()
-        self.default_distance = calculate_total_distance(self.chip._positions)
-        self.last_distance = self.default_distance
-        infos = {f'agent_{i + 1}':  self.default_distance for i in range(self.num_qubits)}
+        self.init_dist = calculate_total_distance(self.chip._positions)
+        self.last_dist = self.init_dist
+        infos = {f'agent_{i + 1}':  self.init_dist for i in range(self.num_qubits)}
         self.player_now = 1  # index of the current agent
         return self._get_obs(),infos
 
@@ -65,9 +65,10 @@ class Env_1(MultiAgentEnv):
         self.chip.move(self.player_now,act)
         if act == ChipAction.STAY:
             rewards = 0
-            distance = self.last_distance
+            distance = self.last_dist
         else:
             rewards, distance = self.reward_function()
+            self.last_dist = distance
 
         terminateds = {"__all__": False} if self.steps <= self.max_step else {"__all__": True}
         truncated = {}
@@ -86,18 +87,23 @@ class Env_1(MultiAgentEnv):
     def reward_function(self):
         rewards = {}
         distance = calculate_total_distance(self.chip._positions)
+
         rf_name = f"rfv{args.rf_version}"
         function_to_call = getattr(rfunctions, rf_name, None)
-        r = -1
+
         if callable(function_to_call):
-            r = function_to_call(self, distance)
+            r = function_to_call(self.init_dist,self.last_dist,distance)
         else:
+            r = -1
             print(f"Function {rf_name} does not exist.")
+
         for i in range(1, self.num_qubits+1):
             if i == self.player_now:
                 rewards.update({f'agent_{i}':r})
             else:
                 rewards.update({f'agent_{i}':0})
+
+
         return rewards,distance
 
 
@@ -125,6 +131,8 @@ def calculate_total_distance(coords) -> float:
 
     return total_distance
 if __name__ == '__main__':
-    pass
+    env = Env_1()
+    obs,infos = env.reset()
+    print(obs)
 
 

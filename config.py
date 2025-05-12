@@ -40,7 +40,7 @@ class ConfigSingleton:
     def enhance_configure(self):
         p = Path(get_root_dir())
         #0.8 * logical_cpu_cores
-        self.args['num_cpus'] = int(os.cpu_count() * 0.7)
+        # self.args['num_cpus'] = int(os.cpu_count() * 0.7)
 
         # default number_learner is 1, thus  set num_gpus_per_learner to 1 is fine
         self.args['num_gpus_per_learner'] = 1 if torch.cuda.is_available() else 0

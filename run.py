@@ -45,9 +45,9 @@ def get_model_config():
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False
-        #,conv_filters= ConvFilterSpec
+        ,conv_filters= ConvFilterSpec
         # conv_activation='relu',
-        #,fcnet_hiddens=[1024,512,256,128],
+        ,fcnet_hiddens=[512,512,256],
         # fcnet_activation='relu',
     )
     return model_config
