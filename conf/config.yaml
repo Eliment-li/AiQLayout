@@ -1,3 +1,4 @@
 defaults:
   - constant: constant
-  - run: run_v1
+  - run: run_v2
+  - private: private
