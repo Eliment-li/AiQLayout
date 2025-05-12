@@ -181,6 +181,15 @@ class Chip():
             x,y = self._positions[i]
             state[x][y] = i*100
         return  state
+
+    def print_state(self):
+        for row in self._state:
+            # 使用列表推导式将0替换为'-'
+            replaced_row = ['-' if value == 0 else value for value in row]
+            # 打印替换后的行
+            print(" ".join(map(str, replaced_row)))
+
+
     @property
     def rows(self):
         return self._rows
@@ -203,6 +212,7 @@ if __name__ == '__main__':
     print(chip)
     print(chip.state)
     print(chip.position)
+    chip.print_state()
     for i in range(3):
         player = random.randint(1, chip._num_qubits)
         act  = random.randint(0, 3)
