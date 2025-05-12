@@ -33,7 +33,7 @@ class Env_1(MultiAgentEnv):
         self.obs_spaces = gym.spaces.Box(
             low=-10,
             high=16,
-            shape=(args.chip_rows,args.chip_cols),
+            shape=(args.chip_rows + 1,args.chip_cols + 1),
             dtype=np.int16
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
