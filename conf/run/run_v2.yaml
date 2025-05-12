@@ -1,4 +1,4 @@
-rf_version: 1
+rf_version: 2
 env_version: 0
 num_qubits: 4
 env_max_step: 4

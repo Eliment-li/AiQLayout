@@ -40,12 +40,15 @@ class Env_1(MultiAgentEnv):
         self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(5) for i in range(self.num_qubits)}
 
         self.player_now = 1  # index of the current agent
+
+        self.agent_total_r = [0,0,0,0]
         #use config from outside
         # if config.get("sheldon_cooper_mode"):
         #     #do something
 
     def reset(self, *, seed=None, options=None):
         self.steps = 0
+        self.agent_total_r = [0,0,0,0]
         self.chip.reset()
         self.init_dist = calculate_total_distance(self.chip._positions)
         self.last_dist = self.init_dist
@@ -92,13 +95,16 @@ class Env_1(MultiAgentEnv):
         function_to_call = getattr(rfunctions, rf_name, None)
 
         if callable(function_to_call):
-            r = function_to_call(self.init_dist,self.last_dist,distance)
+
+            #r = function_to_call(self.init_dist,self.last_dist,distance)
+            r = function_to_call(init_dist=self.init_dist,last_dist=self.last_dist, dist=distance,agent_total_r=self.agent_total_r[self.player_now-1])
         else:
             r = -1
             print(f"Function {rf_name} does not exist.")
 
         for i in range(1, self.num_qubits+1):
             if i == self.player_now:
+                self.agent_total_r[i-1] =  self.agent_total_r[self.player_now-1]*0.99+r
                 rewards.update({f'agent_{i}':r})
             else:
                 rewards.update({f'agent_{i}':0})

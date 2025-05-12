@@ -176,11 +176,11 @@ class Chip():
 
     @property
     def state(self):
-        state = deepcopy(self._state)
-        for i in range(1,self._num_qubits+1):
-            x,y = self._positions[i]
-            state[x][y] = i*100
-        return  state
+        # state = deepcopy(self._state)
+        # for i in range(1,self._num_qubits+1):
+        #     x,y = self._positions[i]
+        #     state[x][y] = i*100
+        return  self._state
 
     def print_state(self):
         for row in self._state:
