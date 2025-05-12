@@ -13,3 +13,4 @@ pygame
 chardet
 openpyxl
 shared-memory-dict
+wandb

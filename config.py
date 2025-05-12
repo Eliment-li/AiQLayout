@@ -47,8 +47,7 @@ class ConfigSingleton:
         self.args['output'] = None
         self.args['tensorboard_path'] = p / 'results' / 'tensorboard'
 
-        if 'results_evaluate_path' in self.smd.keys():
-            print(f'results_evaluate_path exist {self.smd['results_evaluate_path']}')
+        if self.smd['results_evaluate_path']:
             self.args['results_evaluate_path'] = self.smd['results_evaluate_path']
         else:
             path = Path(get_root_dir()) / 'results' / 'evaluate' / self.args.time_id

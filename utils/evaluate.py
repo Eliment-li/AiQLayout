@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from pprint import pprint
 import random
+from shared_memory_dict import SharedMemoryDict
 import re
 import time
 from copy import deepcopy
@@ -180,6 +181,7 @@ def evaluate_v2(base_config, args, results):
     #show_trace(actions)
     print(actions)
     save_results(actions,rewrads,distance)
+    SharedMemoryDict(name='ConfigSingleton', size=1024).cleanup()
 
 
 def evaluate(base_config, args, results):

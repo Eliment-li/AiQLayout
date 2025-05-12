@@ -11,7 +11,6 @@ from utils.evaluate import evaluate, evaluate_v2
 torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
-from envs.env_0 import Env_0
 from envs.env_1 import Env_1
 from run_helper import train
 '''
@@ -46,9 +45,9 @@ def get_model_config():
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False
-        ,conv_filters= ConvFilterSpec
+        #,conv_filters= ConvFilterSpec
         # conv_activation='relu',
-        ,fcnet_hiddens=[1024,512,256,128],
+        #,fcnet_hiddens=[1024,512,256,128],
         # fcnet_activation='relu',
     )
     return model_config
@@ -108,7 +107,7 @@ if __name__ == "__main__":
         ).learners(
             num_learners=args.num_learners,
             num_gpus_per_learner= args.num_gpus_per_learner
-                   )
+        )
     )
     # .rl_module(
     #     rl_module_spec=MultiRLModuleSpec(rl_module_specs={
@@ -116,9 +115,9 @@ if __name__ == "__main__":
     #         "random_policy": RLModuleSpec(rl_module_class=RandomRLModule),
     #     }),
     # )
-
+    #
     results = train(base_config, args)
     evaluate_v2(base_config,args,results)
-
-    # results = r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_fb68c2853b8643d88b886094a6a1d32c'
-    # evaluate_v2(base_config,args,r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_fb68c2853b8643d88b886094a6a1d32c')
+    #
+    # results = r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_b2fbb54763c14cdbbf5570f7163952fc'
+    # evaluate_v2(base_config,args,results)
