@@ -20,7 +20,6 @@ the agent acts one by  one
 '''
 class Env_1(MultiAgentEnv):
 
-
     def __init__(self, config=None):
         super().__init__()
         self.steps = 0
@@ -109,7 +108,7 @@ class Env_1(MultiAgentEnv):
                                avg_dist=self.sw.current_avg)
             else:
                 # 当 dist 首次出现这么大, 那么计算后的 total reward 也应该比之前所有的都大
-                r = (_max_total_r - _agent_total_r * args.gamma) * (1 + (dist - _max_dist) / (_max_dist + 1)) * 1.1
+                r = (_max_total_r - _agent_total_r * args.gamma) * (1 + (dist - _max_dist) / (_max_dist + 1))
                 # update max_dist
                 self.max_dist[p - 1] = dist
                 self.max_total_r[p - 1] = _agent_total_r * args.gamma + r
@@ -118,8 +117,9 @@ class Env_1(MultiAgentEnv):
         else:
             r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist, avg_dist=self.sw.current_avg)
 
+        print(f'agent_{self.player_now},rewrad={r}')
         for i in range(1, self.num_qubits + 1):
-            if i == p:
+            if i == self.player_now:
                 # update total reward for the current agent
                 self.agent_total_r[i - 1] = self.agent_total_r[i - 1] * 0.99 + r
                 # update max total r for the current agent
