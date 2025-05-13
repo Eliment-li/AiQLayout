@@ -45,6 +45,7 @@ class Env_1(MultiAgentEnv):
         self.agent_total_r = [0]* self.num_qubits
         self.max_dist = [-np.inf] * self.num_qubits
         self.max_total_r = [-np.inf] * self.num_qubits
+        #TODO allocate each agent an slidewindow
         self.sw = SlideWindow(100)
         #use config from outside
         # if config.get("sheldon_cooper_mode"):

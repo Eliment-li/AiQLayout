@@ -173,8 +173,8 @@ def evaluate_v2(base_config, args, results):
             # print(f'{terminated},{truncated},{stop_timesteps}')
             break
 
-    print('rewards:\n',rewrads)
-    print('distance:\n',distance)
+    # print('rewards:\n',rewrads)
+    # print('distance:\n',distance)
     #plot_reward([rewrads, distance])
     # print(env.chip.position)
     save_results(actions,rewrads,distance)
@@ -302,7 +302,7 @@ def evaluate(base_config, args, results):
     #print(env.chip.position)
 
     # save_results(actions)
-    # print(env.chip.state)
+    # print(env.chip.state)wan
 
 def save_results(actions,rewards,distance):
     args = ConfigSingleton().get_args()
