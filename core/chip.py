@@ -18,9 +18,13 @@ class ChipAction(Enum):
     DOWN = 3
     STAY = 4
 
-'''
-TODO: use enum to warp action
-'''
+class QubitState(Enum):
+    ANCILLA = 0  # free to use
+    MAGIC = -1 # magic state
+    BROKEN = -2 #broken, unavailable
+
+
+
 class Chip():
     def __init__(self,rows: int,cols: int, num_qubits=None, disable:list = []):
         '''
