@@ -9,6 +9,8 @@ from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 from config import ConfigSingleton
 from core.chip import Chip, ChipAction
 from core.reward_function import RewardFunction
+from utils.calc_util import SlideWindow
+
 args = ConfigSingleton().get_args()
 rfunctions = RewardFunction()
 '''
@@ -41,7 +43,10 @@ class Env_1(MultiAgentEnv):
 
         self.player_now = 1  # index of the current agent
 
-        self.agent_total_r = [0,0,0,0]
+        self.agent_total_r = [0]* self.num_qubits
+        self.max_dist = [-np.inf] * self.num_qubits
+        self.max_total_r = [-np.inf] * self.num_qubits
+        self.sw = SlideWindow(100)
         #use config from outside
         # if config.get("sheldon_cooper_mode"):
         #     #do something
@@ -50,7 +55,7 @@ class Env_1(MultiAgentEnv):
         self.steps = 0
         self.agent_total_r = [0,0,0,0]
         self.chip.reset()
-        self.init_dist = calculate_total_distance(self.chip._positions)
+        self.init_dist = calculate_total_distance(self.chip.positions)
         self.last_dist = self.init_dist
         infos = {f'agent_{i + 1}':  self.init_dist for i in range(self.num_qubits)}
         self.player_now = 1  # index of the current agent
@@ -89,28 +94,71 @@ class Env_1(MultiAgentEnv):
 
     def reward_function(self):
         rewards = {}
-        distance = calculate_total_distance(self.chip._positions)
+        p = self.player_now - 1
+        dist =calculate_distance_sum(self.player_now, self.chip.positions) #calculate_total_distance(self.chip.positions)
 
-        rf_name = f"rfv{args.rf_version}"
-        function_to_call = getattr(rfunctions, rf_name, None)
+        _max_dist = self.max_dist[p - 1]
+        _max_total_r = self.max_total_r[p - 1]
+        _agent_total_r = self.agent_total_r[p - 1]
+        if dist > _max_dist:
+            if _max_dist != -np.inf:
+                #当 dist 首次出现这么大, 那么计算后的 total reward 也应该比之前所有的都大
+                r =  (_max_total_r -_agent_total_r  * args.gamma) * (1 + (dist - _max_dist)/(_max_dist+1)) * 1.1
 
-        if callable(function_to_call):
-
-            #r = function_to_call(self.init_dist,self.last_dist,distance)
-            r = function_to_call(init_dist=self.init_dist,last_dist=self.last_dist, dist=distance,agent_total_r=self.agent_total_r[self.player_now-1])
+            #update max_dist
+            self.max_dist[p - 1] = dist
+            self.max_total_r[p - 1] = _agent_total_r  * args.gamma +r
         else:
-            r = -1
-            print(f"Function {rf_name} does not exist.")
+            #use rewrad function
+            rf_name = f"rfv{args.rf_version}"
+            rf_to_call = getattr(rfunctions, rf_name, None)
 
-        for i in range(1, self.num_qubits+1):
-            if i == self.player_now:
-                self.agent_total_r[i-1] =  self.agent_total_r[self.player_now-1]*0.99+r
-                rewards.update({f'agent_{i}':r})
+            if callable(rf_to_call):
+
+                #r = function_to_call(self.init_dist,self.last_dist,distance)
+                r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist, avg_dist = self.sw.current_avg)
             else:
-                rewards.update({f'agent_{i}':0})
+                r = -1
+                print(f"Function {rf_name} does not exist.")
+
+            for i in range(1, self.num_qubits+1):
+                if i == p:
+                    # update total reward for the current agent
+                    self.agent_total_r[i-1] =  self.agent_total_r[i-1]*0.99+r
+
+                    #update max total r for the current agent
+                    if self.agent_total_r[i-1] > self.max_total_r[i-1]:
+                        self.max_total_r[i-1] = self.agent_total_r[i-1]
+                    rewards.update({f'agent_{i}':r})
+                else:
+                    rewards.update({f'agent_{i}':0})
 
 
-        return rewards,distance
+        return rewards,dist
+
+def calculate_distance_sum( n,coords) -> float:
+    """
+    计算第n个坐标与其他所有坐标的距离之和
+
+    参数:
+    coords -- 包含坐标的列表，每个坐标是一个二元组(x, y)
+    n -- 要计算的目标坐标的索引
+
+    返回:
+    第n个坐标与其他所有坐标的距离之和
+    """
+    if n < 0 or n >= len(coords):
+        raise ValueError("索引n超出范围")
+    target_x, target_y = coords[n]
+    total_distance = 0.0
+
+    for i in range(1, len(coords)):
+        x,y = coords[i]
+        if i != n:  # 跳过自身
+            distance = math.sqrt((x - target_x) ** 2 + (y - target_y) ** 2)
+            total_distance += distance
+
+    return np.round(total_distance,3)
 
 
 def calculate_total_distance(coords) -> float:
@@ -136,6 +184,8 @@ def calculate_total_distance(coords) -> float:
             total_distance += distance
 
     return total_distance
+
+
 if __name__ == '__main__':
     env = Env_1()
     obs,infos = env.reset()
