@@ -173,8 +173,8 @@ def evaluate_v2(base_config, args, results):
             # print(f'{terminated},{truncated},{stop_timesteps}')
             break
 
-    print(rewrads)
-    print(distance)
+    print('rewards:\n',rewrads)
+    print('distance:\n',distance)
     #plot_reward([rewrads, distance])
     # print(env.chip.position)
     print(actions)
