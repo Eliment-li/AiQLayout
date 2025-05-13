@@ -117,7 +117,6 @@ class Env_1(MultiAgentEnv):
         else:
             r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist, avg_dist=self.sw.current_avg)
 
-        print(f'agent_{self.player_now},rewrad={r}')
         for i in range(1, self.num_qubits + 1):
             if i == self.player_now:
                 # update total reward for the current agent

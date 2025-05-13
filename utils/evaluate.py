@@ -177,7 +177,6 @@ def evaluate_v2(base_config, args, results):
     print('distance:\n',distance)
     #plot_reward([rewrads, distance])
     # print(env.chip.position)
-    print(actions)
     save_results(actions,rewrads,distance)
     env.chip.print_state()
     #show_trace(actions)

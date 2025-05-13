@@ -86,11 +86,5 @@ def test_rf(distance: list):
 
 
 if __name__ == '__main__':
-
-    #dist=[1,2,3,4,5]
-
-    #dist=[1,2,1,2,1,2,1,2]
-    dist = [4,10,5,10,5,4, 8,11]
-    #dist = [5,5,4,4,5,5,4]
-    test_rf(dist)
+    pass
 
