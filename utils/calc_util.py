@@ -120,13 +120,13 @@ class SlideWindow:
         self.size = size
         self.queue = deque()
         self.total = 0.0
+        self.avg = 0.0
 
     def next(self, val):
         if len(self.queue) == self.size:
             self.total -= self.queue.popleft()
         self.queue.append(val)
         self.total += val
-        return self.total / len(self.queue)
 
     def reset(self):
         self.queue.clear()

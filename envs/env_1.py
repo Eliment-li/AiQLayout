@@ -71,13 +71,10 @@ class Env_1(MultiAgentEnv):
         # print(f"step {self.steps} player {self.player_now} action {action}")
         act = action[f'agent_{self.player_now}']
         self.chip.move(self.player_now,act)
-        if act == ChipAction.STAY:
-            rewards = 0
-            distance = self.last_dist
-        else:
-            rewards, distance = self.reward_function()
-            self.last_dist = distance
 
+        rewards, distance = self.reward_function(act)
+        self.last_dist = distance
+        self.sw.next(distance)
         terminateds = {"__all__": False} if self.steps <= self.max_step else {"__all__": True}
         truncated = {}
         infos = {
@@ -92,47 +89,45 @@ class Env_1(MultiAgentEnv):
         return self._get_obs(),rewards,terminateds,truncated,infos
 
 
-    def reward_function(self):
+    def reward_function(self,act):
+        # prepare rewrad function
+        rf_name = f"rfv{args.rf_version}"
+        rf_to_call = getattr(rfunctions, rf_name, None)
+        assert callable(rf_to_call)
+
         rewards = {}
         p = self.player_now - 1
-        dist =calculate_distance_sum(self.player_now, self.chip.positions) #calculate_total_distance(self.chip.positions)
-
         _max_dist = self.max_dist[p - 1]
         _max_total_r = self.max_total_r[p - 1]
         _agent_total_r = self.agent_total_r[p - 1]
+
+        dist =calculate_distance_sum(self.player_now, self.chip.positions) #calculate_total_distance(self.chip.positions)
+
         if dist > _max_dist:
-            if _max_dist != -np.inf:
-                #当 dist 首次出现这么大, 那么计算后的 total reward 也应该比之前所有的都大
-                r =  (_max_total_r -_agent_total_r  * args.gamma) * (1 + (dist - _max_dist)/(_max_dist+1)) * 1.1
-
-            #update max_dist
-            self.max_dist[p - 1] = dist
-            self.max_total_r[p - 1] = _agent_total_r  * args.gamma +r
-        else:
-            #use rewrad function
-            rf_name = f"rfv{args.rf_version}"
-            rf_to_call = getattr(rfunctions, rf_name, None)
-
-            if callable(rf_to_call):
-
-                #r = function_to_call(self.init_dist,self.last_dist,distance)
-                r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist, avg_dist = self.sw.current_avg)
+            if _max_dist == -np.inf:
+                r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist,
+                               avg_dist=self.sw.current_avg)
             else:
-                r = -1
-                print(f"Function {rf_name} does not exist.")
+                # 当 dist 首次出现这么大, 那么计算后的 total reward 也应该比之前所有的都大
+                r = (_max_total_r - _agent_total_r * args.gamma) * (1 + (dist - _max_dist) / (_max_dist + 1)) * 1.1
+                # update max_dist
+                self.max_dist[p - 1] = dist
+                self.max_total_r[p - 1] = _agent_total_r * args.gamma + r
 
-            for i in range(1, self.num_qubits+1):
-                if i == p:
-                    # update total reward for the current agent
-                    self.agent_total_r[i-1] =  self.agent_total_r[i-1]*0.99+r
+            _max_dist = dist
+        else:
+            r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist, avg_dist=self.sw.current_avg)
 
-                    #update max total r for the current agent
-                    if self.agent_total_r[i-1] > self.max_total_r[i-1]:
-                        self.max_total_r[i-1] = self.agent_total_r[i-1]
-                    rewards.update({f'agent_{i}':r})
-                else:
-                    rewards.update({f'agent_{i}':0})
-
+        for i in range(1, self.num_qubits + 1):
+            if i == p:
+                # update total reward for the current agent
+                self.agent_total_r[i - 1] = self.agent_total_r[i - 1] * 0.99 + r
+                # update max total r for the current agent
+                if self.agent_total_r[i - 1] > self.max_total_r[i - 1]:
+                    self.max_total_r[i - 1] = self.agent_total_r[i - 1]
+                rewards.update({f'agent_{i}': r})
+            else:
+                rewards.update({f'agent_{i}': 0})
 
         return rewards,dist
 
