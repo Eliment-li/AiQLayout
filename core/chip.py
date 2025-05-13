@@ -45,7 +45,8 @@ class Chip():
         self.last_distance=[]
 
 
-
+    def get_positon(self,player):
+        return self._positions[player]
     def random_init(self):
         # vaild value start from _position[1] , -1 only for occupy
         self._positions = [-1]
@@ -201,6 +202,10 @@ class Chip():
     @property
     def num_qubits(self):
         return self._num_qubits
+
+    @property
+    def positions(self):
+        return self._positions
 
 
     def plot(self):
