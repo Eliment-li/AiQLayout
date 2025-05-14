@@ -122,7 +122,7 @@ class Chip():
                 or new_r >= self._rows
                 or self._state[new_r,new_c] != 0):
 
-            print("Invalid move")
+            # print("Invalid move")
             return False
         else:
             #print(f'player{player} move {act} ')
