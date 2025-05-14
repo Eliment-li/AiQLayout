@@ -45,17 +45,19 @@ class Env_1(MultiAgentEnv):
         self.agent_total_r = [0]* self.num_qubits
         self.max_dist = [-np.inf] * self.num_qubits
         self.max_total_r = [-np.inf] * self.num_qubits
-        #TODO allocate each agent an slidewindow
-        self.sw = SlideWindow(100)
+        self.sw = [SlideWindow(50)] * self.num_qubits
         #use config from outside
         # if config.get("sheldon_cooper_mode"):
         #     #do something
 
     def reset(self, *, seed=None, options=None):
         self.steps = 0
-        self.agent_total_r = [0,0,0,0]
+        self.agent_total_r = [0] * self.num_qubits
+        self.max_dist = [-np.inf] * self.num_qubits
+        self.max_total_r = [-np.inf] * self.num_qubits
+        self.sw = [SlideWindow(50)] * self.num_qubits
         self.chip.reset()
-        self.init_dist = calculate_total_distance(self.chip.positions)
+        self.init_dist = calculate_distance_sum(1, self.chip.positions)
         self.last_dist = self.init_dist
         infos = {f'agent_{i + 1}':  self.init_dist for i in range(self.num_qubits)}
         self.player_now = 1  # index of the current agent
@@ -74,8 +76,8 @@ class Env_1(MultiAgentEnv):
 
         rewards, distance = self.reward_function(act)
         self.last_dist = distance
-        self.sw.next(distance)
-        terminateds = {"__all__": False} if self.steps <= self.max_step else {"__all__": True}
+        self.sw[self.player_now - 1].next(distance)
+        terminateds = {"__all__": False} if self.steps < self.max_step else {"__all__": True}
         truncated = {}
         infos = {
                     f'agent_{self.player_now}':
@@ -97,26 +99,25 @@ class Env_1(MultiAgentEnv):
 
         rewards = {}
         p = self.player_now - 1
-        _max_dist = self.max_dist[p - 1]
-        _max_total_r = self.max_total_r[p - 1]
-        _agent_total_r = self.agent_total_r[p - 1]
+        _max_dist = self.max_dist[p]
+        _max_total_r = self.max_total_r[p]
+        _agent_total_r = self.agent_total_r[p]
 
-        dist =calculate_distance_sum(self.player_now, self.chip.positions) #calculate_total_distance(self.chip.positions)
+        dist =calculate_distance_sum(self.player_now, self.chip.positions)
 
         if dist > _max_dist:
             if _max_dist == -np.inf:
                 r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist,
-                               avg_dist=self.sw.current_avg)
+                               avg_dist=self.sw[p].current_avg)
             else:
                 # 当 dist 首次出现这么大, 那么计算后的 total reward 也应该比之前所有的都大
                 r = (_max_total_r - _agent_total_r * args.gamma) * (1 + (dist - _max_dist) / (_max_dist + 1))
-                # update max_dist
-                self.max_dist[p - 1] = dist
-                self.max_total_r[p - 1] = _agent_total_r * args.gamma + r
-
+                self.max_total_r[p] = _agent_total_r * args.gamma + r
+            # update max_dist
+            self.max_dist[p] = dist
             _max_dist = dist
         else:
-            r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist, avg_dist=self.sw.current_avg)
+            r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist, avg_dist=self.sw[p].current_avg)
 
         for i in range(1, self.num_qubits + 1):
             if i == self.player_now:
@@ -131,29 +132,26 @@ class Env_1(MultiAgentEnv):
 
         return rewards,dist
 
-def calculate_distance_sum( n,coords) -> float:
+def calculate_distance_sum(player,positions) -> float:
     """
-    计算第n个坐标与其他所有坐标的距离之和
-
     参数:
-    coords -- 包含坐标的列表，每个坐标是一个二元组(x, y)
-    n -- 要计算的目标坐标的索引
+    positions -- 包含坐标的列表，每个坐标是一个二元组(x, y)
+    player -- 要计算的目标坐标的索引
 
     返回:
     第n个坐标与其他所有坐标的距离之和
     """
-    if n < 0 or n >= len(coords):
-        raise ValueError("索引n超出范围")
-    target_x, target_y = coords[n]
-    total_distance = 0.0
+    assert len(positions) >= player >= 1, f"player {player} out of range"
 
-    for i in range(1, len(coords)):
-        x,y = coords[i]
-        if i != n:  # 跳过自身
+    target_x, target_y = positions[player]
+    total_distance = 0.0
+    for i in range(1, len(positions)):
+        x,y = positions[i]
+        if i != player:  # 跳过自身
             distance = math.sqrt((x - target_x) ** 2 + (y - target_y) ** 2)
             total_distance += distance
 
-    return np.round(total_distance,3)
+    return np.round(total_distance,4)
 
 
 def calculate_total_distance(coords) -> float:
