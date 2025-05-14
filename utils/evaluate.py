@@ -110,7 +110,7 @@ def evaluate_v2(base_config, args, results):
 
     obs, _ = env.reset()
     terminated, truncated = False, False
-    stop_timesteps = 1000
+    stop_timesteps = 400
     while True:
 
         shared_data = {}
