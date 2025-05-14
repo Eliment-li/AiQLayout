@@ -134,7 +134,11 @@ class SlideWindow:
 
     @property
     def current_avg(self):
-        return self.total / len(self.queue) if self.queue else 1.0
+        if self.queue:
+            return self.total / len(self.queue)
+        else:
+            print(f"queue is 0")
+            return 0
 
 
 if __name__ == '__main__':
