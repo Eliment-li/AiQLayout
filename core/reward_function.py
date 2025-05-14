@@ -53,9 +53,6 @@ class RewardFunction:
         if k2 > 0:
             r = (math.pow((1 + k2), 2) - 1) * (1 + np.tanh(k1))
         elif k2 < 0:
-            '''
-            防止 agent 通过distance的波动获取 reward
-            '''
             r = -2 * (math.pow((1 - k2), 2) - 1) * (1 - np.tanh(k1)) - 0.05
         else:
             r = -0.05
