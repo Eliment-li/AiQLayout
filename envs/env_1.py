@@ -58,7 +58,7 @@ class Env_1(MultiAgentEnv):
         self.sw = [SlideWindow(50)] * self.num_qubits
         self.chip.reset()
         self.init_dist = calculate_distance_sum(1, self.chip.positions)
-        self.last_dist = self.init_dist
+        self.last_dist = [calculate_distance_sum(i, self.chip.positions) for i in range(1, self.num_qubits + 1)]
         infos = {f'agent_{i + 1}':  self.init_dist for i in range(self.num_qubits)}
         self.player_now = 1  # index of the current agent
         return self._get_obs(),infos
@@ -75,7 +75,7 @@ class Env_1(MultiAgentEnv):
         self.chip.move(self.player_now,act)
 
         rewards, distance = self.reward_function(act)
-        self.last_dist = distance
+        self.last_dist[self.player_now - 1] = distance
         self.sw[self.player_now - 1].next(distance)
         terminateds = {"__all__": False} if self.steps < self.max_step else {"__all__": True}
         truncated = {}
@@ -107,7 +107,7 @@ class Env_1(MultiAgentEnv):
 
         if dist > _max_dist:
             if _max_dist == -np.inf:
-                r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist,
+                r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist[p], dist=dist,
                                avg_dist=self.sw[p].current_avg)
             else:
                 # 当 dist 首次出现这么大, 那么计算后的 total reward 也应该比之前所有的都大
@@ -117,7 +117,7 @@ class Env_1(MultiAgentEnv):
             self.max_dist[p] = dist
             _max_dist = dist
         else:
-            r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist, dist=dist, avg_dist=self.sw[p].current_avg)
+            r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist[p], dist=dist, avg_dist=self.sw[p].current_avg)
 
         for i in range(1, self.num_qubits + 1):
             if i == self.player_now:
