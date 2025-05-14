@@ -95,6 +95,8 @@ def train(
     args: Optional[argparse.Namespace] = None,
     tune_callbacks: Optional[List] = None,
     scheduler=None,
+    stop = None,
+    enable_wandb = False
 ) -> Union[ResultDict, tune.result_grid.ResultGrid]:
     """Given an algorithm config and some command line args, runs an experiment.
 
@@ -132,12 +134,6 @@ def train(
         ignore_reinit_error=True,
     )
 
-    stop = {
-            f"{ENV_RUNNER_RESULTS}/{NUM_ENV_STEPS_SAMPLED_LIFETIME}": (
-                args.stop_timesteps
-            ),
-            TRAINING_ITERATION: args.stop_iters,
-    }
 
     enhance_base_config(config,args)
     #print(config)

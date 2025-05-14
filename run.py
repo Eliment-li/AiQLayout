@@ -1,22 +1,26 @@
 from ray import tune
+from ray.air.constants import TRAINING_ITERATION
 from ray.rllib.algorithms import PPOConfig
 from ray.rllib.core.rl_module import MultiRLModule, MultiRLModuleSpec, RLModuleSpec
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
+from ray.rllib.utils.metrics import ENV_RUNNER_RESULTS, NUM_ENV_STEPS_SAMPLED_LIFETIME
+
 from config import ConfigSingleton
 import os
 from ray.rllib.utils.framework import try_import_torch
 from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
-from utils.evaluate import evaluate, evaluate_v2
 
 torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
 from envs.env_1 import Env_1
 from run_helper import train
+from utils.evaluate import evaluate, evaluate_v2
+
 '''
 Gaming the Quantum bit Placement with AI
 '''
-args = ConfigSingleton().get_args()
+
 # def new_env():
 #     return  Env_1()
 # register_env("Env_0", new_env)
@@ -66,6 +70,26 @@ def get_policys():
     return policies
 
 if __name__ == "__main__":
+    #set custom run config before init args
+    import argparse
+
+    parser = argparse.ArgumentParser(description="命令行参数示例")
+    parser.add_argument("--iter", '-i',type=int, help="train iter", default=None)
+    parser.add_argument("--wandb", '-w',type=bool, help="enable_wandb",default=False)
+    cmd_args = parser.parse_args()
+
+    args = ConfigSingleton().get_args()
+    stop = {
+            f"{ENV_RUNNER_RESULTS}/{NUM_ENV_STEPS_SAMPLED_LIFETIME}": (
+                args.stop_timesteps
+            ),
+            TRAINING_ITERATION: args.stop_iters,
+    }
+
+    if cmd_args.iter is not None:
+        stop[TRAINING_ITERATION] = cmd_args.iter
+
+    print(stop)
     base_config = (
         get_trainable_cls(args.algo_class)
         .get_default_config()
@@ -116,8 +140,8 @@ if __name__ == "__main__":
     #     }),
     # )
     #
-    results = train(base_config, args)
+    results = train(config = base_config, args=args,enable_wandb=cmd_args.wandb,stop=stop)
     evaluate_v2(base_config,args,results)
     #
-    # results = r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_b2fbb54763c14cdbbf5570f7163952fc'
+    # results = r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_b20c3aedf072404aa8fbc10e5051586d'
     # evaluate_v2(base_config,args,results)
