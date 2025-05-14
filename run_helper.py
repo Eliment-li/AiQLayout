@@ -140,7 +140,7 @@ def train(
 
     # Log results using WandB.
     tune_callbacks = tune_callbacks or []
-    if args.enable_wandb is not None and args.enable_wandb:
+    if enable_wandb:
         append_wandb(tune_callbacks,args,config)
 
     progress_reporter =cli_reporter(config)
