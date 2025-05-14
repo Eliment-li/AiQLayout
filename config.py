@@ -57,6 +57,12 @@ class ConfigSingleton:
             self.smd['results_evaluate_path'] = path
             os.makedirs(path, exist_ok=True)
 
+        if 'wandb_run_name' in self.smd:
+            self.args['wandb_run_name'] = self.smd['wandb_run_name']
+        else:
+            self.args['wandb_run_name'] = self.args.time_id
+            self.smd['wandb_run_name'] = self.args.time_id
+
 
     def get_args(self):
         return self.args
