@@ -45,7 +45,7 @@ class Chip():
         # magic state
         self._magic_state = []
         self._init_magic_state()
-        self._init_qubits_layout()
+        self.random_init()
         self.last_distance=[]
 
 
@@ -66,7 +66,6 @@ class Chip():
                 continue
 
     def _init_qubits_layout(self):
-       # random init qubits layout
        # init qubits one by one
         self._positions = [-1]
         for r in range(self.rows):
@@ -80,7 +79,7 @@ class Chip():
     def reset(self):
        self._state = np.zeros((self._rows, self._cols), dtype=np.int32)
        self._init_magic_state()
-       self._init_qubits_layout()
+       self.random_init()
 
     def _init_magic_state(self):
         pass
@@ -219,18 +218,17 @@ class Chip():
 if __name__ == '__main__':
     chip = Chip(5,5)
     print(chip)
-    print(chip.state)
     print(chip.position)
     chip.print_state()
-    for i in range(3):
-        player = random.randint(1, chip._num_qubits)
-        act  = random.randint(0, 3)
-        chip.move(player, act)
-    print(chip.state)
-    print(chip.position)
-
-    print('routing length  = ', chip.route_to_magic_state(1))
-    print('length  = ', chip.distance_to_others(4))
+    # for i in range(3):
+    #     player = random.randint(1, chip._num_qubits)
+    #     act  = random.randint(0, 3)
+    #     chip.move(player, act)
+    # print(chip.state)
+    # print(chip.position)
+    #
+    # print('routing length  = ', chip.route_to_magic_state(1))
+    # print('length  = ', chip.distance_to_others(4))
 
     # rewards = {}
     # for i in range(1, chip._num_qubits + 1):
