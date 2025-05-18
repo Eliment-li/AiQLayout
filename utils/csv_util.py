@@ -70,6 +70,10 @@ def append_data(file_path, data):
     # 追加数据
     with open(file_path, 'a', newline='') as file:
         writer = csv.writer(file)
+        # Add empty line if file is not empty
+        if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+            writer.writerow([])  # Write empty row
+
         writer.writerows(data)
 
 
@@ -87,14 +91,8 @@ def test():
     for row in data:
         print(row)
 
-def demo():
-    current_datetime = datetime.datetime.now()
-    formatted_datetime = current_datetime.strftime('%Y-%m-%d_%H-%M')
-    rootdir = get_root_dir()
-    csv_path = rootdir / 'benchmark' / 'a-result' / formatted_datetime / '.csv'
-    print(csv_path)
-    write_data(csv_path,[['datetime', 'qasm', 'rl', 'qiskit', 'rl_qiskit', 'result', 'iter', 'remark', 'checkpoint'] ])
 if __name__ == '__main__':
 
-   data =  read(is_numeric=True,file_path=r'D:\project\AiQLayout/results/evaluate/2025_05_09_10_32/2025_05_09_10_32.csv')
-   print(data)
+   # data =  read(is_numeric=True,file_path=r'D:\project\AiQLayout/results/evaluate/2025_05_09_10_32/2025_05_09_10_32.csv')
+   # print(data)
+   test()

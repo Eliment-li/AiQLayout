@@ -16,7 +16,7 @@ stop_reward: 100.0
 stop_timesteps: 9999999  # Default: default_timesteps
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters: 400  # Default: default_iters
+stop_iters: 80  # Default: default_iters
 
 # If run --as-release-test, --as-test must also be set.
 as_test: false

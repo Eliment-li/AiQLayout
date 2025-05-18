@@ -1,7 +1,7 @@
 rf_version: 2
 env_version: 0
 num_qubits: 4
-env_max_step: 400
+env_max_step: 100
 #chip
 chip_rows: 9
 chip_cols: 9
@@ -16,7 +16,7 @@ stop_reward: 100.0
 stop_timesteps: 9999999  # Default: default_timesteps
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters:  40  # Default: default_iters
+stop_iters:  4 # Default: default_iters
 
 # If run --as-release-test, --as-test must also be set.
 as_test: false

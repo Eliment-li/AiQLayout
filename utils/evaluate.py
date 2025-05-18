@@ -44,7 +44,7 @@ from core.chip_visualizer import show_trace
 from envs.env_0 import Env_0
 from envs.env_1 import Env_1
 from results.plot_results import plot_reward
-from utils.csv_util import write_data
+from utils.csv_util import write_data, append_data
 from utils.file_util import get_root_dir
 
 
@@ -107,8 +107,12 @@ def evaluate_v2(base_config, args, results):
     rewrads = [[] for i in range(env.num_qubits)]
     distance = [[] for i in range(env.num_qubits)]
     actions = [[] for i in range(env.num_qubits)]
+    max_total_r = [[] for i in range(env.num_qubits)]
 
-    obs, _ = env.reset()
+    obs, info = env.reset()
+    init_dist  = [info[f'agent_{i+1}'] for i in range(env.num_qubits)]
+    print('init_dist:',init_dist)
+    env.chip.print_state()
     terminated, truncated = False, False
     stop_timesteps = 400
     while True:
@@ -160,6 +164,7 @@ def evaluate_v2(base_config, args, results):
 
         rewrads[last_player - 1].append(reward[f'agent_{last_player}'])
         distance[last_player - 1].append(info[f'agent_{last_player}']['distance'])
+        max_total_r[last_player - 1].append(info[f'agent_{last_player}']['max_total_r'])
 
         # Keep our `Episode` instance updated at all times.
         # update_episode()
@@ -169,7 +174,6 @@ def evaluate_v2(base_config, args, results):
             break
         elif  stop_timesteps <= 0:
             print('stop_timesteps end')
-            pprint(obs)
             # print(f'{terminated},{truncated},{stop_timesteps}')
             break
 
@@ -178,7 +182,7 @@ def evaluate_v2(base_config, args, results):
     #TODO refactor plot_reward
     #plot_reward([rewrads, distance])
     # print(env.chip.position)
-    save_results(actions,rewrads,distance)
+    save_results(actions,rewrads,distance,max_total_r)
     env.chip.print_state()
     #show_trace(actions)
     SharedMemoryDict(name='ConfigSingleton', size=1024).cleanup()
@@ -305,14 +309,17 @@ def evaluate(base_config, args, results):
     # save_results(actions)
     # print(env.chip.state)wan
 
-def save_results(actions,rewards,distance):
+def save_results(actions,rewards,distance,max_total_r):
     args = ConfigSingleton().get_args()
-    path  = Path(args.results_evaluate_path, (args.time_id+'_actions.csv'))
+    path  = Path(args.results_evaluate_path, (args.time_id+'_results.csv'))
     write_data(file_path =path,data= actions)
-    path  = Path(args.results_evaluate_path, (args.time_id+'_rewards.csv'))
-    write_data(file_path =path,data= rewards)
-    path  = Path(args.results_evaluate_path, (args.time_id+'_distance.csv'))
-    write_data(file_path =path,data= distance)
+    append_data(file_path =path,data= rewards)
+    append_data(file_path =path,data= distance)
+    append_data(file_path =path,data= max_total_r)
+    # path  = Path(args.results_evaluate_path, (args.time_id+'_rewards.csv'))
+    # write_data(file_path =path,data= rewards)
+    # path  = Path(args.results_evaluate_path, (args.time_id+'_distance.csv'))
+    # write_data(file_path =path,data= distance)
 
 def update_episode(episode,obs,action,rewrad, terminated,truncated,to_env):
     # Keep our `Episode` instance updated at all times.

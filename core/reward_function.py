@@ -1,4 +1,5 @@
 import math
+from mimetypes import inited
 
 import numpy as np
 import queue
@@ -46,14 +47,18 @@ class RewardFunction:
         k1 = (dist - init_dist) / avg_dist
         k2 = (dist - last_dist) / avg_dist
 
-        k1 = np.log(abs(k1+1.0001)) if k1 > 0 else -np.log(abs(k1-1.0001))
-        k2 = np.log(abs(k2+1.0001)) if k2 > 0 else -np.log(abs(k2-1.0001))
+        # print(f'k1: {k1}, k2: {k2}')
+        k1 = np.log(abs(k1)+1) if k1 > 0 else -np.log(abs(k1)+1)
+        k2 = np.log(abs(k2)+1) if k2 > 0 else -np.log(abs(k2)+1)
+        # print(f'k1: {k1}, k2: {k2}')
 
 
         if k2 > 0:
-            r = (math.pow((1 + k2), 2) - 1) * (1 + np.tanh(k1))
+            r = (math.pow((1 + k2), 2) - 1) * (1+abs(k1))
+            # print('k2>0',(1 + abs(k1)))
         elif k2 < 0:
-            r = -2 * (math.pow((1 - k2), 2) - 1) * (1 - np.tanh(k1)) - 0.05
+            r = (math.pow((1 - k2), 2) - 1) * (1 +abs(k1)) * -1.15 -0.1
+            # print('k2<0',(1 + abs(k1)))
         else:
             r = -0.05
 
@@ -80,6 +85,18 @@ def test_rf(distance: list):
 
 
 if __name__ == '__main__':
-    dist = [5,6,5,6,5,6,5,10,5,10,5]
-    test_rf(dist)
+    d =[24.2409,	25.21]
+    init = 24.2409
+    last = d[0]
+    #[np.float64(24.2409), np.float64(11.4605), np.float64(12.4472), np.float64(13.6338)],
+    sw = SlideWindow(50)
 
+    r = RewardFunction().rfv2(init_dist=init,last_dist=last,dist=d[0],avg_dist=0)
+    sw.next(last)
+    print(r)
+
+
+    last = d[0]
+    r = RewardFunction().rfv2(init_dist=init, last_dist=last, dist=d[1], avg_dist=sw.current_avg)
+    sw.next(last)
+    print(r)

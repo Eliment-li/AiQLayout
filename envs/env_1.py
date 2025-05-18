@@ -1,4 +1,5 @@
 import math
+from copy import deepcopy
 from pprint import pprint
 
 import gymnasium as gym
@@ -32,8 +33,8 @@ class Env_1(MultiAgentEnv):
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
 
         self.obs_spaces = gym.spaces.Box(
-            low=-10,
-            high=16,
+            low=-5,
+            high=5,
             shape=(args.chip_rows + 2,args.chip_cols + 2), # +2 for padding
             dtype=np.int16
         )
@@ -43,7 +44,7 @@ class Env_1(MultiAgentEnv):
         self.player_now = 1  # index of the current agent
 
         self.agent_total_r = [0]* self.num_qubits
-        self.max_dist = [-np.inf] * self.num_qubits
+
         self.max_total_r = [-np.inf] * self.num_qubits
         self.sw = [SlideWindow(50)] * self.num_qubits
         #use config from outside
@@ -52,19 +53,23 @@ class Env_1(MultiAgentEnv):
 
     def reset(self, *, seed=None, options=None):
         self.steps = 0
+        self.player_now = 1  # index of the current agent
         self.agent_total_r = [0] * self.num_qubits
-        self.max_dist = [-np.inf] * self.num_qubits
+
         self.max_total_r = [-np.inf] * self.num_qubits
         self.sw = [SlideWindow(50)] * self.num_qubits
+
         self.chip.reset()
-        self.init_dist = calculate_distance_sum(1, self.chip.positions)
+        self.init_dist =[calculate_distance_sum(i, self.chip.positions) for i in range(1, self.num_qubits + 1)]
         self.last_dist = [calculate_distance_sum(i, self.chip.positions) for i in range(1, self.num_qubits + 1)]
+        self.max_dist = deepcopy(self.init_dist)
+
         infos = {f'agent_{i + 1}':  self.init_dist for i in range(self.num_qubits)}
-        self.player_now = 1  # index of the current agent
+
         return self._get_obs(),infos
 
     def _get_obs(self):
-        padded_state =  np.pad(self.chip.state, pad_width=1, mode='constant', constant_values=-9).astype(np.int16)
+        padded_state =  np.pad(self.chip.state, pad_width=1, mode='constant', constant_values=-5).astype(np.int16)
         obs = {f'agent_{self.player_now}': padded_state}
         return obs
 
@@ -82,7 +87,8 @@ class Env_1(MultiAgentEnv):
         infos = {
                     f'agent_{self.player_now}':
                     {
-                      'distance': distance
+                      'distance': distance,
+                        'max_total_r':self.max_total_r[self.player_now - 1]
                     }
                  }
 
@@ -104,20 +110,34 @@ class Env_1(MultiAgentEnv):
         _agent_total_r = self.agent_total_r[p]
 
         dist =calculate_distance_sum(self.player_now, self.chip.positions)
-
+        ##test
+        # if self.player_now == 1:
+        #     print(f"step {self.steps} player {self.player_now} action {act} distance {dist}")
+        #     print(f'last_dist {self.last_dist}')
+        ##
         if dist > _max_dist:
             if _max_dist == -np.inf:
-                r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist[p], dist=dist,
+                r = rf_to_call(init_dist=self.init_dist[p], last_dist=self.last_dist[p], dist=dist,
                                avg_dist=self.sw[p].current_avg)
             else:
                 # 当 dist 首次出现这么大, 那么计算后的 total reward 也应该比之前所有的都大
-                r = (_max_total_r - _agent_total_r * args.gamma) * (1 + (dist - _max_dist) / (_max_dist + 1))
+                factor = (1 + (dist - _max_dist) / (_max_dist + 1))
+                if factor < 1.1:
+                    factor = 1.1
+                if factor > 2:
+                    factor = 2
+                r = (_max_total_r - _agent_total_r * args.gamma) * factor
+                if r < 0.1:
+                    r = 0.1
+                if r <0:
+                    print(f'dist > _max_dist but r <0 {_max_total_r},{_agent_total_r},{dist},{_max_dist} ')
+                    r = 0.1
                 self.max_total_r[p] = _agent_total_r * args.gamma + r
             # update max_dist
             self.max_dist[p] = dist
-            _max_dist = dist
+
         else:
-            r = rf_to_call(init_dist=self.init_dist, last_dist=self.last_dist[p], dist=dist, avg_dist=self.sw[p].current_avg)
+            r = rf_to_call(init_dist=self.init_dist[p], last_dist=self.last_dist[p], dist=dist, avg_dist=self.sw[p].current_avg)
 
         for i in range(1, self.num_qubits + 1):
             if i == self.player_now:
@@ -182,6 +202,23 @@ def calculate_total_distance(coords) -> float:
 if __name__ == '__main__':
     env = Env_1()
     obs,infos = env.reset()
-    print(obs)
+    act = [
+        [1,2,1,2,1,3,4],
+        [3,4,3,4, 3] ,
+        [0,0,1,1,1] ,
+        [2,2,3,3,3] ,
+    ]
+    print(env.last_dist)
+    for i in range(5):
+        print(env.last_dist)
+        for k in range(4):
+            warpped_act = {f'agent_{env.player_now}': act[k][i]}
+            obs, reward, terminated, truncated, info = env.step(warpped_act)
+
+            dist  = info[f'agent_{k+1}']['distance']
+            print(dist)
+
+
+
 
 
