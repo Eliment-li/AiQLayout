@@ -40,6 +40,7 @@ class RewardFunction:
     def _recent_dist_avg(self):
         return np.mean(self.recent_dist)
 
+    #The Env_1 only compatible with  rf2 and vice versa
     def rfv2(self,init_dist,last_dist,avg_dist,dist):
         if avg_dist == 0:
             avg_dist = init_dist
@@ -62,6 +63,25 @@ class RewardFunction:
         else:
             r = -0.05
 
+        return r
+
+
+    def rfv3(self,init_dist,last_dist,avg_dist,dist):
+        if avg_dist == 0:
+            avg_dist = init_dist
+        #update recent dist
+        k1 = ( init_dist - dist) / avg_dist
+        k2 = (last_dist - dist) / avg_dist
+
+        k1 = np.log(abs(k1)+1) if k1 > 0 else -np.log(abs(k1)+1)
+        k2 = np.log(abs(k2)+1) if k2 > 0 else -np.log(abs(k2)+1)
+
+        if k2 > 0:
+            r = (math.pow((1 + k2), 2) - 1) * (1+abs(k1))
+        elif k2 < 0:
+            r = (math.pow((1 - k2), 2) - 1) * (1 +abs(k1)) * -1.15 -0.1
+        else:
+            r = -0.05
         return r
 
 
