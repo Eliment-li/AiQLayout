@@ -83,11 +83,12 @@ class ChipVisualizer:
         # Load & resize objects(qubits, magic state, broken qubits, etc.)
         self.qubit_imgs = self.get_qubits_object()
 
-
-        file_name =  img_path / 'tile_light_grey.png'
-
-        img = pygame.image.load(file_name)
+        img = pygame.image.load(img_path / 'tile_light_grey.png')
         self.floor_img = pygame.transform.scale(img, self.cell_size)
+
+        img = pygame.image.load(img_path / 'tile_green.png')
+        self.magic_img = pygame.transform.scale(img, self.cell_size)
+
         #
         # file_name = path.join(path.dirname(__file__), r"D:\sync\gym_custom_env-main\gym_custom_env-main\sprites\package.png")
         # img = pygame.image.load(file_name)
@@ -165,10 +166,15 @@ class ChipVisualizer:
                 pos = (c * self.cell_width, r * self.cell_height)
                 self.window_surface.blit(self.floor_img, pos)
 
+        # Draw magic state
+        for i in range(len(self.chip.magic_state_pos)):
+            r,c = self.chip.magic_state_pos[i]
+            pos = (c * self.cell_width, r * self.cell_height)
+            self.window_surface.blit(self.magic_img, pos)
         #render the qubits
         #print('position:', self.chip.position)
         for i in range(0, self.chip.num_qubits):
-            r,c = self.chip.position[i+1]
+            r,c = self.chip.position[i]
             pos = (c * self.cell_width, r * self.cell_height)
             self.window_surface.blit(self.qubit_imgs[i], pos)
 
