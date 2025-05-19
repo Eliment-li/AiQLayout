@@ -110,6 +110,7 @@ def evaluate_v2(base_config, args, results):
     max_total_r = [[] for i in range(env.num_qubits)]
 
     obs, info = env.reset()
+    init_chip_state = env.chip.state
     init_dist  = [info[f'agent_{i+1}'] for i in range(env.num_qubits)]
     print('init_dist:',init_dist)
     env.chip.print_state()
@@ -176,13 +177,13 @@ def evaluate_v2(base_config, args, results):
             print('stop_timesteps end')
             # print(f'{terminated},{truncated},{stop_timesteps}')
             break
-
+    final_chip_state= env.chip.state
     # print('rewards:\n',rewrads)
     # print('distance:\n',distance)
     #TODO refactor plot_reward
     #plot_reward([rewrads, distance])
     # print(env.chip.position)
-    save_results(actions,rewrads,distance,max_total_r)
+    save_results(actions,rewrads,distance,max_total_r,init_chip_state,final_chip_state)
     env.chip.print_state()
     #show_trace(actions)
     SharedMemoryDict(name='ConfigSingleton', size=1024).cleanup()
@@ -309,13 +310,16 @@ def evaluate(base_config, args, results):
     # save_results(actions)
     # print(env.chip.state)wan
 
-def save_results(actions,rewards,distance,max_total_r):
+def save_results(actions,rewards,distance,max_total_r,init_chip_state,final_chip_state):
     args = ConfigSingleton().get_args()
     path  = Path(args.results_evaluate_path, (args.time_id+'_results.csv'))
+    #TODO refactor
     write_data(file_path =path,data= actions)
     append_data(file_path =path,data= rewards)
     append_data(file_path =path,data= distance)
     append_data(file_path =path,data= max_total_r)
+    append_data(file_path =path,data= init_chip_state)
+    append_data(file_path =path,data= final_chip_state)
     # path  = Path(args.results_evaluate_path, (args.time_id+'_rewards.csv'))
     # write_data(file_path =path,data= rewards)
     # path  = Path(args.results_evaluate_path, (args.time_id+'_distance.csv'))
