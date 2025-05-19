@@ -18,6 +18,7 @@ rfunctions = RewardFunction()
 This env is to test our code,
 The further the distance between the agents, the higher the reward.
 the agent acts one by  one
+The Env_1 only compatible with  rf2
 '''
 class Env_1(MultiAgentEnv):
 
