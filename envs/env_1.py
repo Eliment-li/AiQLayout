@@ -61,7 +61,7 @@ class Env_1(MultiAgentEnv):
 
         self.chip.reset()
         self.init_dist =[calculate_distance_sum(i, self.chip.positions) for i in range(1, self.num_qubits + 1)]
-        self.last_dist = [calculate_distance_sum(i, self.chip.positions) for i in range(1, self.num_qubits + 1)]
+        self.dist_rec = [[] for i in range(1, self.num_qubits + 1)]
         self.max_dist = deepcopy(self.init_dist)
 
         infos = {f'agent_{i + 1}':  self.init_dist for i in range(self.num_qubits)}
@@ -82,14 +82,14 @@ class Env_1(MultiAgentEnv):
         self.chip.move(self.player_now,act)
         dist = calculate_distance_sum(self.player_now, self.chip.positions)
         rewards, distance = self.reward_function(dist=dist,last_dist=last_dist)
-        self.last_dist[self.player_now - 1] = f'b{last_dist}-a{dist}'
+        self.dist_rec[self.player_now - 1] = f'b{last_dist}-a{dist}'
         self.sw[self.player_now - 1].next(distance)
         terminateds = {"__all__": False} if self.steps < self.max_step else {"__all__": True}
         truncated = {}
         infos = {
                     f'agent_{self.player_now}':
                     {
-                      'distance': self.last_dist[self.player_now - 1],
+                      'distance': self.dist_rec[self.player_now - 1],
                         'max_total_r':self.max_total_r[self.player_now - 1]
                     }
                  }
