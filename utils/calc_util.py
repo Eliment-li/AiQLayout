@@ -41,41 +41,74 @@ class ZScoreNormalizer:
 class CNN:
     @staticmethod
     def calculate_conv_output_size(input_size, conv_spec):
-        """
-        计算卷积层输出的数据维度
+            """
+            计算卷积层输出的数据维度（支持 padding 参数）
 
-        参数:
-            input_size: 输入图像的尺寸 (height, width)
-            conv_spec: 卷积层配置列表，每个元素为 [过滤器数量, 卷积核大小, 步幅]
+            参数:
+                input_size: 输入图像的尺寸 (height, width)
+                conv_spec: 卷积层配置列表，每个元素为 [过滤器数量, 卷积核大小, 步幅, padding模式]
+                          padding模式可以是 'valid' 或 'same'（默认为 'valid'）
 
-        返回:
-            输出数据的维度 (channels, height, width)
-       # test code
-            conv_spec = [
-                [16, 2, 1],  # 过滤器数量，卷积核大小，步幅
-                [32, 3, 1],
-                [64, 3, 1],
-            ]
+            返回:
+                输出数据的维度 (channels, height, width)
 
-            input_size = (10, 10)
+            测试代码:
+                    # 测试案例1：混合padding模式
+                    conv_spec = [
+                        [16, 3, 1, 'same'],  # 保持尺寸
+                        [32, 3, 2, 'valid'],  # 尺寸减半
+                        [64, 5, 1, 'same'],  # 保持尺寸
+                    ]
+                    input_size = (10, 10)
+                    print("\n测试案例1: 混合padding模式")
+                    final = CNN.calculate_conv_output_size(input_size, conv_spec)
+                    print("最终输出维度:", final)
 
-            final_channels, final_height, final_width = calculate_conv_output_size(input_size, conv_spec)
-            print("\n最终输出维度:", (final_channels, final_height, final_width))
+                    # 测试案例2：全valid模式（兼容旧版）
+                    conv_spec_old = [
+                        [16, 2, 1, ],  # 过滤器数量，卷积核大小 步幅
+                        [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
+                        [64, 3, 1],  # 过滤器数量，卷积核大小 步幅
+                    ]
+                    print("\n测试案例2: 全valid模式")
+                    final = CNN.calculate_conv_output_size((10, 10), conv_spec_old)
+                    print("最终输出维度:", final)
+            """
+            channels = 1  # 初始输入通道数（假设是灰度图像）
+            height, width = input_size
 
-        """
-        channels = 1  # 初始输入通道数（假设是灰度图像）
-        height, width = input_size
+            for i, layer in enumerate(conv_spec):
+                # 解析层配置（兼容旧版缺少padding的情况）
+                if len(layer) == 3:
+                    filters, kernel_size, stride = layer
+                    padding = 'valid'  # 默认值
+                else:
+                    filters, kernel_size, stride, padding = layer
 
-        for layer in conv_spec:
-            filters, kernel_size, stride = layer
-            # 计算输出高度和宽度
-            height = (height - kernel_size) // stride + 1
-            width = (width - kernel_size) // stride + 1
-            channels = filters  # 更新通道数为当前层的过滤器数量
+                # 计算输出高度和宽度
+                if padding == 'valid':
+                    height = (height - kernel_size) // stride + 1
+                    width = (width - kernel_size) // stride + 1
+                elif padding == 'same':
+                    # 'same' 填充的目标是使输出尺寸 = ceil(输入尺寸 / stride)
+                    height = (height + stride - 1) // stride
+                    width = (width + stride - 1) // stride
 
-            print(f"层配置 {layer}: 输出尺寸 ({channels}, {height}, {width})")
-        print(f'final data dimensions: {channels * height * width}')
-        return channels, height, width
+                    # 当 stride=1 时，输出尺寸与输入相同
+                    if stride == 1:
+                        height = height
+                        width = width
+                else:
+                    raise ValueError(f"未知的padding模式: {padding} (必须是 'valid' 或 'same')")
+
+                channels = filters  # 更新通道数为当前层的过滤器数量
+
+                print(f"层 {i + 1} 配置 {layer}: 输出尺寸 ({channels}, {height}, {width})")
+
+            print(f'最终数据维度（通道×高度×宽度）: {channels}×{height}×{width} = {channels * height * width}')
+            return channels, height, width
+
+
 
 '''
 test code
