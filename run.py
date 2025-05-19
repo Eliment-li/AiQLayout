@@ -39,7 +39,8 @@ Conv2D stacks
 Continuous action settings
 LSTM settings
 '''
-def get_model_config():
+    # specific the rl module
+def get_rl_module_specs():
     ConvFilterSpec = [
         [16, 2, 1],  # 过滤器数量，卷积核大小 步幅
         [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
@@ -49,18 +50,13 @@ def get_model_config():
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False
-        ,conv_filters= ConvFilterSpec
+        , conv_filters=ConvFilterSpec
         # conv_activation='relu',
-        ,fcnet_hiddens=[512,512,256],
+        , fcnet_hiddens=[512, 512, 512],
         # fcnet_activation='relu',
     )
-    return model_config
-
-
-    # specific the rl module
-def get_rl_module_specs():
     rl_module_specs = {
-            'policy_{}'.format(i): RLModuleSpec(model_config=get_model_config()) for i in
+            'policy_{}'.format(i): RLModuleSpec(model_config=model_config) for i in
             range(1, int(args.num_qubits) + 1)
     }
     return rl_module_specs
@@ -100,6 +96,13 @@ if __name__ == "__main__":
         .training(
             lr=tune.grid_search(args.lr_grid),
             gamma=tune.grid_search(args.gamma_grid),
+            # model={
+            #     # "fcnet_hiddens":args.fcnet_hiddens ,
+            #     "fcnet_hiddens": tune.grid_search(args.fcnet_hiddens_grid),  # args.fcnet_hiddens,
+            #     "fcnet_activation": tune.grid_search(args.fcnet_activation),
+            #     "use_attention": False,
+            # },
+
             # step = iteration * 4000
             #     lr_schedule= tune.grid_search([
             #     [[0, 5.0e-5], [4000*100, 5.0e-5],[4000*200,1.0e-5]],
