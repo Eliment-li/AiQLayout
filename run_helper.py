@@ -54,7 +54,8 @@ tf1, tf, tfv = try_import_tf()
 torch, _ = try_import_torch()
 
 logger = logging.getLogger(__name__)
-
+def trial_str_creator(trial):
+    return "{}_{}".format(trial.trainable_name, trial.trial_id)
 
 def train_no_tune(args, config, stop: Optional[Dict] = None):
     results = None
@@ -134,7 +135,6 @@ def train(
         ignore_reinit_error=True,
     )
 
-
     enhance_base_config(config,args)
     #print(config)
 
@@ -147,8 +147,8 @@ def train(
     if args.no_tune:
         return train_no_tune(args, config, stop=stop)
 
-    # Run the actual experiment (using Tune).
     start_time = time.time()
+    # Run the actual experiment (using Tune).
     results = tune.Tuner(
         config.algo_class,
         param_space=config,
@@ -166,15 +166,14 @@ def train(
             num_samples=args.num_samples,#default to 1
             max_concurrent_trials=args.max_concurrent_trials,
             scheduler=scheduler,
+            trial_name_creator=trial_str_creator,
+            trial_dirname_creator=trial_str_creator,
         ),
     ).fit()
+
     time_taken = time.time() - start_time
     print('time_taken ',str(time_taken/60))
-
-
-
     ray.shutdown()
-
 
     # Error out, if Tuner.fit() failed to run.
     if results.errors:
