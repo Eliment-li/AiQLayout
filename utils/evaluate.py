@@ -41,8 +41,7 @@ from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
 
 from config import ConfigSingleton
 from core.chip_visualizer import show_trace
-from envs.env_0 import Env_0
-from envs.env_1 import Env_1
+from envs.env_2 import Env_2
 from results.plot_results import plot_reward
 from utils.csv_util import write_data, append_data
 from utils.file_util import get_root_dir
@@ -56,7 +55,7 @@ def evaluate_v2(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_1()
+    env = Env_2()
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
@@ -198,7 +197,7 @@ def evaluate(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_1()
+    env = Env_2()
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
