@@ -50,10 +50,9 @@ class Chip():
 
 
     def get_positon(self,player):
-        return self._positions[player]
+        return self._positions[player - 1]
     def random_init(self):
         # vaild value start from _position[1] , -1 only for occupy
-        self._positions = [-1]
         i = 1
         while i <= self._num_qubits:
             x = random.randint(0, self._rows - 1)
@@ -67,13 +66,12 @@ class Chip():
 
     def _init_qubits_layout(self):
        # init qubits one by one
-        self._positions = [-1]
         for r in range(self.rows):
             for c in range(self.cols):
                 if self._state[r][c] == 0:
                     self._positions.append((r, c))
-                    self._state[r][c] = len(self._positions)-1
-                    if len(self._positions)-1 == self._num_qubits:
+                    self._state[r][c] = len(self._positions)
+                    if len(self._positions) == self._num_qubits:
                         return
 
     def reset(self):
@@ -82,19 +80,18 @@ class Chip():
        self.random_init()
 
     def _init_magic_state(self):
-        pass
-        # self._magic_state = [
-        #     (0, 0),
-        #     (0, self._cols - 1),
-        #     (self._rows - 1, 0),
-        #     (self._rows - 1, self._cols - 1),
-        # ]
-        #
-        # for x, y in self._magic_state:
-        #     self._state[x][y] = -1
+        self._magic_state = [
+            (0, 0),
+            (0, self._cols - 1),
+            (self._rows - 1, 0),
+            (self._rows - 1, self._cols - 1),
+        ]
+
+        for x, y in self._magic_state:
+            self._state[x][y] = QubitState.MAGIC.value
 
     def move(self, player: int, act:int):
-        old_r,old_c = self._positions[player]
+        old_r,old_c = self._positions[player - 1]
 
         assert act in ChipAction, f"{act} is not a valid action"
 
@@ -128,7 +125,7 @@ class Chip():
             #free the old position
             self._state[old_r, old_c] = 0
             #occupy the new position
-            self._positions[player] = (new_r, new_c)
+            self._positions[player - 1] = (new_r, new_c)
             self._state[new_r, new_c] = player
 
             return True
@@ -138,37 +135,12 @@ class Chip():
         :param player:
         :return: the length to magic state
         '''
-        px,py = self._positions[player]
+        px,py = self._positions[player - 1]
         # use dfs to find the shortest path to magic state(value that equal to -1)
 
         path_len,path = bfs_find_target(self._state, px, py)
         return path_len
 
-    def all_path_len(self):
-        '''
-        :return: all path to magic state
-        '''
-        path_len = []
-        for i in range(1,self._num_qubits+1):
-            px, py = self._positions[i+1]
-            len, path  = bfs_find_target(self._state, px, py)
-            path_len.append(len)
-        return path_len
-
-    def distance_to_others(self,player):
-        '''
-        :param player:
-        :return: the distance to other qubits
-        '''
-        px, py = self._positions[player]
-        distance = []
-        for i in range(1,self._num_qubits+1):
-            if i == player:
-                continue
-            x, y = self._positions[i]
-            distance.append(abs(px - x) + abs(py - y))
-        #sum distance
-        return sum(distance)
 
     def __str__(self):
         return self._state.__str__()
