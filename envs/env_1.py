@@ -77,17 +77,19 @@ class Env_1(MultiAgentEnv):
         self.steps += 1
         # print(f"step {self.steps} player {self.player_now} action {action}")
         act = action[f'agent_{self.player_now}']
-        self.chip.move(self.player_now,act)
 
-        rewards, distance = self.reward_function(act)
-        self.last_dist[self.player_now - 1] = distance
+        last_dist = calculate_distance_sum(self.player_now, self.chip.positions)
+        self.chip.move(self.player_now,act)
+        dist = calculate_distance_sum(self.player_now, self.chip.positions)
+        rewards, distance = self.reward_function(dist=dist,last_dist=last_dist)
+        self.last_dist[self.player_now - 1] = f'b{last_dist}-a{dist}'
         self.sw[self.player_now - 1].next(distance)
         terminateds = {"__all__": False} if self.steps < self.max_step else {"__all__": True}
         truncated = {}
         infos = {
                     f'agent_{self.player_now}':
                     {
-                      'distance': distance,
+                      'distance': self.last_dist[self.player_now - 1],
                         'max_total_r':self.max_total_r[self.player_now - 1]
                     }
                  }
@@ -97,7 +99,7 @@ class Env_1(MultiAgentEnv):
         return self._get_obs(),rewards,terminateds,truncated,infos
 
 
-    def reward_function(self,act):
+    def reward_function(self,dist,last_dist):
         # prepare rewrad function
         rf_name = f"rfv{args.rf_version}"
         rf_to_call = getattr(rfunctions, rf_name, None)
@@ -109,7 +111,7 @@ class Env_1(MultiAgentEnv):
         _max_total_r = self.max_total_r[p]
         _agent_total_r = self.agent_total_r[p]
 
-        dist =calculate_distance_sum(self.player_now, self.chip.positions)
+
         ##test
         # if self.player_now == 1:
         #     print(f"step {self.steps} player {self.player_now} action {act} distance {dist}")
@@ -117,7 +119,7 @@ class Env_1(MultiAgentEnv):
         ##
         if dist > _max_dist:
             if _max_dist == -np.inf:
-                r = rf_to_call(init_dist=self.init_dist[p], last_dist=self.last_dist[p], dist=dist,
+                r = rf_to_call(init_dist=self.init_dist[p], last_dist=last_dist, dist=dist,
                                avg_dist=self.sw[p].current_avg)
             else:
                 # 当 dist 首次出现这么大, 那么计算后的 total reward 也应该比之前所有的都大
@@ -137,7 +139,7 @@ class Env_1(MultiAgentEnv):
             self.max_dist[p] = dist
 
         else:
-            r = rf_to_call(init_dist=self.init_dist[p], last_dist=self.last_dist[p], dist=dist, avg_dist=self.sw[p].current_avg)
+            r = rf_to_call(init_dist=self.init_dist[p], last_dist=last_dist, dist=dist, avg_dist=self.sw[p].current_avg)
 
         for i in range(1, self.num_qubits + 1):
             if i == self.player_now:
@@ -168,7 +170,7 @@ def calculate_distance_sum(player,positions) -> float:
     for i in range(1, len(positions)):
         x,y = positions[i]
         if i != player:  # 跳过自身
-            distance = math.sqrt((x - target_x) ** 2 + (y - target_y) ** 2)
+            distance = abs(x-target_x) + abs(y-target_y) #math.sqrt((x - target_x) ** 2 + (y - target_y) ** 2)
             total_distance += distance
 
     return np.round(total_distance,4)
