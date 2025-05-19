@@ -10,6 +10,8 @@ import os
 from ray.rllib.utils.framework import try_import_torch
 from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
 
+from envs.env_2 import Env_2
+
 torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
@@ -42,7 +44,7 @@ LSTM settings
     # specific the rl module
 def get_rl_module_specs():
     ConvFilterSpec = [
-        [16, 2, 1],  # 过滤器数量，卷积核大小 步幅
+        [16, 2, 1,'same'],  # 过滤器数量，卷积核大小 步幅
         [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
         [64, 3, 1],  # 过滤器数量，卷积核大小 步幅
     ]
@@ -52,8 +54,15 @@ def get_rl_module_specs():
         use_lstm=False
         , conv_filters=ConvFilterSpec
         # conv_activation='relu',
-        , fcnet_hiddens=[512, 512, 512],
-        # fcnet_activation='relu',
+        #: Note that in an encoder-based default architecture with a policy head (and
+        #: possible value head), this setting only affects the encoder component. To set the
+        #: policy (and value) head sizes, use `post_fcnet_hiddens`, instead. For example,
+        #: if you set `fcnet_hiddens=[32, 32]` and `post_fcnet_hiddens=[64]`, you would get
+        #: an RLModule with a [32, 32] encoder, a [64, act-dim] policy head, and a [64, 1]
+        #: value head (if applicable).
+        ,fcnet_hiddens=[1024, 1024, 512]
+        ,head_fcnet_hiddens = [256,256]
+        ,fcnet_activation='swish'
     )
     rl_module_specs = {
             'policy_{}'.format(i): RLModuleSpec(model_config=model_config) for i in
@@ -69,9 +78,11 @@ if __name__ == "__main__":
     #set custom run config before init args
     import argparse
 
-    parser = argparse.ArgumentParser(description="命令行参数示例")
+    parser = argparse.ArgumentParser(description="")
     parser.add_argument("--iter", '-i',type=int, help="train iter", default=None)
     parser.add_argument("--wandb", '-w',type=bool, help="enable_wandb",default=False)
+    parser.add_argument("--checkpoint", '-c',type=str, help="best checkpoint",default=None)
+
     cmd_args = parser.parse_args()
 
     args = ConfigSingleton().get_args()
@@ -90,7 +101,7 @@ if __name__ == "__main__":
         get_trainable_cls(args.algo_class)
         .get_default_config()
         .environment(
-            env=Env_1,
+            env=Env_2,
             env_config={"key": "value"},
         )
         .training(
@@ -143,7 +154,10 @@ if __name__ == "__main__":
     #     }),
     # )
     #
-    results = train(config = base_config, args=args,enable_wandb=cmd_args.wandb,stop=stop)
+    if cmd_args.checkpoint is not None:
+        results = cmd_args.checkpoint
+    else:
+        results = train(config = base_config, args=args,enable_wandb=cmd_args.wandb,stop=stop)
     evaluate_v2(base_config,args,results)
     #
     # results = r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_b20c3aedf072404aa8fbc10e5051586d'
