@@ -44,6 +44,7 @@ class Chip():
         self._state=np.zeros(( self._rows,self._cols), dtype=np.int16)
         # magic state
         self._magic_state = []
+        self._magic_state_pos=[]
         self._init_magic_state()
         self.random_init()
         self.last_distance=[]
@@ -86,9 +87,9 @@ class Chip():
             (self._rows - 1, 0),
             (self._rows - 1, self._cols - 1),
         ]
-
         for x, y in self._magic_state:
             self._state[x][y] = QubitState.MAGIC.value
+            self._magic_state_pos.append((x, y))
 
     def move(self, player: int, act:int):
         old_r,old_c = self._positions[player - 1]
@@ -149,6 +150,10 @@ class Chip():
     # start from index 1
     def position(self):
         return self._positions
+
+    @property
+    def magic_state_pos(self):
+        return self._magic_state_pos
 
     @property
     def state(self):
