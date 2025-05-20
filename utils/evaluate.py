@@ -115,7 +115,7 @@ def evaluate_v2(base_config, args, results):
     print('init_dist:',init_dist)
     env.chip.print_state()
     terminated, truncated = False, False
-    stop_timesteps = 400
+    stop_timesteps = 800
     while True:
 
         shared_data = {}
@@ -163,7 +163,10 @@ def evaluate_v2(base_config, args, results):
         last_player = env.player_now
         obs, reward, terminated, truncated, info = env.step(warpped_act) # after step, env.player_now  will turn to next
 
-        rewrads[last_player - 1].append(reward[f'agent_{last_player}'])
+        if f'agent_{last_player}' in terminated and terminated[f'agent_{last_player}']:
+            print(f'player {last_player} done')
+        if reward is not None:
+            rewrads[last_player - 1].append(reward[f'agent_{last_player}'])
         distance[last_player - 1].append(info[f'agent_{last_player}']['distance'])
         max_total_r[last_player - 1].append(info[f'agent_{last_player}']['max_total_r'])
 

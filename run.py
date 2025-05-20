@@ -52,8 +52,8 @@ def get_rl_module_specs():
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False
-        , conv_filters=ConvFilterSpec
-        # conv_activation='relu',
+        ,conv_filters=ConvFilterSpec
+        ,conv_activation='swish'
         #: Note that in an encoder-based default architecture with a policy head (and
         #: possible value head), this setting only affects the encoder component. To set the
         #: policy (and value) head sizes, use `post_fcnet_hiddens`, instead. For example,
@@ -61,7 +61,7 @@ def get_rl_module_specs():
         #: an RLModule with a [32, 32] encoder, a [64, act-dim] policy head, and a [64, 1]
         #: value head (if applicable).
         ,fcnet_hiddens=[1024, 1024, 512]
-        ,head_fcnet_hiddens = [256,256]
+        ,head_fcnet_hiddens = [512,256]
         ,fcnet_activation='swish'
     )
     rl_module_specs = {
@@ -160,5 +160,5 @@ if __name__ == "__main__":
         results = train(config = base_config, args=args,enable_wandb=cmd_args.wandb,stop=stop)
     evaluate_v2(base_config,args,results)
     #
-    # results = r'C:\Users\90471\AppData\Local\Temp\checkpoint_tmp_b20c3aedf072404aa8fbc10e5051586d'
+    # results = r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_1afe49475c1349148e81b6b30ee9ae6d'
     # evaluate_v2(base_config,args,results)

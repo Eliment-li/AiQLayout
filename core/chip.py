@@ -17,6 +17,7 @@ class ChipAction(Enum):
     UP = 2
     DOWN = 3
     STAY = 4
+    Done = 5
 
 class QubitState(Enum):
     ANCILLA = 0  # free to use

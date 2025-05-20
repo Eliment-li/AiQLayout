@@ -33,7 +33,7 @@ class RewardFunction:
             if dist - last_dist <= 1:
                 r *= 1.25
         else:
-            r = -0.05
+            r = -0.01
 
         return r
 

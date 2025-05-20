@@ -33,10 +33,10 @@ class Env_2(MultiAgentEnv):
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
 
         self.obs_spaces = gym.spaces.Box(
-            low=-5,
-            high=5,
+            low=-6,
+            high=6,
             shape=(args.chip_rows + 2,args.chip_cols + 2), # +2 for padding
-            dtype=np.int16
+            dtype=np.int16,
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
         self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(5) for i in range(self.num_qubits)}
@@ -54,6 +54,7 @@ class Env_2(MultiAgentEnv):
     def reset(self, *, seed=None, options=None):
         self.steps = 0
         self.player_now = 1  # index of the current agent
+        self.done = [False] * self.num_qubits
         self.agent_total_r = [0] * self.num_qubits
 
         self.max_total_r = [-np.inf] * self.num_qubits
@@ -75,30 +76,60 @@ class Env_2(MultiAgentEnv):
 
     def step(self, action):
         self.steps += 1
+
         # print(f"step {self.steps} player {self.player_now} action {action}")
         act = action[f'agent_{self.player_now}']
+        ##
+        if self.steps>10 and self.player_now == 1:
+            act = ChipAction.Done.value
+        ##
+        if act == ChipAction.Done.value:
+            print(f'player {self.player_now} done at step {self.steps}')
+            self.done[self.player_now - 1] = True
 
-        last_dist = self.distance_to_m(self.player_now)
-        self.chip.move(player=self.player_now,act=act)
-        dist = self.distance_to_m(self.player_now)
+            distance = dist =  last_dist = self.distance_to_m(self.player_now)
+            rewards= {f'agent_{self.player_now}': None}
+        else:
+            last_dist = self.distance_to_m(self.player_now)
+            self.chip.move(player=self.player_now,act=act)
+            dist = self.distance_to_m(self.player_now)
 
-        rewards, distance = self.reward_function(dist=dist,last_dist=last_dist)
+            rewards, distance = self.reward_function(dist=dist,last_dist=last_dist)
+
         self.dist_rec[self.player_now - 1] = f'{last_dist}->{dist}'
-
         self.sw[self.player_now - 1].next(distance)
-        terminateds = {"__all__": False} if self.steps < self.max_step else {"__all__": True}
+
+        terminateds = self.is_terminated()
         truncated = {}
         infos = {
                     f'agent_{self.player_now}':
                     {
-                      'distance': self.dist_rec[self.player_now - 1],
+                        'distance': self.dist_rec[self.player_now - 1],
                         'max_total_r':self.max_total_r[self.player_now - 1]
                     }
                  }
 
         self.player_now = ((self.player_now) % self.num_qubits) + 1
+        # switch to next player
+        if  terminateds.get('__all__') is None:
+            while self.done[self.player_now - 1]:
+                self.player_now = ((self.player_now) % self.num_qubits) + 1
+
         return self._get_obs(),rewards,terminateds,truncated,infos
 
+    def is_terminated(self):
+        if self.steps >= self.max_step:
+            return {"__all__": True}
+
+        # terminateds = {"__all__": True}
+        terminateds={}
+        for i in range(len(self.done)):
+            if self.done[i]:
+                terminateds.update({f'agent_{i + 1}': True})
+            else:
+                # terminateds.update({'__all__': False})
+                terminateds.update({f'agent_{i + 1}': False})
+        return terminateds
 
     def reward_function(self,dist,last_dist):
         # prepare rewrad function
@@ -162,8 +193,19 @@ class Env_2(MultiAgentEnv):
         return dist
 
 if __name__ == '__main__':
-    pass
+    #test code
+    env = Env_2()
+    env.reset()
+    env.chip.print_state()
+    player = 1
+    for i in range(10):
 
+        action = {f'agent_{player}': env.action_spaces[f'agent_{player}'].sample()}
+        obs, rewards, terminateds, truncated, infos = env.step(action)
+        player = ((player) % 4) + 1
+        print(i)
+        env.chip.print_state()
+    env.chip.print_state()
 
 
 
