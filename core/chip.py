@@ -26,11 +26,11 @@ class QubitState(Enum):
 
 
 class Chip():
-    def __init__(self,rows: int,cols: int, num_qubits=None, disable:list = []):
+    def __init__(self,rows: int,cols: int, init_position = None,num_qubits=None, broken:list = []):
         '''
         :param rows:
         :param cols:
-        :param disable: the broken postion of chip
+        :param broken: the broken postion of chip
         '''
 
         self._cols = cols
@@ -40,13 +40,13 @@ class Chip():
         else:
             self._num_qubits = args.num_qubits
         #start from index 1
-        self._positions=[]
-        self._state=np.zeros(( self._rows,self._cols), dtype=np.int32)
+        # self._positions=[]
+        # self._state=np.zeros(( self._rows,self._cols), dtype=np.int32)
         # magic state
-        self._magic_state = []
-        self._init_magic_state()
-        self.random_init()
-        self.last_distance=[]
+        # self._magic_state = []
+        # self._init_magic_state()
+        # self.random_init()
+        self.reset(init_position = init_position)
 
 
     def get_positon(self,player):
@@ -64,22 +64,28 @@ class Chip():
             else:
                 continue
 
-    def _init_qubits_layout(self):
-       # init qubits one by one
-        for r in range(self.rows):
-            for c in range(self.cols):
+    def _init_qubits_layout(self,init_position):
+        if init_position is None:
+            self.random_init()
+        else:
+            assert len(init_position) == self.num_qubits ,\
+                f"len(init_position) = {len(init_position)} but self.num_qubits = {self.num_qubits} They should be equal"
+            i = 1
+            for r,c in init_position:
                 if self._state[r][c] == 0:
+                    self._state[r][c] = i
                     self._positions.append((r, c))
-                    self._state[r][c] = len(self._positions)+1
-                    if len(self._positions) == self._num_qubits:
-                        return
+                    i += 1
+                else:
+                    continue
 
-    def reset(self):
+
+    def reset(self,init_position = None):
        self._state = np.zeros((self._rows, self._cols), dtype=np.int32)
        self._positions = []
        self._init_magic_state()
-       self.random_init()
-       self._magic_state = []
+       self._init_qubits_layout(init_position)
+
 
     def _init_magic_state(self):
         self._magic_state = [
@@ -195,17 +201,24 @@ class Chip():
 
 #test code
 if __name__ == '__main__':
-    chip = Chip(10,10)
+    init_pos = [(4,4), (0, 1), (1, 0), (1, 1)]
+    chip = Chip(10,10,init_position = init_pos)
     print(chip.position)
     chip.print_state()
-    for i in range(10):
-        player = 4 #random.randint(1, chip._num_qubits)
-        act  = 3#random.randint(0, 3)
-        chip.move(player, act)
 
+    chip.reset(init_position=init_pos)
     print()
     chip.print_state()
     print(chip.position)
+
+    # for i in range(10):
+    #     player = 4 #random.randint(1, chip._num_qubits)
+    #     act  = 3#random.randint(0, 3)
+    #     chip.move(player, act)
+
+    # print()
+    # chip.print_state()
+    # print(chip.position)
     #
     # print('routing length  = ', chip.route_to_magic_state(1))
     # print('length  = ', chip.distance_to_others(4))
