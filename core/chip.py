@@ -166,11 +166,16 @@ class Chip():
         return  self._state
 
     def print_state(self):
+        # 设置每个元素的宽度
+        element_width = 2
+
         for row in self._state:
-            # 使用列表推导式将0替换为'-'
-            replaced_row = ['-' if value == 0 else value for value in row]
-            # 打印替换后的行
-            print(" ".join(map(str, replaced_row)))
+            # 使用列表推导式将 0 替换为 '--'
+            replaced_row = ['--' if value == 0 else value for value in row]
+            # :>{element_width} 指定右对齐，并确保每个值占用固定的宽度。
+            # str(value) 将值转换为字符串
+            formatted_row = [f"{str(value):>{element_width}}" for value in replaced_row]
+            print(" ".join(formatted_row))
 
 
     @property
