@@ -1,6 +1,7 @@
 import math
 from copy import deepcopy
 from pprint import pprint
+import  random
 
 import gymnasium as gym
 import numpy as np
@@ -59,7 +60,6 @@ class Env_2(MultiAgentEnv):
         self.sw = [SlideWindow(50)] * self.num_qubits
 
         self.chip.reset()
-        #TODO
         self.init_dist =[self.distance_to_m(i) for i in range(1, self.num_qubits + 1)]
         self.dist_rec = [[] for i in range(1, self.num_qubits + 1)]
         self.min_dist = deepcopy(self.init_dist)
@@ -77,13 +77,14 @@ class Env_2(MultiAgentEnv):
         self.steps += 1
         # print(f"step {self.steps} player {self.player_now} action {action}")
         act = action[f'agent_{self.player_now}']
-        #TODO
+
         last_dist = self.distance_to_m(self.player_now)
-        self.chip.move(self.player_now,act)
-        #TODO
+        self.chip.move(player=self.player_now,act=act)
         dist = self.distance_to_m(self.player_now)
+
         rewards, distance = self.reward_function(dist=dist,last_dist=last_dist)
-        self.dist_rec[self.player_now - 1] = f'b{last_dist}-a{dist}'
+        self.dist_rec[self.player_now - 1] = f'{last_dist}->{dist}'
+
         self.sw[self.player_now - 1].next(distance)
         terminateds = {"__all__": False} if self.steps < self.max_step else {"__all__": True}
         truncated = {}
@@ -156,7 +157,7 @@ class Env_2(MultiAgentEnv):
         # 计算 player 到最近的 magic state 的距离
         x, y = self.chip.positions[player-1]
         dist = np.inf
-        for mx,my in self.chip.magic_state_pos:
+        for mx,my in self.chip.magic_state:
             dist = min(dist, abs(x - mx) + abs(y - my))
         return dist
 
