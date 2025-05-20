@@ -109,7 +109,8 @@ def evaluate_v2(base_config, args, results):
     max_total_r = [[] for i in range(env.num_qubits)]
 
     obs, info = env.reset()
-    init_chip_state = env.chip.state
+    init_chip_state = deepcopy(env.chip.state)
+    #TODO fix it
     init_dist  = [info[f'agent_{i+1}'] for i in range(env.num_qubits)]
     print('init_dist:',init_dist)
     env.chip.print_state()
@@ -176,14 +177,15 @@ def evaluate_v2(base_config, args, results):
             print('stop_timesteps end')
             # print(f'{terminated},{truncated},{stop_timesteps}')
             break
-    final_chip_state= env.chip.state
+    final_chip_state=deepcopy(env.chip.state)
+    env.chip.print_state()
     # print('rewards:\n',rewrads)
     # print('distance:\n',distance)
     #TODO refactor plot_reward
     #plot_reward([rewrads, distance])
     # print(env.chip.position)
     save_results(actions,rewrads,distance,max_total_r,init_chip_state,final_chip_state)
-    env.chip.print_state()
+
     #show_trace(actions)
     SharedMemoryDict(name='ConfigSingleton', size=1024).cleanup()
 
