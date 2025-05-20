@@ -77,8 +77,10 @@ class Chip():
 
     def reset(self):
        self._state = np.zeros((self._rows, self._cols), dtype=np.int32)
+       self._positions = []
        self._init_magic_state()
        self.random_init()
+       self._magic_state = []
 
     def _init_magic_state(self):
         self._magic_state = [
