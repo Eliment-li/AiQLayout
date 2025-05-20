@@ -41,10 +41,9 @@ class Chip():
             self._num_qubits = args.num_qubits
         #start from index 1
         self._positions=[]
-        self._state=np.zeros(( self._rows,self._cols), dtype=np.int16)
+        self._state=np.zeros(( self._rows,self._cols), dtype=np.int32)
         # magic state
         self._magic_state = []
-        self._magic_state_pos=[]
         self._init_magic_state()
         self.random_init()
         self.last_distance=[]
@@ -71,7 +70,7 @@ class Chip():
             for c in range(self.cols):
                 if self._state[r][c] == 0:
                     self._positions.append((r, c))
-                    self._state[r][c] = len(self._positions)
+                    self._state[r][c] = len(self._positions)+1
                     if len(self._positions) == self._num_qubits:
                         return
 
@@ -91,7 +90,6 @@ class Chip():
         ]
         for x, y in self._magic_state:
             self._state[x][y] = QubitState.MAGIC.value
-            self._magic_state_pos.append((x, y))
 
     def move(self, player: int, act:int):
         old_r,old_c = self._positions[player - 1]
@@ -127,9 +125,10 @@ class Chip():
             #print(f'player{player} move {act} ')
             #free the old position
             self._state[old_r, old_c] = 0
+            self._state[new_r, new_c] = player
             #occupy the new position
             self._positions[player - 1] = (new_r, new_c)
-            self._state[new_r, new_c] = player
+
 
             return True
 
@@ -153,16 +152,9 @@ class Chip():
     def position(self):
         return self._positions
 
-    @property
-    def magic_state_pos(self):
-        return self._magic_state_pos
 
     @property
     def state(self):
-        # state = deepcopy(self._state)
-        # for i in range(1,self._num_qubits+1):
-        #     x,y = self._positions[i]
-        #     state[x][y] = i*100
         return  self._state
 
     def print_state(self):
@@ -177,6 +169,9 @@ class Chip():
             formatted_row = [f"{str(value):>{element_width}}" for value in replaced_row]
             print(" ".join(formatted_row))
 
+    @property
+    def magic_state(self):
+        return self._magic_state
 
     @property
     def rows(self):
@@ -200,16 +195,17 @@ class Chip():
 
 #test code
 if __name__ == '__main__':
-    chip = Chip(5,5)
-    print(chip)
+    chip = Chip(10,10)
     print(chip.position)
     chip.print_state()
-    # for i in range(3):
-    #     player = random.randint(1, chip._num_qubits)
-    #     act  = random.randint(0, 3)
-    #     chip.move(player, act)
-    # print(chip.state)
-    # print(chip.position)
+    for i in range(10):
+        player = 4 #random.randint(1, chip._num_qubits)
+        act  = 3#random.randint(0, 3)
+        chip.move(player, act)
+
+    print()
+    chip.print_state()
+    print(chip.position)
     #
     # print('routing length  = ', chip.route_to_magic_state(1))
     # print('length  = ', chip.distance_to_others(4))
