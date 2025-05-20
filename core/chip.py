@@ -90,9 +90,9 @@ class Chip():
 
     def _init_magic_state(self):
         self._magic_state = [
-            (0, 0),
-            (0, self._cols - 1),
-            (self._rows - 1, 0),
+            # (0, 0),
+            # (0, self._cols - 1),
+            # (self._rows - 1, 0),
             (self._rows - 1, self._cols - 1),
         ]
         for x, y in self._magic_state:

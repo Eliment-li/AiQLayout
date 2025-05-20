@@ -80,15 +80,15 @@ class Env_2(MultiAgentEnv):
         # print(f"step {self.steps} player {self.player_now} action {action}")
         act = action[f'agent_{self.player_now}']
         ##
-        if self.steps>10 and self.player_now == 1:
-            act = ChipAction.Done.value
+        # if self.steps>10 and self.player_now == 1:
+        #     act = ChipAction.Done.value
         ##
         if act == ChipAction.Done.value:
             print(f'player {self.player_now} done at step {self.steps}')
             self.done[self.player_now - 1] = True
 
             distance = dist =  last_dist = self.distance_to_m(self.player_now)
-            rewards= {f'agent_{self.player_now}': None}
+            rewards= {f'agent_{self.player_now}': 0}
         else:
             last_dist = self.distance_to_m(self.player_now)
             self.chip.move(player=self.player_now,act=act)
@@ -110,25 +110,26 @@ class Env_2(MultiAgentEnv):
                  }
 
         self.player_now = ((self.player_now) % self.num_qubits) + 1
+
         # switch to next player
-        if  terminateds.get('__all__') is None:
+        if not  terminateds.get('__all__'):
             while self.done[self.player_now - 1]:
                 self.player_now = ((self.player_now) % self.num_qubits) + 1
 
         return self._get_obs(),rewards,terminateds,truncated,infos
 
     def is_terminated(self):
+        terminateds = {"__all__": True}
         if self.steps >= self.max_step:
-            return {"__all__": True}
+           terminateds = {"__all__": True}
+        else:
+            for i in range(len(self.done)):
+                if self.done[i]:
+                    terminateds.update({f'agent_{i + 1}': True})
+                else:
+                    terminateds.update({'__all__': False})
+                    terminateds.update({f'agent_{i + 1}': False})
 
-        # terminateds = {"__all__": True}
-        terminateds={}
-        for i in range(len(self.done)):
-            if self.done[i]:
-                terminateds.update({f'agent_{i + 1}': True})
-            else:
-                # terminateds.update({'__all__': False})
-                terminateds.update({f'agent_{i + 1}': False})
         return terminateds
 
     def reward_function(self,dist,last_dist):

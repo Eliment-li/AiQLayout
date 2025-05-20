@@ -84,6 +84,10 @@ class RewardFunction:
             r = -0.05
         return r
 
+    def rfv4(self,init_dist,last_dist,avg_dist,dist):
+
+        return -dist
+
 
 
 def test_rf(distance: list):
