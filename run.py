@@ -92,8 +92,9 @@ if __name__ == "__main__":
 
     print(stop)
     base_config = (
-        get_trainable_cls(args.algo_class)
-        .get_default_config()
+        # get_trainable_cls(args.algo_class)
+        # .get_default_config()
+        PPOConfig()
         .environment(
             env=Env_2,
             env_config={"key": "value"},

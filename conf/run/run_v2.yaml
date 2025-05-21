@@ -1,7 +1,7 @@
-rf_version: 2
+rf_version: 3
 env_version: 0
 num_qubits: 4
-env_max_step: 100
+env_max_step: 3000
 #chip
 chip_rows: 9
 chip_cols: 9
