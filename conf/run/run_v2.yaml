@@ -1,6 +1,6 @@
-rf_version: 4
+rf_version: 3
 num_qubits: 4
-env_max_step: 3000
+env_max_step: 1000
 #chip
 chip_rows: 9
 chip_cols: 9
@@ -23,7 +23,7 @@ as_release_test: false
 
 #learning rate
 lr: 3.0e-5
-lr_grid: [3.0e-4]
+lr_grid: [9.0e-4]
 gamma: 0.99
 gamma_grid: [0.99]
 

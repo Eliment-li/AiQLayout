@@ -52,11 +52,11 @@ def get_rl_module_specs():
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False
-        ,conv_filters=ConvFilterSpec
-        ,conv_activation='relu'
-        ,fcnet_hiddens=[1024, 1024, 512]
-        ,head_fcnet_hiddens = [512,256]
-        ,fcnet_activation='relu'
+        # ,conv_filters=ConvFilterSpec
+        # ,conv_activation='relu'
+        ,fcnet_hiddens=[512, 512,512]
+        ,head_fcnet_hiddens = [256,256,128]
+        # ,fcnet_activation='relu'
     )
     rl_module_specs = {
             'policy_{}'.format(i): RLModuleSpec(model_config=model_config) for i in
