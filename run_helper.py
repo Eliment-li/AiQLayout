@@ -94,6 +94,7 @@ def train_no_tune(args, config, stop: Optional[Dict] = None):
 def train(
     config: "AlgorithmConfig",
     args: Optional[argparse.Namespace] = None,
+    cmd_args = None,
     tune_callbacks: Optional[List] = None,
     scheduler=None,
     stop = None,
@@ -141,7 +142,7 @@ def train(
     # Log results using WandB.
     tune_callbacks = tune_callbacks or []
     if enable_wandb:
-        append_wandb(tune_callbacks,args,config)
+        append_wandb(tune_callbacks,args,config,name=cmd_args.run_name)
 
     progress_reporter =cli_reporter(config)
     if args.no_tune:
@@ -184,7 +185,7 @@ def train(
     return results
 
 
-def append_wandb(tune_callbacks,args,config):
+def append_wandb(tune_callbacks,args,config,name = None):
     wandb_key = args.wandb_key
     # 设置环境变量，静默 wandb 输出
     os.environ["WANDB_SILENT"] = "true"
@@ -192,7 +193,7 @@ def append_wandb(tune_callbacks,args,config):
             args.algo.lower() + "-" + re.sub("\\W+", "-", str(config.env).lower())
     )
     kwargs = {
-        "name": args.wandb_run_name if args.wandb_run_name else None,
+        "name": name if name else args.wandb_run_name,
         #"silent": True
     }
     tune_callbacks.append(

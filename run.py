@@ -76,6 +76,7 @@ if __name__ == "__main__":
     parser.add_argument("--iter", '-i',type=int, help="train iter", default=None)
     parser.add_argument("--wandb", '-w',type=bool, help="enable_wandb",default=False)
     parser.add_argument("--checkpoint", '-c',type=str, help="best checkpoint",default=None)
+    parser.add_argument("--run_name", '-name',type=str, help="wandb project run name",default=None)
 
     cmd_args = parser.parse_args()
 
@@ -105,13 +106,6 @@ if __name__ == "__main__":
             lambda_ = 0.9,
             entropy_coeff = 0.01,
             vf_loss_coeff = 0.5
-            # model={
-            #     # "fcnet_hiddens":args.fcnet_hiddens ,
-            #     "fcnet_hiddens": tune.grid_search(args.fcnet_hiddens_grid),  # args.fcnet_hiddens,
-            #     "fcnet_activation": tune.grid_search(args.fcnet_activation),
-            #     "use_attention": False,
-            # },
-
             # step = iteration * 4000
             #     lr_schedule= tune.grid_search([
             #     [[0, 5.0e-5], [4000*100, 5.0e-5],[4000*200,1.0e-5]],
@@ -155,7 +149,7 @@ if __name__ == "__main__":
     if cmd_args.checkpoint is not None:
         results = cmd_args.checkpoint
     else:
-        results = train(config = base_config, args=args,enable_wandb=cmd_args.wandb,stop=stop)
+        results = train(config = base_config, cmd_args = cmd_args,args=args,enable_wandb=cmd_args.wandb,stop=stop)
     evaluate_v2(base_config,args,results)
     #
     # results = r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_1afe49475c1349148e81b6b30ee9ae6d'
