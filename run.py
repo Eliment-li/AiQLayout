@@ -52,11 +52,11 @@ def get_rl_module_specs():
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False
-        # ,conv_filters=ConvFilterSpec
-        # ,conv_activation='swish'
-        # ,fcnet_hiddens=[1024, 1024, 512]
-        # ,head_fcnet_hiddens = [512,256]
-        # ,fcnet_activation='swish'
+        ,conv_filters=ConvFilterSpec
+        ,conv_activation='relu'
+        ,fcnet_hiddens=[1024, 1024, 512]
+        ,head_fcnet_hiddens = [512,256]
+        ,fcnet_activation='relu'
     )
     rl_module_specs = {
             'policy_{}'.format(i): RLModuleSpec(model_config=model_config) for i in
@@ -101,6 +101,9 @@ if __name__ == "__main__":
         .training(
             lr=tune.grid_search(args.lr_grid),
             gamma=tune.grid_search(args.gamma_grid),
+            lambda_ = 0.9,
+            entropy_coeff = 0.01,
+            vf_loss_coeff = 0.5
             # model={
             #     # "fcnet_hiddens":args.fcnet_hiddens ,
             #     "fcnet_hiddens": tune.grid_search(args.fcnet_hiddens_grid),  # args.fcnet_hiddens,
