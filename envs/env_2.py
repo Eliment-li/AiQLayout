@@ -39,7 +39,7 @@ class Env_2(MultiAgentEnv):
             dtype=np.int16,
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
-        self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(5) for i in range(self.num_qubits)}
+        self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(6) for i in range(self.num_qubits)}
 
         self.player_now = 1  # index of the current agent
 
@@ -76,30 +76,24 @@ class Env_2(MultiAgentEnv):
 
     def step(self, action):
         self.steps += 1
+        terminateds = self.is_terminated()
 
         # print(f"step {self.steps} player {self.player_now} action {action}")
         act = action[f'agent_{self.player_now}']
-        ##
-        # if self.steps>10 and self.player_now == 1:
-        #     act = ChipAction.Done.value
-        ##
-        if act == ChipAction.Done.value:
-            print(f'player {self.player_now} done at step {self.steps}')
+        if act == ChipAction.Done.value or  self.done[self.player_now - 1]:
+            #print(f'player {self.player_now} done at step {self.steps}')
             self.done[self.player_now - 1] = True
-
-            distance = dist =  last_dist = self.distance_to_m(self.player_now)
+            dist =  last_dist = self.distance_to_m(self.player_now)
             rewards= {f'agent_{self.player_now}': 0}
         else:
             last_dist = self.distance_to_m(self.player_now)
             self.chip.move(player=self.player_now,act=act)
             dist = self.distance_to_m(self.player_now)
-
-            rewards, distance = self.reward_function(dist=dist,last_dist=last_dist)
+            rewards = self.reward_function(dist=dist,last_dist=last_dist)
 
         self.dist_rec[self.player_now - 1] = f'{last_dist}->{dist}'
-        self.sw[self.player_now - 1].next(distance)
+        self.sw[self.player_now - 1].next(dist)
 
-        terminateds = self.is_terminated()
         truncated = {}
         infos = {
                     f'agent_{self.player_now}':
@@ -109,26 +103,32 @@ class Env_2(MultiAgentEnv):
                     }
                  }
 
+        if dist <=1:
+            self.done[self.player_now - 1] = True
+
         self.player_now = ((self.player_now) % self.num_qubits) + 1
 
         # switch to next player
-        if not  terminateds.get('__all__'):
+        if not np.all(self.done):
             while self.done[self.player_now - 1]:
                 self.player_now = ((self.player_now) % self.num_qubits) + 1
 
         return self._get_obs(),rewards,terminateds,truncated,infos
 
     def is_terminated(self):
-        terminateds = {"__all__": True}
+
         if self.steps >= self.max_step:
            terminateds = {"__all__": True}
+        elif np.all(self.done):
+           terminateds = {"__all__": True}
         else:
-            for i in range(len(self.done)):
-                if self.done[i]:
-                    terminateds.update({f'agent_{i + 1}': True})
-                else:
-                    terminateds.update({'__all__': False})
-                    terminateds.update({f'agent_{i + 1}': False})
+            terminateds = {"__all__": False}
+            # for i in range(len(self.done)):
+            #     if self.done[i]:
+            #         terminateds.update({f'agent_{i + 1}': True})
+            #     else:
+            #         terminateds.update({'__all__': False})
+            #         terminateds.update({f'agent_{i + 1}': False})
 
         return terminateds
 
@@ -158,11 +158,11 @@ class Env_2(MultiAgentEnv):
             if factor > 10:
                 factor = 10
             r = (_max_total_r - _agent_total_r * args.gamma) * factor
-            if r < 0.1:
-                r = 0.1
+            if r < 0.2:
+                r = 0.2
             if r < 0:
                 print(f'dist > _max_dist but r <0 {_max_total_r},{_agent_total_r},{dist},{_min_dist} ')
-                r = 0.1
+                r = 0.15
             self.max_total_r[p] = _agent_total_r * args.gamma + r
 
             # update min_dist
@@ -182,7 +182,7 @@ class Env_2(MultiAgentEnv):
             else:
                 rewards.update({f'agent_{i}': 0})
 
-        return rewards,dist
+        return rewards
 
 
     def distance_to_m(self,player) -> float:
