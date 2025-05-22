@@ -54,8 +54,8 @@ def get_rl_module_specs():
         use_lstm=False
         # ,conv_filters=ConvFilterSpec
         # ,conv_activation='relu'
-        ,fcnet_hiddens=[512, 512,512]
-        ,head_fcnet_hiddens = [256,256,128]
+        ,fcnet_hiddens=[512, 512,]
+        ,head_fcnet_hiddens = [256,128]
         # ,fcnet_activation='relu'
     )
     rl_module_specs = {
@@ -69,6 +69,7 @@ def get_policys():
     return policies
 
 if __name__ == "__main__":
+
     #set custom run config before init args
     import argparse
 
@@ -101,6 +102,7 @@ if __name__ == "__main__":
             env_config={"key": "value"},
         )
         .training(
+            use_gae = True,
             lr=tune.grid_search(args.lr_grid),
             gamma=tune.grid_search(args.gamma_grid),
             lambda_ = 0.9,

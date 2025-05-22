@@ -153,10 +153,10 @@ class Env_2(MultiAgentEnv):
         if dist < _min_dist:
             # 当 dist 首次出现这么小, 那么计算后的 total reward 也应该比之前所有的都大
             factor = (1 + ( _min_dist - dist) / (_min_dist))
-            if factor < 1.1:
-                factor = 1.1
-            if factor > 2:
+            if factor < 2:
                 factor = 2
+            if factor > 10:
+                factor = 10
             r = (_max_total_r - _agent_total_r * args.gamma) * factor
             if r < 0.1:
                 r = 0.1

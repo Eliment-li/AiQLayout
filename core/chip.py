@@ -85,7 +85,7 @@ class Chip():
        self._state = np.zeros((self._rows, self._cols), dtype=np.int32)
        self._positions = []
        self._init_magic_state()
-       self._add_broken_patch()
+       #self._add_broken_patch()
        self._init_qubits_layout(init_position)
 
 
