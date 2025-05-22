@@ -54,8 +54,8 @@ def get_rl_module_specs():
         use_lstm=False
         # ,conv_filters=ConvFilterSpec
         # ,conv_activation='relu'
-        ,fcnet_hiddens=[512, 512,]
-        ,head_fcnet_hiddens = [256,128]
+        ,fcnet_hiddens=args.fcnet_hiddens
+        ,head_fcnet_hiddens = args.head_fcnet_hiddens
         # ,fcnet_activation='relu'
     )
     rl_module_specs = {
@@ -105,9 +105,10 @@ if __name__ == "__main__":
             use_gae = True,
             lr=tune.grid_search(args.lr_grid),
             gamma=tune.grid_search(args.gamma_grid),
-            lambda_ = 0.9,
-            entropy_coeff = 0.01,
-            vf_loss_coeff = 0.5
+            lambda_ = args.lambda_,
+            entropy_coeff =args.entropy_coeff,
+            vf_loss_coeff = args.vf_loss_coeff,
+            kl_target =args.kl_target,
             # step = iteration * 4000
             #     lr_schedule= tune.grid_search([
             #     [[0, 5.0e-5], [4000*100, 5.0e-5],[4000*200,1.0e-5]],
