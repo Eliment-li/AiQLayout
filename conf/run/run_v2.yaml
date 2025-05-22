@@ -23,10 +23,10 @@ gamma: 0.9
 gamma_grid: [0.95]
 
 fcnet_activation: [Swish]
-fcnet_hiddens: [512, 512,]
+fcnet_hiddens: [1024, 1024,]
 fcnet_hiddens_grid: [[128,256,256,128]]
 
-head_fcnet_hiddens: [256,128]
+head_fcnet_hiddens: [512，256,128]
 
 
 
