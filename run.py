@@ -44,7 +44,7 @@ LSTM settings
     # specific the rl module
 def get_rl_module_specs():
     ConvFilterSpec = [
-        [16, 2, 1,'same'],  # 过滤器数量，卷积核大小 步幅
+        [16, 2, 1,],  # 过滤器数量，卷积核大小 步幅
         [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
         [64, 3, 1],  # 过滤器数量，卷积核大小 步幅
     ]
@@ -52,7 +52,7 @@ def get_rl_module_specs():
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False
-        # ,conv_filters=ConvFilterSpec
+        ,conv_filters=ConvFilterSpec
         # ,conv_activation='relu'
         ,fcnet_hiddens=args.fcnet_hiddens
         ,head_fcnet_hiddens = args.head_fcnet_hiddens
