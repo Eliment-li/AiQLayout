@@ -16,14 +16,6 @@ vf_loss_coeff: 0.5
 kl_target: 0.1
 use_gae: True
 
-
-###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters:  4 # Default: default_iters
-
-# If run --as-release-test, --as-test must also be set.
-as_test: false
-as_release_test: false
-
 #learning rate
 lr: 3.0e-5
 lr_grid: [5.0e-4]
@@ -35,6 +27,15 @@ fcnet_hiddens: [512, 512,]
 fcnet_hiddens_grid: [[128,256,256,128]]
 
 head_fcnet_hiddens: [256,128]
+
+
+
+###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
+stop_iters:  4 # Default: default_iters
+
+# If run --as-release-test, --as-test must also be set.
+as_test: false
+as_release_test: false
 
 local_mode: False
 checkpoint_frequency: 10

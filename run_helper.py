@@ -142,7 +142,7 @@ def train(
     # Log results using WandB.
     tune_callbacks = tune_callbacks or []
     if enable_wandb:
-        append_wandb(tune_callbacks,args,config,name=cmd_args.run_name)
+        append_wandb(tune_callbacks,args,config,name=cmd_args.run_name,group = cmd_args.wandb_group)
 
     progress_reporter =cli_reporter(config)
     if args.no_tune:
@@ -185,7 +185,7 @@ def train(
     return results
 
 
-def append_wandb(tune_callbacks,args,config,name = None):
+def append_wandb(tune_callbacks,args,config,group,name = None):
     wandb_key = args.wandb_key
     # 设置环境变量，静默 wandb 输出
     os.environ["WANDB_SILENT"] = "true"
@@ -194,6 +194,7 @@ def append_wandb(tune_callbacks,args,config,name = None):
     )
     kwargs = {
         "name": name if name else args.wandb_run_name,
+        "group":group
         #"silent": True
     }
     tune_callbacks.append(

@@ -1,6 +1,6 @@
 from ray import tune
 from ray.air.constants import TRAINING_ITERATION
-from ray.rllib.algorithms import PPOConfig
+from ray.rllib.algorithms import PPOConfig,SACConfig
 from ray.rllib.core.rl_module import MultiRLModule, MultiRLModuleSpec, RLModuleSpec
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 from ray.rllib.utils.metrics import ENV_RUNNER_RESULTS, NUM_ENV_STEPS_SAMPLED_LIFETIME
@@ -76,6 +76,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--iter", '-i',type=int, help="train iter", default=None)
     parser.add_argument("--wandb", '-w',type=bool, help="enable_wandb",default=False)
+    parser.add_argument("--wandb_group", '-wg',type=str, help="wandb_group",default='default')
     parser.add_argument("--checkpoint", '-c',type=str, help="best checkpoint",default=None)
     parser.add_argument("--run_name", '-name',type=str, help="wandb project run name",default=None)
 
