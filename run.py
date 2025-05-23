@@ -1,7 +1,7 @@
 from ray import tune
 from ray.air.constants import TRAINING_ITERATION
-from ray.rllib.algorithms import PPOConfig,SACConfig
-from ray.rllib.core.rl_module import MultiRLModule, MultiRLModuleSpec, RLModuleSpec
+from ray.rllib.algorithms import PPOConfig
+from ray.rllib.core.rl_module import RLModuleSpec
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 from ray.rllib.utils.metrics import ENV_RUNNER_RESULTS, NUM_ENV_STEPS_SAMPLED_LIFETIME
 
@@ -15,17 +15,13 @@ from envs.env_2 import Env_2
 torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
-from envs.env_1 import Env_1
 from run_helper import train
-from utils.evaluate import evaluate, evaluate_v2
+from utils.evaluate import evaluate_v2
 
 '''
 Gaming the Quantum bit Placement with AI
 '''
 
-# def new_env():
-#     return  Env_1()
-# register_env("Env_0", new_env)
 def policy_mapping_fn(agent_id, episode, **kwargs):
     try:
         agent_number = agent_id.split('_')[1]  # Split and get the number part
@@ -44,7 +40,7 @@ LSTM settings
     # specific the rl module
 def get_rl_module_specs():
     ConvFilterSpec = [
-        [16, 2, 1,],  # 过滤器数量，卷积核大小 步幅
+        [16, 2, 1],  # 过滤器数量，卷积核大小 步幅
         [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
         [64, 3, 1],  # 过滤器数量，卷积核大小 步幅
     ]
@@ -52,11 +48,11 @@ def get_rl_module_specs():
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
         use_lstm=False
-        ,conv_filters=ConvFilterSpec
-        # ,conv_activation='relu'
+        # ,conv_filters=ConvFilterSpec
+        # ,conv_activation=args.conv_activation
         ,fcnet_hiddens=args.fcnet_hiddens
         ,head_fcnet_hiddens = args.head_fcnet_hiddens
-        # ,fcnet_activation='relu'
+        ,fcnet_activation=args.fcnet_activation
     )
     rl_module_specs = {
             'policy_{}'.format(i): RLModuleSpec(model_config=model_config) for i in
@@ -93,7 +89,6 @@ if __name__ == "__main__":
     if cmd_args.iter is not None:
         stop[TRAINING_ITERATION] = cmd_args.iter
 
-    print(stop)
     base_config = (
         # get_trainable_cls(args.algo_class)
         # .get_default_config()
