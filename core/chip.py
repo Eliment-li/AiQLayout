@@ -8,6 +8,7 @@ import numpy as np
 from config import ConfigSingleton
 
 from core.routing import bfs_find_target
+from utils.position import positionalencoding2d
 
 args = ConfigSingleton().get_args()
 
@@ -33,7 +34,7 @@ class Chip():
         :param cols:
         :param broken: the broken postion of chip
         '''
-        self.channel = 2
+        self.channel = 1
         self._cols = cols
         self._rows = rows
         if num_qubits:
@@ -217,8 +218,7 @@ class Chip():
     def print_state(self):
         # 设置每个元素的宽度
         element_width = 2
-        s = self.merge_states(self._state, self._broken_channel)
-        for row in s:
+        for row in self._state:
             # 使用列表推导式将 0 替换为 '--'
             replaced_row = ['--' if value == 0 else value for value in row]
             # :>{element_width} 指定右对齐，并确保每个值占用固定的宽度。
@@ -264,6 +264,11 @@ if __name__ == '__main__':
 
     print(chip.channel_state)
     print(np.shape(chip.channel_state))
+
+    pos_encoding = positionalencoding2d(9, 9,4).numpy()
+
+    pos_encoding = np.concatenate((pos_encoding,[chip.state]),axis=0)
+    print(pos_encoding)
 
     # for i in range(10):
     #     player = 4 #random.randint(1, chip._num_qubits)

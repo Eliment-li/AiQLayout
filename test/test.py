@@ -90,6 +90,7 @@ def visualize_map(map_grid):
     plt.show()
 
 
+'''test code'''
 # 示例使用
 if __name__ == "__main__":
     n = 20  # 地图大小

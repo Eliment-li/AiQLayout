@@ -6,12 +6,14 @@ import  random
 import gymnasium as gym
 import numpy as np
 from gymnasium import register
+from numpy import dtype
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 
 from config import ConfigSingleton
 from core.chip import Chip, ChipAction
 from core.reward_function import RewardFunction
 from utils.calc_util import SlideWindow
+from utils.position import positionalencoding2d
 
 args = ConfigSingleton().get_args()
 rfunctions = RewardFunction()
@@ -30,12 +32,12 @@ class Env_2(MultiAgentEnv):
         self.chip = Chip(args.chip_rows, args.chip_cols)
         self.positions = []
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
-
+        self.pos_encoding = positionalencoding2d(9, 9, 8)
         self.obs_spaces = gym.spaces.Box(
             low=-6,
             high=6,
-            shape=(self.chip.channel,args.chip_rows,args.chip_cols),
-            dtype=np.int16,
+            shape=(self.chip.channel+8,args.chip_rows,args.chip_cols),
+            dtype=np.float32,
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
         self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(6) for i in range(self.num_qubits)}
@@ -71,7 +73,7 @@ class Env_2(MultiAgentEnv):
     def _get_obs(self):
         #padded_state =  np.pad(self.chip.channel_state, pad_width=1, mode='constant', constant_values=-5).astype(np.int16)
 
-        obs = {f'agent_{self.player_now}': self.chip.channel_state}
+        obs = {f'agent_{self.player_now}': np.concatenate((self.pos_encoding,[self.chip.state]),axis=0,dtype=np.float32) }
         return obs
 
     def step(self, action):
