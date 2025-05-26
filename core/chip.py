@@ -27,72 +27,75 @@ class QubitState(Enum):
 
 
 class Chip():
-    def __init__(self,rows: int,cols: int, init_position = None,num_qubits=None, broken:list = []):
+    def __init__(self,rows: int,cols: int, q_pos = None,num_qubits=None, broken_pos:list = []):
         '''
         :param rows:
         :param cols:
         :param broken: the broken postion of chip
         '''
-
+        self.channel = 2
         self._cols = cols
         self._rows = rows
         if num_qubits:
             self._num_qubits = num_qubits
         else:
             self._num_qubits = args.num_qubits
-        #start from index 1
-        # self._positions=[]
-        # self._state=np.zeros(( self._rows,self._cols), dtype=np.int32)
-        # magic state
-        # self._magic_state = []
-        # self._init_magic_state()
-        # self.random_init()
-        self.reset(init_position = init_position)
+        self.reset(q_pos = q_pos)
 
 
     def get_positon(self,player):
-        return self._positions[player - 1]
+        return self._q_pos[player - 1]
     def random_init(self):
         # vaild value start from _position[1] , -1 only for occupy
         i = 1
         while i <= self._num_qubits:
             x = random.randint(0, self._rows - 1)
             y = random.randint(0, self._cols - 1)
-            if self._state[x][y] == 0:
+            if self._state[x][y] == 0 and self._broken_channel[x][y]==0:
+
                 self._state[x][y] = i
-                self._positions.append((x, y))
+                self._qubits_channel[x][y] = i
+
+                self._q_pos.append((x, y))
                 i += 1
             else:
                 continue
 
-    def _init_qubits_layout(self,init_position):
-        if init_position is None:
+    def _init_qubits_layout(self,q_pos):
+        if q_pos is None:
             self.random_init()
         else:
-            assert len(init_position) == self.num_qubits ,\
-                f"len(init_position) = {len(init_position)} but self.num_qubits = {self.num_qubits} They should be equal"
+            assert len(q_pos) == self.num_qubits ,\
+                f"len(q_pos) = {len(q_pos)} but self.num_qubits = {self.num_qubits} They should be equal"
             i = 1
-            for r,c in init_position:
+            for r,c in q_pos:
                 if self._state[r][c] == 0:
+
                     self._state[r][c] = i
-                    self._positions.append((r, c))
+                    self._qubits_channel[r][c] = i
+
+                    self._q_pos.append((r, c))
                     i += 1
                 else:
                     continue
 
 
-    def reset(self,init_position = None):
+    def reset(self,q_pos = None):
        self._state = np.zeros((self._rows, self._cols), dtype=np.int32)
-       self._positions = []
+       self._broken_channel = np.zeros((self._rows, self._cols), dtype=np.int32)
+       self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.int32)
+       self._q_pos = []
+
        self._init_magic_state()
        if args.enable_broken_patch:
            self._add_broken_patch()
-       self._init_qubits_layout(init_position)
+
+       #qubits must be init in the last
+       self._init_qubits_layout(q_pos)
 
 
     def _add_broken_patch(self):
         broken = [
-
             (5,5),
             (5,6),
             (5,7),
@@ -103,7 +106,10 @@ class Chip():
 
         ]
         for x, y in broken:
+            #self._state[x][y] = QubitState.BROKEN.value
             self._state[x][y] = QubitState.BROKEN.value
+            self._broken_channel[x][y] = QubitState.BROKEN.value
+
 
     def _init_magic_state(self):
         self._magic_state = [
@@ -115,8 +121,9 @@ class Chip():
         for x, y in self._magic_state:
             self._state[x][y] = QubitState.MAGIC.value
 
+
     def move(self, player: int, act:int):
-        old_r,old_c = self._positions[player - 1]
+        old_r,old_c = self._q_pos[player - 1]
 
         assert act in ChipAction, f"{act} is not a valid action"
 
@@ -131,6 +138,8 @@ class Chip():
                 new_c,new_r  = old_c, old_r + 1  # down
             case ChipAction.STAY.value:
                 return True
+            case ChipAction.Done.value:
+                return
             case _:
                 pass
 
@@ -150,10 +159,12 @@ class Chip():
             #free the old position
             self._state[old_r, old_c] = 0
             self._state[new_r, new_c] = player
+
+            self._qubits_channel[old_r, old_c] = 0
+            self._qubits_channel[new_r, new_c] = player
+
             #occupy the new position
-            self._positions[player - 1] = (new_r, new_c)
-
-
+            self._q_pos[player - 1] = (new_r, new_c)
             return True
 
     def route_to_magic_state(self, player: int):
@@ -161,7 +172,7 @@ class Chip():
         :param player:
         :return: the length to magic state
         '''
-        px,py = self._positions[player - 1]
+        px,py = self._q_pos[player - 1]
         # use dfs to find the shortest path to magic state(value that equal to -1)
 
         path_len,path = bfs_find_target(self._state, px, py)
@@ -171,21 +182,43 @@ class Chip():
     def __str__(self):
         return self._state.__str__()
 
+    def merge_states(self,arr1, arr2):
+        # 检查形状是否相同
+        if arr1.shape != arr2.shape:
+            raise ValueError("输入数组的形状必须相同")
+
+        # 检查是否有重叠的非零元素
+        overlap = (arr1 != 0) & (arr2 != 0)
+        if np.any(overlap):
+            # 找出冲突位置
+            conflicts = np.where(overlap)
+            conflict_q_pos = list(zip(conflicts[0], conflicts[1]))
+            raise ValueError(f"在位置 {conflict_q_pos} 处发现非零元素冲突 {arr1},\n {arr2}")
+
+        # 合并数组，非零元素优先
+        result = np.where(arr1 != 0, arr1, arr2)
+        return result
+
     @property
     # start from index 1
-    def position(self):
-        return self._positions
+    def q_pos(self):
+        return self._q_pos
 
 
     @property
     def state(self):
         return  self._state
+    @property
+    def channel_state(self):
+        s = np.array([self._qubits_channel,self._broken_channel]).astype(np.int16)
+        return s
+
 
     def print_state(self):
         # 设置每个元素的宽度
         element_width = 2
-
-        for row in self._state:
+        s = self.merge_states(self._state, self._broken_channel)
+        for row in s:
             # 使用列表推导式将 0 替换为 '--'
             replaced_row = ['--' if value == 0 else value for value in row]
             # :>{element_width} 指定右对齐，并确保每个值占用固定的宽度。
@@ -211,7 +244,7 @@ class Chip():
 
     @property
     def positions(self):
-        return self._positions
+        return self._q_pos
 
 
     def plot(self):
@@ -219,15 +252,18 @@ class Chip():
 
 #test code
 if __name__ == '__main__':
-    init_pos = [(4,4), (0, 1), (1, 0), (1, 1)]
-    chip = Chip(10,10,init_position = init_pos)
-    print(chip.position)
+    q_pos = [(4,4), (0, 1), (1, 0), (1, 1)]
+    chip = Chip(9,9,q_pos = q_pos)
+    print(chip.q_pos)
     chip.print_state()
 
-    chip.reset(init_position=init_pos)
+    chip.reset(q_pos=q_pos)
     print()
     chip.print_state()
-    print(chip.position)
+    print(chip.q_pos)
+
+    print(chip.channel_state)
+    print(np.shape(chip.channel_state))
 
     # for i in range(10):
     #     player = 4 #random.randint(1, chip._num_qubits)
@@ -236,7 +272,7 @@ if __name__ == '__main__':
 
     # print()
     # chip.print_state()
-    # print(chip.position)
+    # print(chip.q_pos)
     #
     # print('routing length  = ', chip.route_to_magic_state(1))
     # print('length  = ', chip.distance_to_others(4))
