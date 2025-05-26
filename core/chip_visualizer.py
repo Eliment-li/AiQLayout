@@ -167,14 +167,14 @@ class ChipVisualizer:
                 self.window_surface.blit(self.floor_img, pos)
 
         # Draw magic state
-        for i in range(len(self.chip.magic_state_pos)):
-            r,c = self.chip.magic_state_pos[i]
+        for i in range(len(self.chip.magic_state)):
+            r,c = self.chip.magic_state[i]
             pos = (c * self.cell_width, r * self.cell_height)
             self.window_surface.blit(self.magic_img, pos)
         #render the qubits
         #print('position:', self.chip.position)
         for i in range(0, self.chip.num_qubits):
-            r,c = self.chip.position[i]
+            r,c = self.chip.q_pos[i]
             pos = (c * self.cell_width, r * self.cell_height)
             self.window_surface.blit(self.qubit_imgs[i], pos)
 
@@ -186,9 +186,6 @@ class ChipVisualizer:
         # self.window_surface.blit(text_img, text_pos)
 
         pygame.display.update()
-
-
-
         # Limit frames per second
         self.clock.tick(self.fps)
 
@@ -220,12 +217,12 @@ class ChipVisualizer:
     def render_trace(self):
         pass
 
-def show_trace(trace:list):
-    chip = Chip(num_qubits=len(trace),cols=args.chip_cols,rows=args.chip_rows)
-    total_frames = len(trace[0])
-    CV = ChipVisualizer(chip = chip, fps=8,total_frames=total_frames)
+def show_trace(trace:list,init_position ):
+    chip = Chip(num_qubits=len(trace),cols=args.chip_cols,rows=args.chip_rows,init_position=init_position)
+    max_len = max(len(row) for row in trace)
+    CV = ChipVisualizer(chip = chip, fps=1,total_frames=max_len)
     CV.render()
-    for j in range(total_frames):
+    for j in range(max_len):
          for i in range(len(trace)):
             if j >= len(trace[i]):
                 continue
