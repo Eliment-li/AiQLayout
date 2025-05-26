@@ -103,16 +103,14 @@ if __name__ == "__main__":
         .training(
             use_gae = True,
             lr=tune.grid_search(args.lr_grid),
+            #     lr_schedule= tune.grid_search([
+            #     [[0, 5.0e-5], [4000*100, 5.0e-5],[4000*200,1.0e-5]],
+            #    # [[0, 0.001], [1e9, 0.0005]],
             gamma=tune.grid_search(args.gamma_grid),
             lambda_ = args.lambda_,
             entropy_coeff =args.entropy_coeff,
             vf_loss_coeff = args.vf_loss_coeff,
             kl_target =args.kl_target,
-            # step = iteration * 4000
-            #     lr_schedule= tune.grid_search([
-            #     [[0, 5.0e-5], [4000*100, 5.0e-5],[4000*200,1.0e-5]],
-            #    # [[0, 0.001], [1e9, 0.0005]],
-            # ]),
         )
         .multi_agent(
             # Define two policies.
@@ -153,6 +151,8 @@ if __name__ == "__main__":
     else:
         results = train(config = base_config, cmd_args = cmd_args,args=args,enable_wandb=cmd_args.wandb,stop=stop)
     evaluate_v2(base_config,args,results)
+
+    # print(base_config.to_dict())
     #
     # results = r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_1afe49475c1349148e81b6b30ee9ae6d'
     # evaluate_v2(base_config,args,results)

@@ -11,22 +11,22 @@ env_max_step: 400
 use_lstm: True
 #PPO
 lambda_: 0.9
-entropy_coeff: 0.12
+entropy_coeff: 0.08
 vf_loss_coeff: 0.5
-kl_target: 0.1
+kl_target: 0.08
 use_gae: True
 #learning rate
 lr: 3.0e-5
-lr_grid: [1.5e-4]
+lr_grid: [2.5e-4]
 gamma: 0.9
 gamma_grid: [0.95]
 #fcnet
 fcnet_activation: Swish
-fcnet_hiddens: [2048, 2048]
-head_fcnet_hiddens: [1024,1024,512,256]
+fcnet_hiddens: [1024, 1024]
+head_fcnet_hiddens: [512,256]
 #cnn
 conv_activation: Swish
-enable_cnn: True
+enable_cnn: False
 
 
 

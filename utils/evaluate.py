@@ -186,7 +186,6 @@ def evaluate_v2(base_config, args, results):
     # print('distance:\n',distance)
     #TODO refactor plot_reward
     #plot_reward([rewrads, distance])
-    # print(env.chip.position)
     save_results(actions,rewrads,distance,max_total_r,init_chip_state,final_chip_state)
 
     #show_trace(actions)
@@ -309,7 +308,6 @@ def evaluate(base_config, args, results):
 
     # print(rewrads)
     #plot_reward([rewrads,distance])
-    #print(env.chip.position)
 
     # save_results(actions)
     # print(env.chip.state)wan
