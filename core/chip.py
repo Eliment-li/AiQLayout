@@ -44,6 +44,8 @@ class Chip():
         self.reset(q_pos = q_pos)
 
 
+
+
     def _random_init_qubits_layout(self):
         # vaild value start from _position[1] , -1 only for occupy
         i = 1
@@ -54,6 +56,7 @@ class Chip():
 
                 self._state[x][y] = i
                 self._qubits_channel[x][y] = i
+                self._position_mask[i-1][x][y] = 1
 
                 self._q_pos.append((x, y))
                 i += 1
@@ -70,7 +73,7 @@ class Chip():
 
                 self._state[r][c] = i
                 self._qubits_channel[r][c] = i
-
+                self._position_mask[i - 1][x][y] = 1
                 self._q_pos.append((r, c))
                 i += 1
             else:
@@ -82,6 +85,8 @@ class Chip():
        self._broken_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
        self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
        self._q_pos = []
+
+       self._position_mask = np.zeros((self._num_qubits, self._rows, self._cols), dtype=np.float32)
 
        self._init_magic_state()
        if args.enable_broken_patch:
@@ -160,6 +165,9 @@ class Chip():
             self._state[old_r, old_c] = 0
             self._state[new_r, new_c] = player
 
+            self._position_mask[player - 1][old_r, old_c] = 0
+            self._position_mask[player - 1][new_r, new_c] = 1
+
             self._qubits_channel[old_r, old_c] = 0
             self._qubits_channel[new_r, new_c] = player
 
@@ -198,6 +206,9 @@ class Chip():
         # 合并数组，非零元素优先
         result = np.where(arr1 != 0, arr1, arr2)
         return result
+
+    def position_mask(self,player):
+        return self._position_mask[player - 1]
 
     @property
     # start from index 1
