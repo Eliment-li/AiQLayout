@@ -10,7 +10,7 @@ import os
 from ray.rllib.utils.framework import try_import_torch
 from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
 
-from envs.env_2 import Env_2
+from envs.env_3 import Env_3
 
 torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
@@ -41,7 +41,7 @@ LSTM settings
 def get_rl_module_specs():
     if args.enable_cnn:
         conv_filters = [
-            [16, 2, 1,'same'],  # 过滤器数量，卷积核大小 步幅
+            [16, 1, 1,'same'],  # 过滤器数量，卷积核大小 步幅
             [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
             [64, 3, 1],  # 过滤器数量，卷积核大小 步幅
         ]
@@ -50,7 +50,7 @@ def get_rl_module_specs():
 
     model_config = DefaultModelConfig(
         # if use lstm, the AddTimeDimToBatchAndZeroPad connector will throw error
-        use_lstm=False
+        use_lstm=args.use_lstm
         ,conv_filters=conv_filters
         ,conv_activation=args.conv_activation
         ,fcnet_hiddens=args.fcnet_hiddens
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         # .get_default_config()
         PPOConfig()
         .environment(
-            env=Env_2,
+            env=Env_3,
             env_config={"key": "value"},
         )
         .training(
