@@ -38,7 +38,7 @@ class Env_3(MultiAgentEnv):
         self.obs_spaces = gym.spaces.Box(
             low=-6,
             high=6,
-            shape=(4,args.chip_rows,args.chip_cols),
+            shape=(4+1,args.chip_rows,args.chip_cols),
             dtype=np.float32,
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
@@ -75,10 +75,15 @@ class Env_3(MultiAgentEnv):
 
     def _get_obs(self):
         #padded_state =  np.pad(self.chip.channel_state, pad_width=1, mode='constant', constant_values=-5).astype(np.int16)
-        obs = {
-            f'agent_{self.player_now}':self.pe + np.repeat(self.chip.state[np.newaxis, :, :], 4, axis=0)
+
+        repeat_state = np.repeat(self.chip.state[np.newaxis, :, :], 4, axis=0)
+        obs = repeat_state + self.pe
+        pm =np.expand_dims(self.chip.position_mask(self.player_now), axis=0)
+        obs = np.concatenate((obs,pm),axis=0)  # (4, rows, cols) -> (4+1, rows, cols)
+        ret = {
+            f'agent_{self.player_now}':obs
         }
-        return obs
+        return ret
 
     def step(self, action):
         self.steps += 1
