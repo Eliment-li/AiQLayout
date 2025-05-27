@@ -26,7 +26,7 @@ def positionalencoding2d( height, width,d_model):
     pe[d_model::2, :, :] = torch.sin(pos_h * div_term).transpose(0, 1).unsqueeze(2).repeat(1, 1, width)
     pe[d_model + 1::2, :, :] = torch.cos(pos_h * div_term).transpose(0, 1).unsqueeze(2).repeat(1, 1, width)
 
-    return pe
+    return pe.numpy()
 
 
 
@@ -119,11 +119,19 @@ class PositionalEncoding2DSpaceOnly(PositionalEncodingTransposed):
 
 
 
-# a = torch.zeros((1, 4, 5, 5))
-# l = PositionalEncoding2DSpaceOnly(d_model=4)
+# a = torch.zeros((1, 1, 5, 5))
+# a[0][0][0][0] = 0
+# l = PositionalEncoding2DSpaceOnly(d_model=8)
 #
 # print(l(a)[0])
 
-pos_encoding = positionalencoding2d(9,9, 8)
-
-print(pos_encoding)
+# pos_encoding = positionalencoding2d(3,3, 4)
+#
+# print(pos_encoding)
+# print(pos_encoding.shape)
+#
+# a = torch.zeros((1, 3, 3))
+# a = a.repeat(4,1,1)
+# print(a.shape)
+#
+# print(a+pos_encoding)

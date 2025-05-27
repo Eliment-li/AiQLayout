@@ -41,7 +41,7 @@ from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
 
 from config import ConfigSingleton
 from core.chip_visualizer import show_trace
-from envs.env_2 import Env_2
+from envs.env_3 import Env_3
 from results.plot_results import plot_reward
 from utils.csv_util import write_data, append_data
 from utils.file_util import get_root_dir
@@ -55,7 +55,7 @@ def evaluate_v2(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_2()
+    env = Env_3()
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
@@ -110,9 +110,9 @@ def evaluate_v2(base_config, args, results):
 
     obs, info = env.reset()
     init_chip_state = deepcopy(env.chip.state)
-    #TODO fix it
-    init_dist  = [info[f'agent_{i+1}'] for i in range(env.num_qubits)]
-    print('init_dist:',init_dist)
+
+    # init_dist  = [info[f'agent_{i+1}'] for i in range(env.num_qubits)]
+    # print('init_dist:',init_dist)
     env.chip.print_state()
     terminated, truncated = False, False
     stop_timesteps = 800
@@ -201,7 +201,7 @@ def evaluate(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_2()
+    env = Env_3()
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")

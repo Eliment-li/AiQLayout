@@ -44,15 +44,13 @@ class Chip():
         self.reset(q_pos = q_pos)
 
 
-    def get_positon(self,player):
-        return self._q_pos[player - 1]
-    def random_init(self):
+    def _random_init_qubits_layout(self):
         # vaild value start from _position[1] , -1 only for occupy
         i = 1
         while i <= self._num_qubits:
             x = random.randint(0, self._rows - 1)
             y = random.randint(0, self._cols - 1)
-            if self._state[x][y] == 0 and self._broken_channel[x][y]==0:
+            if self._state[x][y] == 0 and self._broken_channel[x][y]== 0:
 
                 self._state[x][y] = i
                 self._qubits_channel[x][y] = i
@@ -63,36 +61,37 @@ class Chip():
                 continue
 
     def _init_qubits_layout(self,q_pos):
-        if q_pos is None:
-            self.random_init()
-        else:
-            assert len(q_pos) == self.num_qubits ,\
-                f"len(q_pos) = {len(q_pos)} but self.num_qubits = {self.num_qubits} They should be equal"
-            i = 1
-            for r,c in q_pos:
-                if self._state[r][c] == 0:
 
-                    self._state[r][c] = i
-                    self._qubits_channel[r][c] = i
+        assert len(q_pos) == self.num_qubits, \
+            f"len(q_pos) = {len(q_pos)} but self.num_qubits = {self.num_qubits} They should be equal"
+        i = 1
+        for r, c in q_pos:
+            if self._state[r][c] == 0:
 
-                    self._q_pos.append((r, c))
-                    i += 1
-                else:
-                    continue
+                self._state[r][c] = i
+                self._qubits_channel[r][c] = i
+
+                self._q_pos.append((r, c))
+                i += 1
+            else:
+                continue
 
 
     def reset(self,q_pos = None):
-       self._state = np.zeros((self._rows, self._cols), dtype=np.int32)
-       self._broken_channel = np.zeros((self._rows, self._cols), dtype=np.int32)
-       self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.int32)
+       self._state = np.zeros((self._rows, self._cols), dtype=np.float32)
+       self._broken_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
+       self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
        self._q_pos = []
 
        self._init_magic_state()
        if args.enable_broken_patch:
            self._add_broken_patch()
 
-       #qubits must be init in the last
-       self._init_qubits_layout(q_pos)
+       if q_pos is None:
+            self._random_init_qubits_layout()
+       else:
+           #qubits must be init in the last
+           self._init_qubits_layout(q_pos)
 
 
     def _add_broken_patch(self):
@@ -216,11 +215,12 @@ class Chip():
 
 
     def print_state(self):
+        print()
         # 设置每个元素的宽度
         element_width = 2
         for row in self._state:
             # 使用列表推导式将 0 替换为 '--'
-            replaced_row = ['--' if value == 0 else value for value in row]
+            replaced_row = ['--' if value == 0 else int(value) for value in row]
             # :>{element_width} 指定右对齐，并确保每个值占用固定的宽度。
             # str(value) 将值转换为字符串
             formatted_row = [f"{str(value):>{element_width}}" for value in replaced_row]
@@ -266,9 +266,11 @@ if __name__ == '__main__':
     print(np.shape(chip.channel_state))
 
     pos_encoding = positionalencoding2d(9, 9,4).numpy()
+    print(pos_encoding.dtype)
+    s = np.repeat(chip.state[np.newaxis, :, :], 4, axis=0) # (rows, cols) -> shape (1, rows, cols) -> shape (4, rows, cols)
+    print(s+pos_encoding)
+    print(s.dtype)
 
-    pos_encoding = np.concatenate((pos_encoding,[chip.state]),axis=0)
-    print(pos_encoding)
 
     # for i in range(10):
     #     player = 4 #random.randint(1, chip._num_qubits)
