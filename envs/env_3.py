@@ -12,6 +12,7 @@ from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 from config import ConfigSingleton
 from core.chip import Chip, ChipAction
 from core.reward_function import RewardFunction
+from core.reward_scaling import RewardScaling
 from utils.calc_util import SlideWindow
 from utils.position import positionalencoding2d
 
@@ -69,6 +70,9 @@ class Env_3(MultiAgentEnv):
         self.dist_rec = [[] for i in range(1, self.num_qubits + 1)]
         self.min_dist = deepcopy(self.init_dist)
 
+        self.rs = RewardScaling(shape=1, gamma=0.9)
+        self.rs.reset()
+
         infos = {f'agent_{i + 1}':  self.init_dist for i in range(self.num_qubits)}
 
         return self._get_obs(),infos
@@ -95,7 +99,7 @@ class Env_3(MultiAgentEnv):
             #print(f'player {self.player_now} done at step {self.steps}')
             self.done[self.player_now - 1] = True
             dist =  last_dist = self.distance_to_m(self.player_now)
-            rewards= {f'agent_{self.player_now}': 0}
+            rewards= {f'agent_{self.player_now}': self.rs(0)}
         else:
             last_dist = self.distance_to_m(self.player_now)
             self.chip.move(player=self.player_now,act=act)
@@ -166,14 +170,14 @@ class Env_3(MultiAgentEnv):
             factor = (1 + ( _min_dist - dist) / (_min_dist))
             if factor < 2:
                 factor = 2
-            if factor > 10:
-                factor = 10
+            if factor > 4:
+                factor = 4
             r = (_max_total_r - _agent_total_r * args.gamma) * factor
             if r < 0.2:
                 r = 0.2
             if r < 0:
                 print(f'dist > _max_dist but r <0 {_max_total_r},{_agent_total_r},{dist},{_min_dist} ')
-                r = 0.15
+                r = 0.1
             self.max_total_r[p] = _agent_total_r * args.gamma + r
 
             # update min_dist
@@ -181,6 +185,8 @@ class Env_3(MultiAgentEnv):
 
         else:
             r = rf_to_call(init_dist=self.init_dist[p], last_dist=last_dist, dist=dist, avg_dist=self.sw[p].current_avg)
+        r = self.rs(r)[0]
+        # update reward scaling
 
         for i in range(1, self.num_qubits + 1):
             if i == self.player_now:
@@ -190,8 +196,8 @@ class Env_3(MultiAgentEnv):
                 if self.agent_total_r[i - 1] > self.max_total_r[i - 1]:
                     self.max_total_r[i - 1] = self.agent_total_r[i - 1]
                 rewards.update({f'agent_{i}': r})
-            else:
-                rewards.update({f'agent_{i}': 0})
+            # else:
+            #     rewards.update({f'agent_{i}': 0})
 
         return rewards
 
