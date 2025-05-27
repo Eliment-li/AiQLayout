@@ -56,6 +56,7 @@ def get_rl_module_specs():
         ,fcnet_hiddens=args.fcnet_hiddens
         ,head_fcnet_hiddens = args.head_fcnet_hiddens
         ,fcnet_activation=args.fcnet_activation
+       # ,fcnet_kernel_initializer = 'kaiming_uniform_'
     )
     rl_module_specs = {
             'policy_{}'.format(i): RLModuleSpec(model_config=model_config) for i in
@@ -103,9 +104,10 @@ if __name__ == "__main__":
         .training(
             use_gae = True,
             lr=tune.grid_search(args.lr_grid),
-            #     lr_schedule= tune.grid_search([
-            #     [[0, 5.0e-5], [4000*100, 5.0e-5],[4000*200,1.0e-5]],
-            #    # [[0, 0.001], [1e9, 0.0005]],
+            # lr_schedule=tune.grid_search([
+            #     [[0, 5.0e-5], [4000 * 100, 5.0e-5], [4000 * 200, 1.0e-5]]
+            # ),
+
             gamma=tune.grid_search(args.gamma_grid),
             lambda_ = args.lambda_,
             entropy_coeff =args.entropy_coeff,
