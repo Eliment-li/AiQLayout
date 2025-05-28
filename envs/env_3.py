@@ -99,7 +99,7 @@ class Env_3(MultiAgentEnv):
             #print(f'player {self.player_now} done at step {self.steps}')
             self.done[self.player_now - 1] = True
             dist =  last_dist = self.distance_to_m(self.player_now)
-            rewards= {f'agent_{self.player_now}': self.rs(0)}
+            rewards= {f'agent_{self.player_now}': self.rs(0)[0]}
         else:
             last_dist = self.distance_to_m(self.player_now)
             self.chip.move(player=self.player_now,act=act)
