@@ -48,6 +48,7 @@ from ray.rllib.algorithms import Algorithm, AlgorithmConfig
 from ray.rllib.offline.dataset_reader import DatasetReader
 
 from envs.env_0 import Env_0
+from utils.checkpoint import CheckPointCallback
 
 jax, _ = try_import_jax()
 tf1, tf, tfv = try_import_tf()
@@ -141,6 +142,7 @@ def train(
 
     # Log results using WandB.
     tune_callbacks = tune_callbacks or []
+    # tune_callbacks.append(CheckPointCallback())
     if enable_wandb:
         append_wandb(tune_callbacks,args,config,name=cmd_args.run_name,group = cmd_args.wandb_group)
 

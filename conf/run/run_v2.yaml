@@ -4,9 +4,9 @@ chip_cols: 9
 verbose: 1
 enable_broken_patch: True
 
-rf_version: 3
+rf_version: 5
 num_qubits: 4
-env_max_step: 200
+env_max_step: 80
 #lstm
 use_lstm: False
 use_gae: True
@@ -38,14 +38,11 @@ enable_cnn: False
 
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters:  4 # Default: default_iters
+stop_iters:  6 # Default: default_iters
 
 # If run --as-release-test, --as-test must also be set.
 as_test: false
 as_release_test: false
-local_mode: False
-checkpoint_frequency: 10
-checkpoint_at_end: True
 
 log_file_id: 0
 

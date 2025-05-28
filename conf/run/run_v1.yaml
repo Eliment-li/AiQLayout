@@ -37,10 +37,6 @@ stop_iters:  4 # Default: default_iters
 as_test: false
 as_release_test: false
 
-local_mode: False
-checkpoint_frequency: 10
-checkpoint_at_end: True
-
 log_file_id: 0
 
 #在config.py中有自动配置

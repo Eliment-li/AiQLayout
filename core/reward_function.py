@@ -97,7 +97,7 @@ class RewardFunction:
         if k2 > 0:
             r = (math.pow((1 + k2), 2) - 1) * (1+abs(k1))
         elif k2 < 0:
-            r = (math.pow((1 - k2), 2) - 1) * (1 +abs(k1)) * -1.15 -0.1
+            r = (math.pow((1 - k2), 2) - 1) * (1 +abs(k1)) * -1.05 -0.05
         else:
             r = -0.05
         return r
