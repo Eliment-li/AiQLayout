@@ -29,11 +29,11 @@ lr_grid: [5.0e-4]
 gamma_grid: [0.99]
 #fcnet
 fcnet_activation: Swish
-fcnet_hiddens: [1024, 1024,1024]
-head_fcnet_hiddens: [512,512,512,256,128]
+fcnet_hiddens: [512, 512]
+head_fcnet_hiddens: [256,128,64]
 #cnn
 conv_activation: Swish
-enable_cnn: True
+enable_cnn: False
 
 
 

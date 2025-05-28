@@ -164,6 +164,8 @@ def train(
             #progress_reporter=progress_reporter,
         ),
         tune_config=tune.TuneConfig(
+            # metric="env_runners/module_episode_returns_mean/policy_1",
+            # mode="max",
             num_samples=args.num_samples,#default to 1
             max_concurrent_trials=args.max_concurrent_trials,
             scheduler=scheduler,
