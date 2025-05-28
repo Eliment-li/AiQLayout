@@ -85,8 +85,22 @@ class RewardFunction:
         return r
 
     def rfv4(self,init_dist,last_dist,avg_dist,dist):
-
         return -dist
+
+    def rfv5(self,init_dist,last_dist,avg_dist,dist):
+        if avg_dist == 0:
+            avg_dist = init_dist
+        #update recent dist
+        k1 = ( init_dist - dist) / avg_dist
+        k2 = (last_dist - dist) / avg_dist
+
+        if k2 > 0:
+            r = (math.pow((1 + k2), 2) - 1) * (1+abs(k1))
+        elif k2 < 0:
+            r = (math.pow((1 - k2), 2) - 1) * (1 +abs(k1)) * -1.15 -0.1
+        else:
+            r = -0.05
+        return r
 
 
 
