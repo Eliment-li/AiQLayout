@@ -6,7 +6,7 @@ import  random
 import gymnasium as gym
 import numpy as np
 from gymnasium import register
-from gymnasium.spaces import MultiDiscrete
+from gymnasium.spaces import MultiDiscrete, Discrete
 from numpy import dtype
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 
@@ -14,17 +14,14 @@ from config import ConfigSingleton
 from core.chip import Chip, ChipAction
 from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
+from core.routing import a_star_path
 from utils.calc_util import SlideWindow
 from utils.position import positionalencoding2d
 
 args = ConfigSingleton().get_args()
 rfunctions = RewardFunction()
 '''
-new feat:
-use positional encoding 
-
-This env is to guide qubits to get closer to magic state
-the agent acts one by one
+try to slove the real quantum chip placement problem with RL
 '''
 class Env_4(MultiAgentEnv):
 
@@ -45,8 +42,10 @@ class Env_4(MultiAgentEnv):
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
 
-        self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(6) for i in range(self.num_qubits)}
-        #self.action_spaces = {f"agent_{i+1}":  MultiDiscrete([9, 9]) for i in range(self.num_qubits)}
+        #self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(6) for i in range(self.num_qubits)}
+        # +1 for Done action
+        self.DoneAct = args.chip_rows * args.chip_cols + 1
+        self.action_spaces = {f"agent_{i+1}":  Discrete(args.chip_rows * args.chip_cols + 1) for i in range(self.num_qubits)}
 
         self.player_now = 1  # index of the current agent
 
@@ -97,17 +96,23 @@ class Env_4(MultiAgentEnv):
         self.steps += 1
         terminateds = self.is_terminated()
 
-        # print(f"step {self.steps} player {self.player_now} action {action}")
+
         act = action[f'agent_{self.player_now}']
-        if act == ChipAction.Done.value or  self.done[self.player_now - 1]:
+
+        if act == self.DoneAct or self.done[self.player_now - 1]:
             #print(f'player {self.player_now} done at step {self.steps}')
             self.done[self.player_now - 1] = True
             dist =  last_dist = self.distance_to_m(self.player_now)
             rewards= {f'agent_{self.player_now}': self.rs[self.player_now-1](0)[0]}
         else:
-            last_dist = self.distance_to_m(self.player_now)
-            self.chip.move(player=self.player_now,act=act)
-            dist = self.distance_to_m(self.player_now)
+
+            row = act // self.chip.cols
+            col = act % self.chip.cols
+            self.chip.goto(player=self.player_now, new_r=row, new_c=col)
+            #last_dist = self.distance_to_m(self.player_now)
+            last_dist  = self.compute_dist()
+            self.chip.goto(player=self.player_now, new_r=row, new_c=col)
+            dist = self.compute_dist()
             rewards = self.reward_function(dist=dist,last_dist=last_dist)
 
         self.dist_rec[self.player_now - 1] = f'{last_dist}->{dist}'
@@ -122,9 +127,6 @@ class Env_4(MultiAgentEnv):
                     }
                  }
 
-        if dist <=1:
-            self.done[self.player_now - 1] = True
-
         self.player_now = ((self.player_now) % self.num_qubits) + 1
 
         # switch to next player
@@ -134,6 +136,35 @@ class Env_4(MultiAgentEnv):
 
         return self._get_obs(),rewards,terminateds,truncated,infos
 
+    def compute_dist(self,gates=[]):
+        depth = 1
+        new = True
+        layer = deepcopy(self.chip.state)
+        i = 0
+        while i < len(gates):
+            start, goal = gates[i]
+            path = a_star_path(start, goal, state)
+            if len(path)==0 :
+                if new:
+                    #已经刷新过但是无法找到路径
+                    return 999
+                else:
+                    state = deepcopy(self.chip.state)
+                    depth += 1
+                    new = True
+
+            else:
+                new = False
+                for p in path:
+                    layer[p[0]][p[1]] = -3
+                i+=1
+
+        return depth
+
+
+
+
+        pass
     def is_terminated(self):
 
         if self.steps >= self.max_step:
@@ -163,12 +194,6 @@ class Env_4(MultiAgentEnv):
         _max_total_r = self.max_total_r[p]
         _agent_total_r = self.agent_total_r[p]
 
-
-        ##test
-        # if self.player_now == 1:
-        #     print(f"step {self.steps} player {self.player_now} action {act} distance {dist}")
-        #     print(f'last_dist {self.last_dist}')
-        ##
         if dist < _min_dist:
             # 当 dist 首次出现这么小, 那么计算后的 total reward 也应该比之前所有的都大
             factor = (1 + ( _min_dist - dist) / (_min_dist))
@@ -206,20 +231,7 @@ class Env_4(MultiAgentEnv):
         return rewards
 
 
-    def distance_to_m(self,player) -> float:
-        # 计算 player 到最近的 magic state 的距离
-        x, y = self.chip.positions[player-1]
-        dist = np.inf
-        for mx,my in self.chip.magic_state:
-            dist = min(dist, abs(x - mx) + abs(y - my))
-        return dist
-
 if __name__ == '__main__':
-    #test code
-    print(MultiDiscrete([9, 9]).sample())
-    print(MultiDiscrete([9, 9]).sample())
-    print(MultiDiscrete([9, 9]).sample())
-    print(MultiDiscrete([9, 9]).sample())
-
+    pass
 
 

@@ -126,6 +126,25 @@ class Chip():
         for x, y in self._magic_state:
             self._state[x][y] = QubitState.MAGIC.value
 
+    def goto(self,player:int, new_r,new_c):
+
+        if chip._state[new_r, new_c] != 0:
+            return False
+        else:
+            old_r, old_c = self._q_pos[player - 1]
+            self._state[old_r, old_c] = 0
+            self._state[new_r, new_c] = player
+
+            self._position_mask[player - 1][old_r, old_c] = 0
+            self._position_mask[player - 1][new_r, new_c] = 1
+
+            self._qubits_channel[old_r, old_c] = 0
+            self._qubits_channel[new_r, new_c] = player
+
+            # occupy the new position
+            self._q_pos[player - 1] = (new_r, new_c)
+        return True
+
 
     def move(self, player: int, act:int):
         old_r,old_c = self._q_pos[player - 1]
