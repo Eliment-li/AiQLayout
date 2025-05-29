@@ -42,7 +42,7 @@ def bfs_find_target(grid, px, py):
 import heapq
 
 
-def a_star_path(start, goal, grid):
+def a_star_path(start, goal, grid,g_qubit):
     """
     使用A*算法计算二维网格中的最短路径
 
@@ -55,12 +55,10 @@ def a_star_path(start, goal, grid):
         list[tuple]: 从起点到终点的路径坐标列表，如果不可达则返回空列表
     """
     # 检查起点和终点是否有效
-    if not (0 <= start[0] < len(grid) and 0 <= start[1] < len(grid[0])):
-        return []
-    if not (0 <= goal[0] < len(grid) and 0 <= goal[1] < len(grid[0])):
-        return []
-    if grid[start[0]][start[1]] != 0 or grid[goal[0]][goal[1]] != 0:
-        return []
+    assert (0 <= start[0] < len(grid) and 0 <= start[1] < len(grid[0])) , "起点不在地图范围内"
+
+    assert (0 <= goal[0] < len(grid) and 0 <= goal[1] < len(grid[0])), "终点不在地图范围内"
+
 
     # 定义可能的移动方向：上、下、左、右
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
@@ -95,7 +93,7 @@ def a_star_path(start, goal, grid):
 
             # 检查邻居是否在地图范围内且不是障碍物
             if (0 <= neighbor[0] < len(grid) and 0 <= neighbor[1] < len(grid[0])
-                    and grid[neighbor[0]][neighbor[1]] == 0):
+                    and (grid[neighbor[0]][neighbor[1]] == 0 or grid[neighbor[0]][neighbor[1]] == g_qubit) ):
 
                 # 计算从起点经过当前节点到邻居的代价
                 tentative_g_score = g_score[current] + 1
@@ -129,18 +127,19 @@ def reconstruct_path(came_from, current):
     path.reverse()  # 反转路径，从起点到终点
     return path
 
+if __name__ == '__main__':
 
-# 示例地图
-grid = [
-    [0, 0, 0, 0, 0],
-    [0, -1, -1, -1, 0],
-    [0, -1, 0, 0, 0],
-    [0, -1, 0, -1, -1],
-    [0, 0, 0, -1, 0]
-]
+    # 示例地图
+    grid = [
+        [0, 0, 0, 0, 0],
+        [0, -1, -1, -1, 0],
+        [0, -1, 0, 0, 0],
+        [0, -1, 0, -1, -1],
+        [0, 0, 0, -1, 0]
+    ]
 
-start = (0, 0)  # 左上角
-goal = (4, 4)   # 右下角
+    start = (0, 0)  # 左上角
+    goal = (0, 2)   # 右下角
 
-path = a_star_path(start, goal, grid)
-print("最短路径:", path)
+    path = a_star_path(start, goal, grid)
+    print("最短路径:", path)

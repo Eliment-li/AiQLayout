@@ -1,5 +1,7 @@
 import numpy as np
 import random
+
+from gymnasium.spaces import Discrete
 from matplotlib import pyplot as plt
 
 

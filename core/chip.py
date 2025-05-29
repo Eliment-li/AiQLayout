@@ -88,7 +88,7 @@ class Chip():
 
        self._position_mask = np.zeros((self._num_qubits, self._rows, self._cols), dtype=np.float32)
 
-       self._init_magic_state()
+       #self._init_magic_state()
        if args.enable_broken_patch:
            self._add_broken_patch()
 
@@ -128,7 +128,7 @@ class Chip():
 
     def goto(self,player:int, new_r,new_c):
 
-        if chip._state[new_r, new_c] != 0:
+        if self._state[new_r, new_c] != 0:
             return False
         else:
             old_r, old_c = self._q_pos[player - 1]
