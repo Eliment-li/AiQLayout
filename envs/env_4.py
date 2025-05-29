@@ -45,8 +45,8 @@ class Env_4(MultiAgentEnv):
         )
         self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
 
-        #self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(6) for i in range(self.num_qubits)}
-        self.action_spaces = {f"agent_{i+1}":  MultiDiscrete([9, 9]) for i in range(self.num_qubits)}
+        self.action_spaces = {f"agent_{i+1}": gym.spaces.Discrete(6) for i in range(self.num_qubits)}
+        #self.action_spaces = {f"agent_{i+1}":  MultiDiscrete([9, 9]) for i in range(self.num_qubits)}
 
         self.player_now = 1  # index of the current agent
 

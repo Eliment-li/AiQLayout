@@ -170,7 +170,6 @@ class SlideWindow:
         if self.queue:
             return self.total / len(self.queue)
         else:
-            print(f"queue is 0")
             return 0
 
 
