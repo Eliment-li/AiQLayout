@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--iter", '-i',type=int, help="train iter", default=None)
-    parser.add_argument("--wandb", '-w',type=bool, help="enable_wandb",default=False)
+    parser.add_argument("--wandb", '-w',type=bool, help="enable_wandb",default=True)
     parser.add_argument("--wandb_group", '-wg',type=str, help="wandb_group",default='default')
     parser.add_argument("--checkpoint", '-c',type=str, help="best checkpoint",default=None)
     parser.add_argument("--run_name", '-name',type=str, help="wandb project run name",default=None)
@@ -156,5 +156,5 @@ if __name__ == "__main__":
 
     # print(base_config.to_dict())
     #
-    # results = r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_1afe49475c1349148e81b6b30ee9ae6d'
+    # results = r'C:/Users/90471/ray_results/PPO_2025-06-02_10-51-50/PPO_886cb_00000/checkpoint_000002'
     # evaluate_v2(base_config,args,results)

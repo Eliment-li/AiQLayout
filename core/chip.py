@@ -5,6 +5,8 @@ from copy import deepcopy
 from enum import Enum
 
 import numpy as np
+from openpyxl.compat import deprecated
+
 from config import ConfigSingleton
 
 from core.routing import bfs_find_target
@@ -73,7 +75,7 @@ class Chip():
 
                 self._state[r][c] = i
                 self._qubits_channel[r][c] = i
-                self._position_mask[i - 1][x][y] = 1
+                self._position_mask[i - 1][r][c] = 1
                 self._q_pos.append((r, c))
                 i += 1
             else:
@@ -282,7 +284,13 @@ class Chip():
 
 #test code
 if __name__ == '__main__':
-    q_pos = [(4,4), (0, 1), (1, 0), (1, 1)]
+    q_pos = [
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (0, 3),
+        (0, 4),
+    ]
     chip = Chip(9,9,q_pos = q_pos)
     print(chip.q_pos)
     chip.print_state()
@@ -295,7 +303,7 @@ if __name__ == '__main__':
     print(chip.channel_state)
     print(np.shape(chip.channel_state))
 
-    pos_encoding = positionalencoding2d(9, 9,4).numpy()
+    pos_encoding = positionalencoding2d(9, 9,4)
     print(pos_encoding.dtype)
     s = np.repeat(chip.state[np.newaxis, :, :], 4, axis=0) # (rows, cols) -> shape (1, rows, cols) -> shape (4, rows, cols)
     print(s+pos_encoding)

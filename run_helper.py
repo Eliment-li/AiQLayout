@@ -142,7 +142,7 @@ def train(
 
     # Log results using WandB.
     tune_callbacks = tune_callbacks or []
-    # tune_callbacks.append(CheckPointCallback())
+    tune_callbacks.append(CheckPointCallback())
     if enable_wandb:
         append_wandb(tune_callbacks,args,config,name=cmd_args.run_name,group = cmd_args.wandb_group)
 

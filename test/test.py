@@ -95,14 +95,46 @@ def visualize_map(map_grid):
 '''test code'''
 # 示例使用
 if __name__ == "__main__":
-    n = 20  # 地图大小
-    obstacle_sizes = [(3, 3), (2, 4), (5, 2), (4, 4)]  # 可能的障碍物尺寸
+    # n = 20  # 地图大小
+    # obstacle_sizes = [(3, 3), (2, 4), (5, 2), (4, 4)]  # 可能的障碍物尺寸
+    #
+    # # 生成带有5个不规则障碍物的地图
+    # obstacle_map = generate_map(n, obstacle_sizes, num_obstacles=5)
+    #
+    # print("生成的地图(0=空地, 1=障碍物):")
+    # print(obstacle_map)
+    #
+    # # 可视化地图
+    # visualize_map(obstacle_map)
 
-    # 生成带有5个不规则障碍物的地图
-    obstacle_map = generate_map(n, obstacle_sizes, num_obstacles=5)
+    import random
 
-    print("生成的地图(0=空地, 1=障碍物):")
-    print(obstacle_map)
+    import wandb
 
-    # 可视化地图
-    visualize_map(obstacle_map)
+    # Start a new wandb run to track this script.
+    run = wandb.init(
+        # Set the wandb entity where your project will be logged (generally your team name).
+        entity="my-awesome-team-name",
+        # Set the wandb project where this run will be logged.
+        project="my-awesome-project",
+        # Track hyperparameters and run metadata.
+        config={
+            "learning_rate": 0.02,
+            "architecture": "CNN",
+            "dataset": "CIFAR-100",
+            "epochs": 10,
+        },
+    )
+
+    # Simulate training.
+    epochs = 10
+    offset = random.random() / 5
+    for epoch in range(2, epochs):
+        acc = 1 - 2 ** -epoch - random.random() / epoch - offset
+        loss = 2 ** -epoch + random.random() / epoch + offset
+
+        # Log metrics to wandb.
+        run.log({"acc": acc, "loss": loss})
+
+    # Finish the run and upload any remaining data.
+    run.finish()

@@ -1,12 +1,12 @@
 #chip
-chip_rows: 5
-chip_cols: 5
+chip_rows: 6
+chip_cols: 6
 verbose: 1
 enable_broken_patch: False
 
-rf_version: 5
+rf_version: 3
 num_qubits: 5
-env_max_step: 100
+env_max_step: 20
 #lstm
 use_lstm: False
 use_gae: True
@@ -25,7 +25,7 @@ kl_target: 0.08
 
 #learning rate
 gamma: 0.99
-lr_grid: [5.0e-4]
+lr_grid: [1.0e-4]
 gamma_grid: [0.99]
 #fcnet
 fcnet_activation: Swish
@@ -38,7 +38,7 @@ enable_cnn: True
 
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters:  6 # Default: default_iters
+stop_iters:  3 # Default: default_iters
 
 # If run --as-release-test, --as-test must also be set.
 as_test: false
@@ -50,7 +50,6 @@ log_file_id: 0
 num_gpus: none
 #resume: False
 
-checkpoint: none
 
 #the save path of check_point zip file
 check_point_zip_path: none

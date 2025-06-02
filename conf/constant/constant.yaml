@@ -47,7 +47,7 @@ evaluation_parallel_to_training: false
 num_samples: 1
 max_concurrent_trials: null
 verbose: 2
-checkpoint_freq: 2
+checkpoint_freq: 1
 checkpoint_at_end: false
 
 # Learner Scaling Options
