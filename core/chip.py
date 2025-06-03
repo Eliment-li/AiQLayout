@@ -86,7 +86,6 @@ class Chip():
        self._state = np.zeros((self._rows, self._cols), dtype=np.float32)
        self._broken_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
        self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
-       self._q_pos = []
 
        self._position_mask = np.zeros((self._num_qubits, self._rows, self._cols), dtype=np.float32)
 
@@ -95,9 +94,11 @@ class Chip():
            self._add_broken_patch()
 
        if q_pos is None:
+            self._q_pos = []
             self._random_init_qubits_layout()
        else:
            #qubits must be init in the last
+           self._q_pos = []
            self._init_qubits_layout(q_pos)
 
 
@@ -129,7 +130,6 @@ class Chip():
             self._state[x][y] = QubitState.MAGIC.value
 
     def goto(self,player:int, new_r,new_c):
-
         if self._state[new_r, new_c] != 0:
             return False
         else:
@@ -236,7 +236,6 @@ class Chip():
     def q_pos(self):
         return self._q_pos
 
-
     @property
     def state(self):
         return  self._state
@@ -274,11 +273,6 @@ class Chip():
     def num_qubits(self):
         return self._num_qubits
 
-    @property
-    def positions(self):
-        return self._q_pos
-
-
     def plot(self):
         pass
 
@@ -291,7 +285,7 @@ if __name__ == '__main__':
         (0, 3),
         (0, 4),
     ]
-    chip = Chip(9,9,q_pos = q_pos)
+    chip = Chip(6,6,q_pos = q_pos)
     print(chip.q_pos)
     chip.print_state()
 
@@ -300,14 +294,23 @@ if __name__ == '__main__':
     chip.print_state()
     print(chip.q_pos)
 
-    print(chip.channel_state)
-    print(np.shape(chip.channel_state))
-
-    pos_encoding = positionalencoding2d(9, 9,4)
-    print(pos_encoding.dtype)
-    s = np.repeat(chip.state[np.newaxis, :, :], 4, axis=0) # (rows, cols) -> shape (1, rows, cols) -> shape (4, rows, cols)
-    print(s+pos_encoding)
-    print(s.dtype)
+    for i in range(1000):
+        pn = ((i) % 5) + 1
+        a = random.randint(0,35)
+        print(f'player{pn}->{a}')
+        row = a // chip.cols
+        col = a % chip.cols
+        chip.goto(pn,row,col)
+    chip.print_state()
+    print(chip.q_pos)
+    # print(chip.channel_state)
+    # print(np.shape(chip.channel_state))
+    #
+    # pos_encoding = positionalencoding2d(9, 9,4)
+    # print(pos_encoding.dtype)
+    # s = np.repeat(chip.state[np.newaxis, :, :], 4, axis=0) # (rows, cols) -> shape (1, rows, cols) -> shape (4, rows, cols)
+    # print(s+pos_encoding)
+    # print(s.dtype)
 
 
     # for i in range(10):

@@ -76,13 +76,16 @@ class Env_4(MultiAgentEnv):
         self.sw = [SlideWindow(50)] * self.num_qubits
 
         self.chip.reset(q_pos=self.init_q_pos)
-        self.init_dist =[self.compute_dist(player = i) for i in range(1, self.num_qubits + 1)]
+        self.init_dist =[self.compute_dist(player = i)[0] for i in range(1, self.num_qubits + 1)]
         self.dist_rec = [[] for i in range(self.num_qubits)]
         self.min_dist = deepcopy(self.init_dist)
 
         self.rs = [RewardScaling(shape=1, gamma=0.9)]*self.num_qubits
         for r in self.rs:
             r.reset()
+
+        self.min_all_dist = self.compute_dist(player = 1)[1]  # use the first player's distance as the initial min_all_dist
+
 
         infos = {f'agent_{i + 1}':  self.init_dist for i in range(self.num_qubits)}
 
@@ -110,28 +113,31 @@ class Env_4(MultiAgentEnv):
         if act == self.DoneAct or self.done[self.player_now - 1]:
             #print(f'player {self.player_now} done at step {self.steps}')
             self.done[self.player_now - 1] = True
-            dist =  last_dist = self.compute_dist(self.player_now)
+            dist =  last_dist = self.compute_dist(self.player_now)[0]
             rewards= {f'agent_{self.player_now}': self.rs[self.player_now-1](0)[0]}
         else:
 
             row = act // self.chip.cols
             col = act % self.chip.cols
             #last_dist = self.distance_to_m(self.player_now)
-            last_dist  = self.compute_dist(self.player_now)
-            last_pos = self.chip.q_pos[self.player_now - 1]
+            pre_pos = self.chip.q_pos[self.player_now - 1]
+            last_dist  = self.compute_dist(self.player_now)[0]
+
             self.chip.goto(player=self.player_now, new_r=row, new_c=col)
-            dist = self.compute_dist(self.player_now)
-            if dist == -1:
+            dist,all_dist,self_dist = self.compute_dist(self.player_now)
+
+            if dist is None:
                 #terminateds = {"__all__": True}
                 rewards = {f'agent_{self.player_now}': self.rs[self.player_now - 1](-1)[0]}
-                # back to last position
-                self.chip.goto(player=self.player_now, new_r=last_pos[0], new_c=last_pos[1])  # move
-
+                # back to previous position
+                self.chip.goto(player=self.player_now, new_r=pre_pos[0], new_c=pre_pos[1])
+                self.done[self.player_now - 1] = True
             else:
-                rewards = self.reward_function(dist=dist,last_dist=last_dist)
+                rewards = self.reward_function(dist=dist,last_dist=last_dist,all_dist = all_dist)
+                self.sw[self.player_now - 1].next(dist)
 
         self.dist_rec[self.player_now - 1] = f'{last_dist}->{dist}'
-        self.sw[self.player_now - 1].next(dist)
+
 
         truncated = {}
         infos = self._get_infos()
@@ -158,20 +164,18 @@ class Env_4(MultiAgentEnv):
             (1,2),
             (1,3),
             (1,4),
-            (1,5),
-            (3,5),
-            (3,4),
+            (1,5)
+            # (3,5),
+            # (3,4),
         ]
 
         depth = 1
         new = True
         layer = deepcopy(self.chip.state)
 
-
-        self_dist = 0
-        #compute the distance between qubits
         i = 0
         all_dist = 0
+        self_dist = 0
         while i < len(gates):
             start, goal = gates[i]
 
@@ -180,26 +184,30 @@ class Env_4(MultiAgentEnv):
             path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
             all_dist += len(path)
             if start == player or goal == player:
-                all_dist += len(path)
+                self_dist += len(path)
             if len(path) == 2:
                 #the two qubits are already connected
                 i += 1
                 continue
-            elif len(path)==0 :
+            elif len(path)==0:
                 if new:
                     #已经刷新过但是无法找到路径
-                    return -1
+                    print('path = 0')
+                    self.chip.print_state()
+                    return None,None,None
                 else:
                     layer = deepcopy(self.chip.state)
                     depth += 1
                     new = True
             else:
-                new = False
+                #occupy the path
                 for p in path:
                     layer[p[0]][p[1]] = -3
+                new = False
                 i+=1
 
-        return all_dist*0.5+self_dist*0.5
+        sum = all_dist * 0.5 + self_dist * 0.5
+        return sum,all_dist,self_dist
 
     def is_terminated(self):
 
@@ -218,7 +226,7 @@ class Env_4(MultiAgentEnv):
 
         return terminateds
 
-    def reward_function(self,dist,last_dist):
+    def reward_function(self,dist,last_dist,all_dist):
         # prepare rewrad function
         rf_name = f"rfv{args.rf_version}"
         rf_to_call = getattr(rfunctions, rf_name, None)
@@ -226,13 +234,13 @@ class Env_4(MultiAgentEnv):
 
         rewards = {}
         p = self.player_now - 1
-        _min_dist = self.min_dist[p]
+        # _min_dist = self.min_dist[p]
         _max_total_r = self.max_total_r[p]
         _agent_total_r = self.agent_total_r[p]
-        if dist == -1:
+        if dist == None:
             #fail
             r = -2
-        elif (dist < _min_dist ):
+        elif (all_dist < self.min_all_dist ):
 
             # 当 dist 首次出现这么小, 那么计算后的 total reward 也应该比之前所有的都大
             # factor = (1 + ( _min_dist - dist) / (_min_dist))
@@ -245,12 +253,12 @@ class Env_4(MultiAgentEnv):
             if r < 0.2:
                 r = 0.2
             if r < 0:
-                print(f'dist > _max_dist but r <0 {_max_total_r},{_agent_total_r},{dist},{_min_dist} ')
                 r = 0.1
             self.max_total_r[p] = _agent_total_r * args.gamma + r
 
             # update min_dist
-            self.min_dist[p] = dist
+           # self.min_dist[p] = dist
+            self.min_all_dist = all_dist
 
         else:
             r = rf_to_call(init_dist=self.init_dist[p], last_dist=last_dist, dist=dist, avg_dist=self.sw[p].current_avg)
@@ -275,12 +283,13 @@ if __name__ == '__main__':
     env = Env_4()
     env.reset()
     env.chip.print_state()
-    for i in range(10):
+    for i in range(1000):
         pn = ((i) % 5) + 1
         a =random.randint(0, env.DoneAct)
         print(f'player{pn}->{a}')
         act ={f'agent_{pn}':a}
 
         env.step(act)
+    env.chip.print_state()
 
 
