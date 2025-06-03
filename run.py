@@ -11,6 +11,7 @@ from ray.rllib.utils.framework import try_import_torch
 from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
 
 from envs.env_4 import Env_4
+from envs.env_5 import Env_5
 
 torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
@@ -98,7 +99,7 @@ if __name__ == "__main__":
         # .get_default_config()
         PPOConfig()
         .environment(
-            env=Env_4,
+            env=Env_5,
             env_config={"key": "value"},
         )
         .training(
@@ -107,7 +108,8 @@ if __name__ == "__main__":
             # lr_schedule=tune.grid_search([
             #     [[0, 5.0e-5], [4000 * 100, 5.0e-5], [4000 * 200, 1.0e-5]]
             # ),
-
+            train_batch_size = 10240,
+            minibatch_size=5120,
             gamma=tune.grid_search(args.gamma_grid),
             lambda_ = args.lambda_,
             entropy_coeff =args.entropy_coeff,

@@ -33,7 +33,7 @@ fcnet_hiddens: [512, 512]
 head_fcnet_hiddens: [256,128,64]
 #cnn
 conv_activation: Swish
-enable_cnn: False
+enable_cnn: True
 
 
 

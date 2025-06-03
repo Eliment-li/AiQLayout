@@ -42,6 +42,7 @@ from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
 from config import ConfigSingleton
 from core.chip_visualizer import show_trace
 from envs.env_4 import Env_4
+from envs.env_5 import Env_5
 from results.plot_results import plot_reward
 from utils.csv_util import write_data, append_data
 from utils.file_util import get_root_dir
@@ -55,7 +56,7 @@ def evaluate_v2(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_4()
+    env = Env_5()
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
@@ -133,7 +134,7 @@ def evaluate_v2(base_config, args, results):
 
         new_input = {}
         obs = input_dict['default_policy']['obs'][0]
-        new_input[ f'policy_{env.activate}'] = {'obs': obs}
+        new_input[ f'policy_{env.am.activate_agent}'] = {'obs': obs}
 
         # No exploration.
         module_out = rl_module._forward_inference(new_input)
