@@ -133,7 +133,7 @@ def evaluate_v2(base_config, args, results):
 
         new_input = {}
         obs = input_dict['default_policy']['obs'][0]
-        new_input[ f'policy_{env.player_now}'] = {'obs': obs}
+        new_input[ f'policy_{env.activate}'] = {'obs': obs}
 
         # No exploration.
         module_out = rl_module._forward_inference(new_input)
@@ -155,13 +155,13 @@ def evaluate_v2(base_config, args, results):
         #     'agent_2':to_env['policy_2']['actions']
         # }
         #actions = {f'agent_{i + 1}': to_env[f'policy_{i + 1}']['actions'] for i in range(len(to_env))}
-        act=  to_env[f'policy_{env.player_now}']['actions']
-        warpped_act = {f'agent_{env.player_now}': to_env[f'policy_{env.player_now}']['actions']}
+        act=  to_env[f'policy_{env.activate}']['actions']
+        warpped_act = {f'agent_{env.activate}': to_env[f'policy_{env.activate}']['actions']}
 
-        actions[env.player_now - 1].append(act)
+        actions[env.activate - 1].append(act)
 
-        last_player = env.player_now
-        obs, reward, terminated, truncated, info = env.step(warpped_act) # after step, env.player_now  will turn to next
+        last_player = env.activate
+        obs, reward, terminated, truncated, info = env.step(warpped_act) # after step, env.activate  will turn to next
 
         if f'agent_{last_player}' in terminated and terminated[f'agent_{last_player}']:
             print(f'player {last_player} done')
@@ -201,7 +201,7 @@ def evaluate(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_3()
+    env = Env_4()
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")

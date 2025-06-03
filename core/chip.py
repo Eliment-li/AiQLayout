@@ -207,9 +207,21 @@ class Chip():
         path_len,path = bfs_find_target(self._state, px, py)
         return path_len
 
+    def get_p(self, player: int):
+        return self._q_pos[player - 1]
 
     def __str__(self):
-        return self._state.__str__()
+        # 设置每个元素的宽度
+        element_width = 2
+        result = []  # 用于存储每一行的字符串
+        for row in self._state:
+            # 使用列表推导式将 0 替换为 '--'
+            replaced_row = ['--' if value == 0 else int(value) for value in row]
+            # :>{element_width} 指定右对齐，并确保每个值占用固定的宽度。
+            # str(value) 将值转换为字符串
+            formatted_row = [f"{str(value):>{element_width}}" for value in replaced_row]
+            result.append(" ".join(formatted_row))
+        return "\n".join(result)  # 将所有行拼接成一个字符串，用换行符分隔
 
     def merge_states(self,arr1, arr2):
         # 检查形状是否相同
@@ -294,13 +306,14 @@ if __name__ == '__main__':
     chip.print_state()
     print(chip.q_pos)
 
-    for i in range(1000):
+    for i in range(100):
         pn = ((i) % 5) + 1
         a = random.randint(0,35)
         print(f'player{pn}->{a}')
         row = a // chip.cols
         col = a % chip.cols
         chip.goto(pn,row,col)
+    chip.reset(q_pos)
     chip.print_state()
     print(chip.q_pos)
     # print(chip.channel_state)
