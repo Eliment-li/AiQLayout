@@ -108,8 +108,8 @@ if __name__ == "__main__":
             # lr_schedule=tune.grid_search([
             #     [[0, 5.0e-5], [4000 * 100, 5.0e-5], [4000 * 200, 1.0e-5]]
             # ),
-            train_batch_size = 10240,
-            minibatch_size=5120,
+            train_batch_size = 1024*16,
+            minibatch_size=512*16,
             gamma=tune.grid_search(args.gamma_grid),
             lambda_ = args.lambda_,
             entropy_coeff =args.entropy_coeff,

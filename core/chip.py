@@ -45,9 +45,6 @@ class Chip():
             self._num_qubits = args.num_qubits
         self.reset(q_pos = q_pos)
 
-
-
-
     def _random_init_qubits_layout(self):
         # vaild value start from _position[1] , -1 only for occupy
         i = 1

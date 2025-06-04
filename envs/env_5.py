@@ -40,21 +40,40 @@ class Env_5(MultiAgentEnv):
         self.max_step = args.env_max_step * self.num_qubits
         # define chip
         self.init_q_pos  = [
-            (0,0),
             (0,1),
             (0,2),
             (0,3),
             (0,4),
+            (0,5),
+
+            (2, 1),
+            (2, 2),
+            (2, 3),
+            (2, 4),
+            (2, 5),
+
+            (4, 1),
+            (4, 2),
+            (4, 3),
+            (4, 4),
+            (4, 5),
+
+            (6, 1),
+            (6, 2),
+            (6, 3),
+            (6, 4),
+            (6, 5),
         ]
         self.DoneAct = args.chip_rows * args.chip_cols
         self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=self.init_q_pos)
+        self.chip.print_state()
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
 
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
         self.obs_spaces = gym.spaces.Box(
-            low=-6,
-            high=6,
+            low=-5,
+            high=self.num_qubits + 1,
             shape=(4+1,args.chip_rows,args.chip_cols),
             dtype=np.float32,
         )
