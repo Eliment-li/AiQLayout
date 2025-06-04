@@ -73,8 +73,8 @@ def plot_reward(data, save=True):
     plt.title('reward')
     #plt.show()
     if save:
-        print('save figure ...')
         img_path = ( args.results_evaluate_path / (args.time_id  + '.png'))
+        print(f'save figure ...{img_path}')
         plt.savefig(img_path)
 
 

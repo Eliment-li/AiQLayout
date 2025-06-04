@@ -1,4 +1,5 @@
 import math
+from pprint import pprint
 
 import torch
 from torch import nn
@@ -135,3 +136,5 @@ class PositionalEncoding2DSpaceOnly(PositionalEncodingTransposed):
 # print(a.shape)
 #
 # print(a+pos_encoding)
+
+# pprint(positionalencoding2d(15, 15, 4))

@@ -31,7 +31,6 @@ class Agent():
         assert not self.done , "trying to  activate an agent that is already done."
         self.activate = True
 
-
     def compute_dist(self,player):
         gates = get_gates()
 
@@ -63,6 +62,8 @@ class Agent():
                     # print('path = 0')
                     # path = Path(args.results_evaluate_path, (args.time_id + '_results.csv'))
                     # append_data(file_path=path,data=str(self.chip.state))
+                    # self.chip.print_state()
+                    # print(f'from{start} to {goal}')
                     return None,None,None
                 else:
                     layer = deepcopy(self.chip.state)

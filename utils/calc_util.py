@@ -174,4 +174,12 @@ class SlideWindow:
 
 
 if __name__ == '__main__':
-    pass
+    conv_filters = [
+        [16, 1, 1, 'same'],  # 过滤器数量，卷积核大小 步幅
+        [32, 3, 1,'valid'],  # 过滤器数量，卷积核大小 步幅
+        [64, 3, 1,'valid'],  # 过滤器数量，卷积核大小 步幅
+    ]
+    input_size = (10, 10)
+    print("\n测试案例1: 混合padding模式")
+    final = CNN.calculate_conv_output_size(input_size, conv_filters)
+    print("最终输出维度:", final)
