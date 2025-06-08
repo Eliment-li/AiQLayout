@@ -1,61 +1,110 @@
 import os
+from collections import defaultdict
 
 import matplotlib
-
-qubits = [12,10,7,5,15,6,8,8,10,12,3,13,9,17,9,13,11,
-          8,4,10,14,12,5,6,8,9,19,8,17,12,2,10,10,3,10,
-          13,15,5,5,2,10,4,5,13,9,9,8,4,1,11,1,13,12,6,10,
-          4,17,2,7,6,9,18,14,13,12,11,8,5,9,11,14,9,10,4,15,6,12,15,11,
-          5,5,8,10,19,5,9,1,7,6,19,8,12,9,14,10,5,17,8,6,2,9,3,11,5,10,8,
-          3,4,4,3,5,13,7,17,15,9,15,9,2,10,14,4,1,16,7,1,4,
-          19,5,9,13,3,14,5,16,5,11,10,12,8,5,8,18,4,14,9,10,4,
-          14,8,10,14,6,13,5,9,5,1,8,11,11,17,12,11,12,14,4,20,16,
-          7,11,7,7,3,5,8,5,4,8,8,2,7,9,9,8,9,7,6,7,9,2,11,15,8,13,
-          12,8,1,6,7]
+import numpy as np
+from matplotlib import pyplot as plt
+from sympy import pprint
 
 
-def  get_gates():
-    i = 0
-    gates = []
-    while i < len(qubits):
-        gates.append((qubits[i],qubits[i+1]))
-        i += 2
-    return gates
+def plot_heatmap_data(heatmap_data):
+    x_vals = [i+1 for i in range(len(heatmap_data))]
+    y_vals = [i+1  for i in range(len(heatmap_data[0]))]
+    plt.figure(figsize=(10, 10))
+
+    # 使用绿色色系
+    im = plt.imshow(heatmap_data, cmap='Greens', interpolation='nearest',
+                   extent=[min(x_vals)-0.5, max(x_vals)+0.5,
+                          min(y_vals)-0.5, max(y_vals)+0.5],
+                   origin='lower')
+
+    # 添加颜色条
+    cbar = plt.colorbar(im)
+    cbar.set_label('cnt', rotation=270, labelpad=15)
+
+    # 设置坐标轴为整数
+    plt.xticks(np.arange(min(x_vals), max(x_vals)+1, 1))
+    plt.yticks(np.arange(min(y_vals), max(y_vals)+1, 1))
+
+    # 添加网格线
+    plt.grid(which='both', color='gray', linestyle='--', linewidth=0.5, alpha=0.5)
+
+    # 标签和标题
+    plt.xlabel('X (x ≤ y)')
+    plt.ylabel('Y (x ≤ y)')
+    plt.title(' (stander x ≤ y)')
+    # 显示图形
+
+    plt.show()
+
+###
+def get_gates_fixed():
+   return np.array([(3.0, 4.0), (3.0, 9.0), (7.0, 9.0), (9.0, 10.0), (5.0, 8.0), (5.0, 9.0), (7.0, 9.0), (3.0, 7.0), (2.0, 2.0),
+     (4.0, 6.0), (9.0, 10.0), (7.0, 9.0), (1.0, 5.0), (6.0, 9.0), (4.0, 6.0), (4.0, 6.0), (3.0, 5.0), (2.0, 8.0),
+     (2.0, 7.0), (6.0, 6.0), (2.0, 8.0), (2.0, 7.0), (4.0, 5.0), (6.0, 8.0), (3.0, 9.0), (5.0, 6.0), (5.0, 8.0),
+     (3.0, 6.0), (8.0, 9.0), (5.0, 6.0), (7.0, 9.0), (8.0, 9.0), (8.0, 9.0), (2.0, 9.0), (3.0, 4.0), (5.0, 6.0),
+     (7.0, 9.0), (5.0, 9.0), (9.0, 10.0), (4.0, 7.0), (9.0, 9.0), (2.0, 5.0), (8.0, 10.0), (3.0, 5.0), (3.0, 6.0),
+     (7.0, 7.0), (2.0, 6.0), (8.0, 9.0), (5.0, 8.0), (6.0, 8.0), (6.0, 9.0), (6.0, 6.0), (3.0, 7.0), (4.0, 4.0),
+     (6.0, 10.0), (7.0, 9.0), (7.0, 10.0), (5.0, 6.0), (3.0, 6.0), (5.0, 7.0), (6.0, 8.0), (3.0, 7.0), (4.0, 9.0),
+     (6.0, 7.0), (10.0, 10.0), (8.0, 10.0), (8.0, 8.0), (2.0, 5.0), (8.0, 9.0), (3.0, 10.0), (4.0, 9.0), (7.0, 9.0),
+     (3.0, 5.0), (5.0, 10.0), (6.0, 7.0), (4.0, 9.0), (3.0, 7.0), (7.0, 8.0), (2.0, 5.0), (8.0, 9.0), (1.0, 9.0),
+     (5.0, 6.0), (3.0, 10.0), (2.0, 9.0), (5.0, 10.0), (4.0, 5.0), (3.0, 3.0), (5.0, 8.0), (6.0, 7.0), (2.0, 9.0),
+     (6.0, 8.0), (7.0, 9.0), (3.0, 8.0), (5.0, 10.0), (4.0, 7.0), (5.0, 6.0), (1.0, 8.0), (7.0, 8.0), (1.0, 9.0),
+     (7.0, 9.0)]).astype(int)
 
 
-def generate_gates():
-    import numpy as np
-    import matplotlib.pyplot as plt
-
+def  get_gates(num_qubits:int,size = 200,format='heatmap'):
     # 设置正态分布的均值和标准差
     mean = 10  # 均值
     std_dev = 5  # 标准差
+    from scipy.stats import truncnorm
 
+    a = (1 - mean) / std_dev  # 下限标准化
+    b = (num_qubits - mean) / std_dev  # 上限标准化
+    trunc_data = truncnorm.rvs(a, b, loc=mean, scale=std_dev, size=size)
+    trunc_data = np.round(trunc_data)
     # 生成正态分布的随机数
-    random_numbers = np.random.normal(mean, std_dev, 200)
+    qubits =trunc_data
+    i = 0
+    gates = []
+    while i < len(qubits):
+        if qubits[i] < qubits[i + 1]:
+            gates.append((qubits[i], qubits[i + 1]))
+        else:
+            gates.append((qubits[i +1], qubits[i]))
+        i += 2
+    if format == 'heatmap':
+        return  convert_gates_to_heat_map()
+    return gates
 
-    # 将随机数限制在 0 到 19 的范围，并取整
-    bounded_integers = np.clip(random_numbers, 1, 20).astype(int)
+def convert_gates_to_heat_map(x,y,gates):
+    # 统计标准化坐标的频率
+    coord_counts = defaultdict(int)
+    for coord in gates:
+        coord_counts[coord] += 1
 
-    #print bounded_integers,split number with ,
-    output_string = ",".join(map(str, bounded_integers))
-    print(output_string)
+    # 获取所有 x 和 y 值（x ≤ y）
+    x_vals =[i for i in range(1,x+1)] #sorted({x for x, y in coord_counts.keys()})
+    y_vals =[i for i in range(1,y+1)]  #sorted({y for x, y in coord_counts.keys()})
 
-    # 统计每个数字出现的频率
-    values, counts = np.unique(bounded_integers, return_counts=True)
+    # 创建热力图数据矩阵（只包含 x ≤ y 的部分）
+    heatmap_data = np.zeros((len(y_vals), len(x_vals)))
 
-    # 绘制柱状图
-    plt.bar(values, counts, color='skyblue', edgecolor='black')
+    # 填充数据
+    for (x, y), count in coord_counts.items():
+        x_idx = x_vals.index(x)
+        y_idx = y_vals.index(y)
+        heatmap_data[y_idx, x_idx] = count
 
-    # 添加图标题和轴标签
-    plt.title('Distribution of Random Integers (0-19)', fontsize=14)
-    plt.xlabel('Integer Value', fontsize=12)
-    plt.ylabel('Frequency', fontsize=12)
+    #normalize the heatmap_data
+    heatmap_data = heatmap_data / np.max(heatmap_data) if np.max(heatmap_data) != 0 else heatmap_data
 
-    # 设置 x 轴刻度为整数
-    plt.xticks(range(1, 21))
+    return heatmap_data
 
-    # 显示图表
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.tight_layout()
-    plt.show()
+
+if __name__ == "__main__":
+    gates = get_gates(10)
+    heatmap = convert_gates_to_heat_map(10, 10, gates)
+    plot_heatmap_data(heatmap)
+    cleaned = [tuple(float(x) for x in pair) for pair in gates]
+    print(cleaned)

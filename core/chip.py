@@ -44,6 +44,8 @@ class Chip():
         else:
             self._num_qubits = args.num_qubits
         self.reset(q_pos = q_pos)
+        #0= invalid 1=valid
+        self.valid_positions=[1]*(self._rows * self._cols)
 
     def _random_init_qubits_layout(self):
         # vaild value start from _position[1] , -1 only for occupy
@@ -94,18 +96,22 @@ class Chip():
 
        self._position_mask = np.zeros((self._num_qubits, self._rows, self._cols), dtype=np.float32)
 
+
        #self._init_magic_state()
        if args.enable_broken_patch:
            self._add_broken_patch()
 
        if q_pos is None:
             self._q_pos = []
-            self._random_init_qubits_layout()
+            self. _random_init_qubits_layout()
        else:
            #qubits must be init in the last
            self._q_pos = []
            self._init_qubits_layout(q_pos)
 
+       self.valid_positions = [1] * (self._rows * self._cols)
+       for r, c in self._q_pos:
+              self.valid_positions[r * self._rows + c] = 0
 
     def _add_broken_patch(self):
         broken = [
@@ -144,10 +150,12 @@ class Chip():
                 self._position_mask[player - 1][old_r, old_c] = 0
                 self._qubits_channel[old_r, old_c] = 0
 
+                self.valid_positions[old_r * self._rows + old_c ] = 1
+
             self._state[new_r, new_c] = player
             self._position_mask[player - 1][new_r, new_c] = 1
             self._qubits_channel[new_r, new_c] = player
-
+            self.valid_positions[new_r * self._rows + new_c] = 1
             # occupy the new position
             self._q_pos[player - 1] = (new_r, new_c)
         return True
@@ -247,6 +255,8 @@ class Chip():
 
     def q_coor(self,player):
         return self._q_pos[player - 1]
+
+
 
 
     @property

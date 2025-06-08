@@ -5,11 +5,11 @@ import matplotlib
 
 from config import ConfigSingleton
 
-if os.environ.get('DISPLAY', '') == '':
-    print('No display found. Switching to Agg backend.')
-    matplotlib.use('Agg')  # 无头模式
-else:
-    matplotlib.use('TkAgg')  # 有图形界面时使用 TkAgg
+# if os.environ.get('DISPLAY', '') == '':
+#     print('No display found. Switching to Agg backend.')
+#     matplotlib.use('Agg')  # 无头模式
+# else:
+#     matplotlib.use('TkAgg')  # 有图形界面时使用 TkAgg
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator  # 用于设置整数刻度

@@ -1,12 +1,12 @@
 #chip
-chip_rows: 10
-chip_cols: 10
+chip_rows: 8
+chip_cols: 8
 verbose: 1
 enable_broken_patch: False
 
 rf_version: 3
-num_qubits: 20
-env_max_step: 20
+num_qubits: 10
+env_max_step: 10
 #lstm
 use_lstm: False
 use_gae: True

@@ -18,7 +18,9 @@ from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObser
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
 from run_helper import train
 from utils.evaluate import evaluate_v2
-
+from ray.rllib.examples.rl_modules.classes.action_masking_rlm import (
+    ActionMaskingTorchRLModule,
+)
 '''
 Gaming the Quantum bit Placement with AI
 '''
@@ -124,7 +126,10 @@ if __name__ == "__main__":
             policy_mapping_fn=policy_mapping_fn,
 
         ).rl_module(
-            rl_module_spec=MultiRLModuleSpec(rl_module_specs=get_rl_module_specs()),
+            rl_module_spec=MultiRLModuleSpec(
+               # multi_rl_module_class=ActionMaskingTorchRLModule,
+                rl_module_specs=get_rl_module_specs()
+            ),
             # algorithm_config_overrides_per_module={
             #     "policy_1": PPOConfig.overrides(
             #         gamma=0.85

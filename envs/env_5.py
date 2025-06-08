@@ -7,7 +7,7 @@ import  random
 import gymnasium as gym
 import numpy as np
 from gymnasium import register
-from gymnasium.spaces import MultiDiscrete, Discrete
+from gymnasium.spaces import  Discrete, Box,Dict
 from numpy import dtype
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 
@@ -18,7 +18,7 @@ from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
-from utils.circuit_util import get_gates
+from utils.circuit_util import get_gates_fixed
 from utils.csv_util import append_data
 from utils.position import positionalencoding2d
 
@@ -27,8 +27,7 @@ rfunctions = RewardFunction()
 '''
 use agent manager to manage agents
 actor act one by one
-
-we calc the reward each round 
+we compute the reward each round 
 '''
 class Env_5(MultiAgentEnv):
 
@@ -51,18 +50,6 @@ class Env_5(MultiAgentEnv):
             (2, 3),
             (2, 4),
             (2, 5),
-
-            (4, 1),
-            (4, 2),
-            (4, 3),
-            (4, 4),
-            (4, 5),
-
-            (6, 1),
-            (6, 2),
-            (6, 3),
-            (6, 4),
-            (6, 5),
         ]
         self.DoneAct = args.chip_rows * args.chip_cols
         self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=self.init_q_pos)
@@ -71,82 +58,109 @@ class Env_5(MultiAgentEnv):
         self.am = AgentsManager(self.num_qubits, self.chip)
 
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
-        self.obs_spaces = gym.spaces.Box(
-            low=-5,
-            high=self.num_qubits + 1,
-            shape=(4+1,args.chip_rows,args.chip_cols),
-            dtype=np.float32,
-        )
-        self.observation_spaces = {f"agent_{i+1}": self.obs_spaces for i in range(self.num_qubits)}
-        self.action_spaces = {f"agent_{i+1}":  Discrete(args.chip_rows * args.chip_cols + 1) for i in range(self.num_qubits)}
+
+        self.a_space = Discrete(args.chip_rows * args.chip_cols)
+        self.o_space =Box(
+                            low=-5,
+                            high=self.num_qubits + 1,
+                            shape=(4+1,args.chip_rows,args.chip_cols),
+                            dtype=np.float32,
+                            )
+
+        # self.o_space = Dict(
+        #     {"observations":Box(
+        #                     low=-5,
+        #                     high=self.num_qubits + 1,
+        #                     shape=(4+1,args.chip_rows,args.chip_cols),
+        #                     dtype=np.float32,
+        #                     ),
+        #         "action_mask": Box(0.0, 1.0, shape=(self.a_space.n,)),
+        #
+        #     }
+        # )
+
+        self.observation_spaces = {f"agent_{i+1}": self.o_space for i in range(self.num_qubits)}
+        self.action_spaces = {f"agent_{i+1}":  self.a_space for i in range(self.num_qubits)}
         self.pe = positionalencoding2d(self.chip.rows,self.chip.cols,4)
+        self.sw = SlideWindow(50)
 
     def reset(self, *, seed=None, options=None):
         self.steps = 0
         self.chip.reset(q_pos=self.init_q_pos)
         self.am.reset_agents()
-        self.activate = self.am.activate_agent
         self.dist_rec = [[] for i in range(self.num_qubits)]
         self.min_sum_dist = self.compute_dist(self.am.activate_agent)[0]
 
+        #clean the init position
+        self.chip.clean_qubits()
         self.reward = 0
         self._max_total_r = -np.inf
         self._agent_total_r = 0
-
         self.last_dist = self.min_sum_dist
         self.init_dist = self.min_sum_dist
-        self.sw =SlideWindow(50)
+        # self.sw =SlideWindow(50)
 
-        infos = {f'agent_{i + 1}':  self.am(1).init_dist for i in range(self.num_qubits)}
+        infos = {f'agent_{i + 1}':  'default' for i in range(self.num_qubits)}
+        #infos = {f'agent_{i + 1}':  self.am(1).init_dist for i in range(self.num_qubits)}
         return self._get_obs(),infos
 
     def _get_obs(self):
-        #padded_state =  np.pad(self.chip.channel_state, pad_width=1, mode='constant', constant_values=-5).astype(np.int16)
+        ##TODO  add action mask
         repeat_state = np.repeat(self.chip.state[np.newaxis, :, :], 4, axis=0)
         obs = repeat_state + self.pe
         pm =np.expand_dims(self.chip.position_mask(self.am.activate_agent), axis=0)
         obs = np.concatenate((obs,pm),axis=0)  # (4, rows, cols) -> (4+1, rows, cols)
-        ret = {
-            f'agent_{self.am.activate_agent}':obs
+        return {
+            f'agent_{self.am.activate_agent}': obs
         }
-        return ret
+        # return {
+        #     f'agent_{self.am.activate_agent}':{
+        #         'observations': obs,
+        #         'action_mask': self.chip.valid_positions
+        #     }
+        # }
 
     def step(self, action):
-
         terminateds = self.is_terminated()
         act = action[f'agent_{self.am.activate_agent}']
         rewards = {f'agent_{self.am.activate_agent}': self.reward}
-        if act == self.DoneAct or self.am.is_done(self.am.activate_agent):
-            #print(f'player {self.am.activate_agent} done at step {self.steps}')
-            self.am.set_done(self.am.activate_agent)
-            dist = self.compute_dist(self.am.activate_agent)[0]
+        # if act == self.DoneAct or self.am.is_done(self.am.activate_agent):
+        #     self.am.set_done(self.am.activate_agent)
+            #dist, other_dist, self_dist = self.compute_dist(self.am.activate_agent)
+        # else:
+        row = act // self.chip.cols
+        col = act % self.chip.cols
+        # last_dist = self.distance_to_m(self.am.activate_agent)
+        success = self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
+        if not success:
+            # print(f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}')
+            # print(self.chip.valid_positions)
+            self.chip.print_state()
+            terminateds = {"__all__": True}
+            rewards = {f'agent_{self.am.activate_agent}': -2}
+            return self._get_obs(), rewards, terminateds, {}, self._get_infos()
         else:
-            row = act // self.chip.cols
-            col = act % self.chip.cols
-            #last_dist = self.distance_to_m(self.am.activate_agent)
-            self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
-
-            dist, other_dist, self_dist = self.compute_dist(self.am.activate_agent)
             if self.am.activate_agent == self.num_qubits:
-                #calc reward
-
-                if dist is None:
-                    terminateds = {"__all__": True}
-                    self.reward = -1
-                else:
-
-                    self.sw.next(dist)
-                    self.reward = self.reward_function(dist=dist,last_dist=self.last_dist)
-
-        self.dist_rec[self.am.activate_agent - 1] = f'{dist}'
+                try:
+                    dist, other_dist, self_dist = self.compute_dist(self.am.activate_agent)
+                    self.dist_rec[self.am.activate_agent - 1] = f'{dist}'
+                    # calc reward
+                    if dist is None:
+                        terminateds = {"__all__": True}
+                        rewards = {f'agent_{self.am.activate_agent}': -2}
+                    else:
+                        self.sw.next(dist)
+                        self.reward = self.reward_function(dist=dist, last_dist=self.last_dist)
+                        self.last_dist = dist
+                except Exception as e:
+                    print(f'compute dist error: {e} at step {self.steps}')
+                    self.chip.print_state()
 
 
         truncated = {}
         infos = self._get_infos()
         #switch to next agent
         self.am.switch_next()
-        self.activate = self.am.activate_agent
-
         self.steps += 1
         return self._get_obs(),rewards,terminateds,truncated,infos
     def _get_infos(self):
@@ -159,7 +173,7 @@ class Env_5(MultiAgentEnv):
                  }
 
     def compute_dist(self,player):
-        gates = get_gates()
+        gates = get_gates_fixed()
 
         depth = 1
         new = True
@@ -171,12 +185,15 @@ class Env_5(MultiAgentEnv):
         while i < len(gates):
             start, goal = gates[i]
 
-            sr,sc = self.chip.q_pos[start - 1]
-            gr,gc = self.chip.q_pos[goal - 1]
+            sr,sc = self.chip.q_coor(start)
+            gr,gc =  self.chip.q_coor(goal)
             path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
-            other_dist += len(path)
+
             if start == player or goal == player:
                 self_dist += len(path)
+            else:
+                other_dist += len(path)
+
             if len(path) == 2:
                 #the two qubits are already connected
                 i += 1
@@ -185,8 +202,13 @@ class Env_5(MultiAgentEnv):
                 if new:
                     #已经刷新过但是无法找到路径
                     # print('path = 0')
+                    # print(f'agent {player} the dist is None in compute_dist')
+                    # print(f'from{start}({sr},{sc}) to {goal} gr,gc=({gr},{gc})')
+                    # print(self.chip.q_pos)
+                    # print(layer)
                     # path = Path(args.results_evaluate_path, (args.time_id + '_results.csv'))
                     # append_data(file_path=path,data=str(self.chip.state))
+
                     return None,None,None
                 else:
                     layer = deepcopy(self.chip.state)
@@ -199,14 +221,14 @@ class Env_5(MultiAgentEnv):
                 new = False
                 i+=1
 
-        sum = other_dist * 0.5 + self_dist * 0.5
+        sum = other_dist + self_dist
         return sum,other_dist,self_dist
 
     def is_terminated(self):
 
         if self.steps >= self.max_step:
            terminateds = {"__all__": True}
-        elif self.am.all_done():
+        elif self.am.is_all_done():
            terminateds = {"__all__": True}
         else:
             terminateds = {"__all__": False}
@@ -242,7 +264,6 @@ class Env_5(MultiAgentEnv):
             self._agent_total_ = self._agent_total_r * args.gamma + r
 
             # update min_dist
-           # self.min_dist[p] = dist
             self.min_sum_dist = dist
 
         else:
@@ -251,16 +272,21 @@ class Env_5(MultiAgentEnv):
 
 
 if __name__ == '__main__':
-    env = Env_5()
-    env.reset()
-    env.chip.print_state()
-    for i in range(1000):
-        pn = ((i) % 5) + 1
-        a =random.randint(0, env.DoneAct)
-        print(f'player{pn}->{a}')
-        act ={f'agent_{pn}':a}
+    # env = Env_5()
+    # env.reset()
+    # env.chip.print_state()
+    # for i in range(10):
+    #     pn = ((i) % 10) + 1
+    #     a =random.randint(0, env.DoneAct-1)
+    #     print(f'player{pn}->{a}')
+    #     act ={f'agent_{pn}':a}
+    #
+    #     env.step(act)
+    # env.chip.print_state()
 
-        env.step(act)
-    env.chip.print_state()
+
+    a_space  = Discrete(args.chip_rows * args.chip_cols)
+    print(a_space.n)
+    print(Box(0.0, 1.0, shape=(a_space.n,)).sample())
 
 
