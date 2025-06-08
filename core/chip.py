@@ -139,13 +139,13 @@ class Chip():
             return False
         else:
             old_r, old_c = self._q_pos[player - 1]
-            self._state[old_r, old_c] = 0
+            if old_r >0 and old_c >0:
+                self._state[old_r, old_c] = 0
+                self._position_mask[player - 1][old_r, old_c] = 0
+                self._qubits_channel[old_r, old_c] = 0
+
             self._state[new_r, new_c] = player
-
-            self._position_mask[player - 1][old_r, old_c] = 0
             self._position_mask[player - 1][new_r, new_c] = 1
-
-            self._qubits_channel[old_r, old_c] = 0
             self._qubits_channel[new_r, new_c] = player
 
             # occupy the new position
