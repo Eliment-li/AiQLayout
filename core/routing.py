@@ -55,9 +55,9 @@ def a_star_path(start, goal, grid,g_qubit):
         list[tuple]: 从起点到终点的路径坐标列表，如果不可达则返回空列表
     """
     # 检查起点和终点是否有效
-    assert (0 <= start[0] < len(grid) and 0 <= start[1] < len(grid[0])) , "起点不在地图范围内"
+    assert (0 <= start[0] < len(grid) and 0 <= start[1] < len(grid[0])) , f"起点{start},{start[0]},{start[1]}不在地图范围内, grid={grid}"
 
-    assert (0 <= goal[0] < len(grid) and 0 <= goal[1] < len(grid[0])), "终点不在地图范围内"
+    assert (0 <= goal[0] < len(grid) and 0 <= goal[1] < len(grid[0])), f"终点{goal},{goal[0]},{goal[1]}不在地图范围内,grid={grid}"
 
 
     # 定义可能的移动方向：上、下、左、右
