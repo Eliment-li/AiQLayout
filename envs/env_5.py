@@ -135,7 +135,7 @@ class Env_5(MultiAgentEnv):
         if not success:
             # print(f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}')
             # print(self.chip.valid_positions)
-            self.chip.print_state()
+            # self.chip.print_state()
             terminateds = {"__all__": True}
             rewards = {f'agent_{self.am.activate_agent}': -2}
             return self._get_obs(), rewards, terminateds, {}, self._get_infos()

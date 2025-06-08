@@ -274,7 +274,6 @@ class Chip():
 
 
     def print_state(self):
-        print()
         # 设置每个元素的宽度
         element_width = 2
         for row in self._state:
