@@ -5,7 +5,7 @@ import numpy as np
 from core.chip import Chip
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
-from utils.circuit_util import get_gates
+from utils.circuit_util import get_gates, get_gates_fixed
 
 
 class Agent():
@@ -14,6 +14,7 @@ class Agent():
         self.activate = False
         self.chip = chip
         self.sw = SlideWindow(50)
+        self.done = False
 
     def reset(self):
         self.activate = False
@@ -22,17 +23,17 @@ class Agent():
         self.sw.reset()
 
         self.done = False
-        other_dist, self_dist,depth= self.compute_dist(self.number)
-        sum_dist = other_dist * 0.5 + self_dist * 0.5
-        self.min_dist = self_dist
-        self.init_dist = sum_dist
+        # other_dist, self_dist,depth= self.compute_dist(self.number)
+        # sum_dist = other_dist * 0.5 + self_dist * 0.5
+        # self.min_dist = self_dist
+        # self.init_dist = sum_dist
 
     def set_activate(self):
         assert not self.done , "trying to  activate an agent that is already done."
         self.activate = True
 
     def compute_dist(self,player):
-        gates = get_gates()
+        gates = get_gates_fixed()
 
         depth = 1
         new = True
@@ -102,7 +103,7 @@ class AgentsManager():
     def is_done(self, agent_number: int) -> bool:
         return self.agents[agent_number - 1].done
 
-    def all_done(self) -> bool:
+    def is_all_done(self) -> bool:
         return all(agent.done for agent in self.agents)
 
     def switch_next(self):
@@ -130,3 +131,11 @@ class AgentsManager():
             agent.reset()
 
         self.agents[0].set_activate()
+        self.activate_agent = 1
+
+
+if __name__ == '__main__':
+    am = AgentsManager(10, Chip(5,5))
+    for i in range(20):
+        print(am.activate_agent)
+        am.switch_next()
