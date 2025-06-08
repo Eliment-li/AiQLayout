@@ -156,13 +156,13 @@ def evaluate_v2(base_config, args, results):
         #     'agent_2':to_env['policy_2']['actions']
         # }
         #actions = {f'agent_{i + 1}': to_env[f'policy_{i + 1}']['actions'] for i in range(len(to_env))}
-        act=  to_env[f'policy_{env.activate}']['actions']
-        warpped_act = {f'agent_{env.activate}': to_env[f'policy_{env.activate}']['actions']}
+        act=  to_env[f'policy_{env.am.activate_agent}']['actions']
+        warpped_act = {f'agent_{env.am.activate_agent}': to_env[f'policy_{env.am.activate_agent}']['actions']}
 
-        actions[env.activate - 1].append(act)
+        actions[env.am.activate_agent - 1].append(act)
 
-        last_player = env.activate
-        obs, reward, terminated, truncated, info = env.step(warpped_act) # after step, env.activate  will turn to next
+        last_player = env.am.activate_agent
+        obs, reward, terminated, truncated, info = env.step(warpped_act) # after step, env.am.activate_agent  will turn to next
 
         if f'agent_{last_player}' in terminated and terminated[f'agent_{last_player}']:
             print(f'player {last_player} done')

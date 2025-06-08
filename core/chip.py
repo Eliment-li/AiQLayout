@@ -212,9 +212,6 @@ class Chip():
         path_len,path = bfs_find_target(self._state, px, py)
         return path_len
 
-    def get_p(self, player: int):
-        return self._q_pos[player - 1]
-
     def __str__(self):
         # 设置每个元素的宽度
         element_width = 2

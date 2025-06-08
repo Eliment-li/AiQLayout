@@ -118,7 +118,7 @@ class Env_4(MultiAgentEnv):
             row = act // self.chip.cols
             col = act % self.chip.cols
             #last_dist = self.distance_to_m(self.activate)
-            pre_pos = self.chip.get_p(self.activate)
+            pre_pos = self.chip.q_coor(self.activate)
             last_dist  = self.compute_dist(self.activate)[0]
 
             self.chip.goto(player=self.activate, new_r=row, new_c=col)
