@@ -78,6 +78,14 @@ class Chip():
             else:
                 continue
 
+    def clean_qubits(self):
+        self._q_pos = [(-1,-1)]*self.num_qubits
+        self._position_mask = np.zeros((self._num_qubits, self._rows, self._cols), dtype=np.float32)
+        self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
+
+        # if value >0 in self._state,make it to 0
+        self._state[self._state > 0] = 0
+
 
     def reset(self,q_pos = None):
        self._state = np.zeros((self._rows, self._cols), dtype=np.float32)
