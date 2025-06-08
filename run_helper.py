@@ -49,6 +49,7 @@ from ray.rllib.offline.dataset_reader import DatasetReader
 
 from envs.env_0 import Env_0
 from utils.checkpoint import CheckPointCallback
+from utils.swanlab_logger_callback import SwanLabLoggerCallback
 
 jax, _ = try_import_jax()
 tf1, tf, tfv = try_import_tf()
@@ -99,7 +100,7 @@ def train(
     tune_callbacks: Optional[List] = None,
     scheduler=None,
     stop = None,
-    enable_wandb = False
+    enable_swanlab = False
 ) -> Union[ResultDict, tune.result_grid.ResultGrid]:
     """Given an algorithm config and some command line args, runs an experiment.
 
@@ -143,8 +144,8 @@ def train(
     # Log results using WandB.
     tune_callbacks = tune_callbacks or []
     tune_callbacks.append(CheckPointCallback())
-    if enable_wandb:
-        append_wandb(tune_callbacks,args,config,name=cmd_args.run_name,group = cmd_args.wandb_group)
+    if enable_swanlab:
+        append_swanlab(tune_callbacks,args,config,name=cmd_args.run_name,group = cmd_args.wandb_group)
 
     progress_reporter =cli_reporter(config)
     if args.no_tune:
@@ -189,8 +190,8 @@ def train(
     return results
 
 
-def append_wandb(tune_callbacks,args,config,group,name = None):
-    wandb_key = args.wandb_key
+def append_swanlab(tune_callbacks,args,config,group,name = None):
+    wandb_key = args.swanlab_key
     # 设置环境变量，静默 wandb 输出
     os.environ["WANDB_SILENT"] = "true"
     project = args.wandb_project or (
@@ -202,10 +203,17 @@ def append_wandb(tune_callbacks,args,config,group,name = None):
         #"silent": True
     }
     tune_callbacks.append(
-        WandbLoggerCallback(
+        # WandbLoggerCallback(
+        #     api_key=wandb_key,
+        #     project=project,
+        #     upload_checkpoints=args.upload_checkpoints_to_wandb,
+        #     **kwargs,
+        # )
+        SwanLabLoggerCallback(
             api_key=wandb_key,
             project=project,
-            upload_checkpoints=args.upload_checkpoints_to_wandb,
+            workspace='Eliment-li',
+            upload_checkpoints=False,
             **kwargs,
         )
     )

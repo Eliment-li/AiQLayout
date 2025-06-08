@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--iter", '-i',type=int, help="train iter", default=None)
-    parser.add_argument("--wandb", '-w',type=bool, help="enable_wandb",default=True)
+    parser.add_argument("--swanlab", '-w',type=bool, help="enable_swanlab",default=True)
     parser.add_argument("--wandb_group", '-wg',type=str, help="wandb_group",default='default')
     parser.add_argument("--checkpoint", '-c',type=str, help="best checkpoint",default=None)
     parser.add_argument("--run_name", '-name',type=str, help="wandb project run name",default=None)
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     if cmd_args.checkpoint is not None:
         results = cmd_args.checkpoint
     else:
-        results = train(config = base_config, cmd_args = cmd_args,args=args,enable_wandb=cmd_args.wandb,stop=stop)
+        results = train(config = base_config, cmd_args = cmd_args,args=args,enable_swanlab=cmd_args.swanlab,stop=stop)
     evaluate_v2(base_config,args,results)
 
     # print(base_config.to_dict())
