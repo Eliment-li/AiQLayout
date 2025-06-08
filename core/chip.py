@@ -248,6 +248,10 @@ class Chip():
     def position_mask(self,player):
         return self._position_mask[player - 1]
 
+    def q_coor(self,player):
+        return self._q_pos[player - 1]
+
+
     @property
     # start from index 1
     def q_pos(self):
