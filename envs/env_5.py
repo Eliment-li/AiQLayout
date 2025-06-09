@@ -60,24 +60,27 @@ class Env_5(MultiAgentEnv):
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
 
         self.a_space = Discrete(args.chip_rows * args.chip_cols)
-        self.o_space =Box(
+        # self.o_space =Box(
+        #                     low=-5,
+        #                     high=self.num_qubits + 1,
+        #                     shape=(4+1,args.chip_rows,args.chip_cols),
+        #                     dtype=np.float32,
+        #                     )
+
+        self.o_space = Dict(
+            {
+                "action_mask": Box(0.0, 1.0, shape=(self.a_space.n,)),
+                "observations":Box(
                             low=-5,
                             high=self.num_qubits + 1,
                             shape=(4+1,args.chip_rows,args.chip_cols),
                             dtype=np.float32,
                             )
 
-        # self.o_space = Dict(
-        #     {"observations":Box(
-        #                     low=-5,
-        #                     high=self.num_qubits + 1,
-        #                     shape=(4+1,args.chip_rows,args.chip_cols),
-        #                     dtype=np.float32,
-        #                     ),
-        #         "action_mask": Box(0.0, 1.0, shape=(self.a_space.n,)),
-        #
-        #     }
-        # )
+
+            }
+        )
+
 
         self.observation_spaces = {f"agent_{i+1}": self.o_space for i in range(self.num_qubits)}
         self.action_spaces = {f"agent_{i+1}":  self.a_space for i in range(self.num_qubits)}
@@ -110,15 +113,17 @@ class Env_5(MultiAgentEnv):
         obs = repeat_state + self.pe
         pm =np.expand_dims(self.chip.position_mask(self.am.activate_agent), axis=0)
         obs = np.concatenate((obs,pm),axis=0)  # (4, rows, cols) -> (4+1, rows, cols)
-        return {
-            f'agent_{self.am.activate_agent}': obs
-        }
         # return {
-        #     f'agent_{self.am.activate_agent}':{
-        #         'observations': obs,
-        #         'action_mask': self.chip.valid_positions
-        #     }
+        #     f'agent_{self.am.activate_agent}': obs
         # }
+        assert  np.shape(obs) == self.o_space['observations'].shape, f"obs.shape={np.shape(obs)}"
+        assert  np.shape(self.chip.valid_positions) == self.a_space.shape,f'action.shape={np.shape(self.chip.valid_positions)}'
+        return {
+            f'agent_{self.am.activate_agent}':{
+                'observations': obs,
+                'action_mask': self.chip.valid_positions
+            }
+        }
 
     def step(self, action):
         terminateds = self.is_terminated()
@@ -208,7 +213,6 @@ class Env_5(MultiAgentEnv):
                     # print(layer)
                     # path = Path(args.results_evaluate_path, (args.time_id + '_results.csv'))
                     # append_data(file_path=path,data=str(self.chip.state))
-
                     return None,None,None
                 else:
                     layer = deepcopy(self.chip.state)
@@ -283,10 +287,7 @@ if __name__ == '__main__':
     #
     #     env.step(act)
     # env.chip.print_state()
+    pass
 
-
-    a_space  = Discrete(args.chip_rows * args.chip_cols)
-    print(a_space.n)
-    print(Box(0.0, 1.0, shape=(a_space.n,)).sample())
 
 

@@ -81,7 +81,7 @@ def convert_gates_to_heat_map(x,y,gates):
     # 统计标准化坐标的频率
     coord_counts = defaultdict(int)
     for coord in gates:
-        coord_counts[coord] += 1
+        coord_counts[tuple(coord)] += 1
 
     # 获取所有 x 和 y 值（x ≤ y）
     x_vals =[i for i in range(1,x+1)] #sorted({x for x, y in coord_counts.keys()})
@@ -103,7 +103,8 @@ def convert_gates_to_heat_map(x,y,gates):
 
 
 if __name__ == "__main__":
-    gates = get_gates(10)
+    #gates = get_gates(10)
+    gates  = get_gates_fixed()
     heatmap = convert_gates_to_heat_map(10, 10, gates)
     plot_heatmap_data(heatmap)
     cleaned = [tuple(float(x) for x in pair) for pair in gates]
