@@ -64,9 +64,8 @@ def get_rl_module_specs():
     rl_module_specs = {
             'policy_{}'.format(i): RLModuleSpec(
                 model_config=model_config,
-                module_class = ActionMaskingTorchRLModule
-            ) for i in
-            range(1, int(args.num_qubits) + 1)
+                #module_class = ActionMaskingTorchRLModule
+            ) for i in range(1, int(args.num_qubits) + 1)
     }
     return rl_module_specs
 
@@ -146,7 +145,8 @@ if __name__ == "__main__":
             env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
             num_gpus_per_env_runner = 0
             #num_env_runners=args.num_env_runners,
-        ).learners(
+        )
+        .learners(
             num_learners=args.num_learners,
             num_gpus_per_learner= args.num_gpus_per_learner
         )
