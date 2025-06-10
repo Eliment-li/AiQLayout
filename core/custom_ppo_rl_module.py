@@ -28,6 +28,12 @@ class CustomDefaultPPOTorchRLModule(TorchRLModule, DefaultPPORLModule):
     def _forward(self, batch: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """Default forward pass (used for inference and exploration)."""
         output = {}
+        # print(f'batch in forward is {batch}')
+        #action mask
+        action_mask = batch['obs']['action_mask']
+        pure_obs = batch['obs']['observations']
+        batch['obs'] = pure_obs
+
         # Encoder forward pass.
         encoder_outs = self.encoder(batch)
         # Stateful encoder?

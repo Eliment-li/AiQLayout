@@ -12,6 +12,7 @@ import os
 from ray.rllib.utils.framework import try_import_torch
 from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
 
+from core.custom_flatten_observations import CustomFlattenObservations
 from core.custom_ppo_rl_module import CustomDefaultPPOTorchRLModule
 from envs.env_4 import Env_4
 from envs.env_5 import Env_5
@@ -145,7 +146,7 @@ if __name__ == "__main__":
             # },
             #model_config=get_model_config()
         ).env_runners(
-            env_to_module_connector=lambda env: FlattenObservations(multi_agent=True),
+            env_to_module_connector=lambda env: CustomFlattenObservations(multi_agent=True),
             num_gpus_per_env_runner = 0
             #num_env_runners=args.num_env_runners,
         )
