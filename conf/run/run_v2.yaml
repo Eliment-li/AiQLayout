@@ -6,7 +6,7 @@ enable_broken_patch: False
 
 rf_version: 3
 num_qubits: 10
-env_max_step: 10
+env_max_step: 20
 #lstm
 use_lstm: False
 use_gae: True
@@ -33,7 +33,7 @@ fcnet_hiddens: [512, 512]
 head_fcnet_hiddens: [512,256,128]
 #cnn
 conv_activation: Swish
-enable_cnn: False
+enable_cnn: True
 
 
 

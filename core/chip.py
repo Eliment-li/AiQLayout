@@ -45,8 +45,7 @@ class Chip():
         else:
             self._num_qubits = args.num_qubits
         self.reset(q_pos = q_pos)
-        #0= valid 1=invalid
-        self.valid_positions= torch.ones((self._rows * self._cols)) #np.zeros((self._rows * self._cols), dtype=float)
+
 
     def _random_init_qubits_layout(self):
         # vaild value start from _position[1] , -1 only for occupy
@@ -82,12 +81,13 @@ class Chip():
                 continue
 
     def clean_qubits(self):
-        self._q_pos = [(-1,-1)]*self.num_qubits
+        self._q_pos = [(None,None)]*self.num_qubits
         self._position_mask = np.zeros((self._num_qubits, self._rows, self._cols), dtype=np.float32)
         self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
 
         # if value >0 in self._state,make it to 0
         self._state[self._state > 0] = 0
+        self.valid_positions = torch.ones((self._rows * self._cols))
 
 
     def reset(self,q_pos = None):
@@ -96,22 +96,28 @@ class Chip():
        self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
 
        self._position_mask = np.zeros((self._num_qubits, self._rows, self._cols), dtype=np.float32)
-
-
+       # 0= valid 1=invalid
+       self.valid_positions = torch.ones((self._rows * self._cols),
+                                         dtype=torch.float32)  # np.zeros((self._rows * self._cols), dtype=float)
        #self._init_magic_state()
        if args.enable_broken_patch:
            self._add_broken_patch()
 
        if q_pos is None:
+            print('q_pos in reset is None')
             self._q_pos = []
             self. _random_init_qubits_layout()
+       elif len(q_pos) ==0 :
+            self._q_pos = [(None, None)] * self.num_qubits
+            print('q_pos in reset is empty')
        else:
            #qubits must be init in the last
            self._q_pos = []
            self._init_qubits_layout(q_pos)
 
-       self.valid_positions = torch.ones((self._rows * self._cols), dtype=torch.float32)#np.zeros((self._rows * self._cols), dtype=float)
+
        for r, c in self._q_pos:
+           if r is not None and c is not None :
               self.valid_positions[r * self._rows + c] = 0
 
     def _add_broken_patch(self):
@@ -146,7 +152,7 @@ class Chip():
             return False
         else:
             old_r, old_c = self._q_pos[player - 1]
-            if old_r >0 and old_c >0:
+            if old_r is not None and old_c is not None:
                 self._state[old_r, old_c] = 0
                 self._position_mask[player - 1][old_r, old_c] = 0
                 self._qubits_channel[old_r, old_c] = 0
@@ -156,10 +162,13 @@ class Chip():
             self._state[new_r, new_c] = player
             self._position_mask[player - 1][new_r, new_c] = 1
             self._qubits_channel[new_r, new_c] = player
-
             self.valid_positions[new_r * self._rows + new_c] = 0
+
             # occupy the new position
             self._q_pos[player - 1] = (new_r, new_c)
+        if torch.sum(self.valid_positions == 0).item() > self.num_qubits:
+            print('number of 0 too many')
+            self.print_state()
         return True
 
 
@@ -184,7 +193,6 @@ class Chip():
             case _:
                 pass
 
-        #print(f"old_x:{old_x}, old_y:{old_y}, new_c:{new_c}, new_r:{new_r}")
         #if new_post out of matrix
         if (
                 new_c < 0
@@ -312,52 +320,17 @@ if __name__ == '__main__':
         (0, 3),
         (0, 4),
     ]
-    chip = Chip(6,6,q_pos = q_pos)
-    print(chip.q_pos)
+    chip = Chip(6,6,q_pos=[],num_qubits=5)
+    chip.reset()
     chip.print_state()
-
-    chip.reset(q_pos=q_pos)
-    print()
-    chip.print_state()
-    print(chip.q_pos)
+    print(chip.valid_positions)
 
     for i in range(100):
-        pn = ((i) % 5) + 1
-        a = random.randint(0,35)
-        print(f'player{pn}->{a}')
-        row = a // chip.cols
-        col = a % chip.cols
-        chip.goto(pn,row,col)
-    chip.reset(q_pos)
+        player = random.randint(1,5)
+        x = random.randint(0,5)
+        y = random.randint(0,5)
+        chip.goto(player,x,y)
     chip.print_state()
-    print(chip.q_pos)
-    # print(chip.channel_state)
-    # print(np.shape(chip.channel_state))
-    #
-    # pos_encoding = positionalencoding2d(9, 9,4)
-    # print(pos_encoding.dtype)
-    # s = np.repeat(chip.state[np.newaxis, :, :], 4, axis=0) # (rows, cols) -> shape (1, rows, cols) -> shape (4, rows, cols)
-    # print(s+pos_encoding)
-    # print(s.dtype)
+    print(chip.valid_positions)
 
 
-    # for i in range(10):
-    #     player = 4 #random.randint(1, chip._num_qubits)
-    #     act  = 3#random.randint(0, 3)
-    #     chip.move(player, act)
-
-    # print()
-    # chip.print_state()
-    # print(chip.q_pos)
-    #
-    # print('routing length  = ', chip.route_to_magic_state(1))
-    # print('length  = ', chip.distance_to_others(4))
-
-    # rewards = {}
-    # for i in range(1, chip._num_qubits + 1):
-    #     distance = chip.distance_to_others(i)
-    #     print(distance)
-    #     r = math.log(distance +1, 2)-3.5
-    #     rewards.update({f'agent_{i}': r})
-    #
-    # print(rewards)

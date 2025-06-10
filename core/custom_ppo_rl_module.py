@@ -40,7 +40,7 @@ class CustomDefaultPPOTorchRLModule(TorchRLModule, DefaultPPORLModule):
         # Pi head.
         output[Columns.ACTION_DIST_INPUTS] = self.pi(encoder_outs[ENCODER_OUT][ACTOR])
 
-        output[Columns.ACTION_DIST_INPUTS] = self._mask_action_logits(output,action_mask)
+        self._mask_action_logits(output,action_mask)
         return output
 
     @override(RLModule)
@@ -62,8 +62,8 @@ class CustomDefaultPPOTorchRLModule(TorchRLModule, DefaultPPORLModule):
         embeddings: Optional[Any] = None,
     ) -> TensorType:
 
-        # Extract action mask and modify the batch to contain only observations.
-        action_mask, batch = self._preprocess_batch(batch)
+        # # Extract action mask and modify the batch to contain only observations.
+        # action_mask, batch = self._preprocess_batch(batch)
 
         if embeddings is None:
             # Separate vf-encoder.
@@ -77,6 +77,9 @@ class CustomDefaultPPOTorchRLModule(TorchRLModule, DefaultPPORLModule):
                 embeddings = self.encoder.critic_encoder(batch_)[ENCODER_OUT]
             # Shared encoder.
             else:
+                # print(f'batch={batch}')
+                # print(f'obs={batch[Columns.OBS]}')
+                batch[Columns.OBS] = batch[Columns.OBS]['observations']
                 embeddings = self.encoder(batch)[ENCODER_OUT][CRITIC]
 
         # Value head.

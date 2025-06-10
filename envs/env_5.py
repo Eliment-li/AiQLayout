@@ -29,16 +29,7 @@ use agent manager to manage agents
 actor act one by one
 we compute the reward each round 
 '''
-class Env_5(MultiAgentEnv):
-
-    def __init__(self, config=None):
-        super().__init__()
-        self.steps = 0
-        self.num_qubits = args.num_qubits
-        print(f'init env_5 with {self.num_qubits} qubits')
-        self.max_step = args.env_max_step * self.num_qubits
-        # define chip
-        self.init_q_pos  = [
+init_q_pos  = [
             (0,1),
             (0,2),
             (0,3),
@@ -50,9 +41,18 @@ class Env_5(MultiAgentEnv):
             (2, 3),
             (2, 4),
             (2, 5),
-        ]
+]
+class Env_5(MultiAgentEnv):
+
+    def __init__(self, config=None):
+        super().__init__()
+        self.steps = 0
+        self.num_qubits = args.num_qubits
+        print(f'init env_5 with {self.num_qubits} qubits')
+        self.max_step = args.env_max_step * self.num_qubits
+        # define chip
         self.DoneAct = args.chip_rows * args.chip_cols
-        self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=self.init_q_pos)
+        self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=[])
         self.chip.print_state()
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
@@ -80,8 +80,6 @@ class Env_5(MultiAgentEnv):
         #
         #     }
         # )
-
-
         self.observation_spaces = {f"agent_{i+1}": self.o_space for i in range(self.num_qubits)}
         self.action_spaces = {f"agent_{i+1}":  self.a_space for i in range(self.num_qubits)}
         self.pe = positionalencoding2d(self.chip.rows,self.chip.cols,4)
@@ -89,13 +87,16 @@ class Env_5(MultiAgentEnv):
 
     def reset(self, *, seed=None, options=None):
         self.steps = 0
-        self.chip.reset(q_pos=self.init_q_pos)
+        self.chip.reset(q_pos=[])
+        self.chip.clean_qubits()
         self.am.reset_agents()
         self.dist_rec = [[] for i in range(self.num_qubits)]
-        self.min_sum_dist = self.compute_dist(self.am.activate_agent)[0]
+
+        temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=init_q_pos)
+        self.min_sum_dist = self.compute_dist(temp_chip,self.am.activate_agent)[0]
 
         #clean the init position
-        self.chip.clean_qubits()
+
         self.reward = 0
         self._max_total_r = -np.inf
         self._agent_total_r = 0
@@ -126,7 +127,6 @@ class Env_5(MultiAgentEnv):
     def step(self, action):
         terminateds = self.is_terminated()
         act = action[f'agent_{self.am.activate_agent}']
-        print(f'act ={act}')
         rewards = {f'agent_{self.am.activate_agent}': self.reward}
         # if act == self.DoneAct or self.am.is_done(self.am.activate_agent):
         #     self.am.set_done(self.am.activate_agent)
@@ -136,30 +136,23 @@ class Env_5(MultiAgentEnv):
         col = act % self.chip.cols
         # last_dist = self.distance_to_m(self.am.activate_agent)
         success = self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
-        if not success:
-            print(f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}')
-            print(self.chip.valid_positions)
-            self.chip.print_state()
-            pprint(self.chip.valid_positions)
-            terminateds = {"__all__": True}
-            rewards = {f'agent_{self.am.activate_agent}': -2}
-            return self._get_obs(), rewards, terminateds, {}, self._get_infos()
-        else:
-            if self.am.activate_agent == self.num_qubits:
-                try:
-                    dist, other_dist, self_dist = self.compute_dist(self.am.activate_agent)
-                    self.dist_rec[self.am.activate_agent - 1] = f'{dist}'
-                    # calc reward
-                    if dist is None:
-                        terminateds = {"__all__": True}
-                        rewards = {f'agent_{self.am.activate_agent}': -2}
-                    else:
-                        self.sw.next(dist)
-                        self.reward = self.reward_function(dist=dist, last_dist=self.last_dist)
-                        self.last_dist = dist
-                except Exception as e:
-                    print(f'compute dist error: {e} at step {self.steps}')
-                    self.chip.print_state()
+        assert success, f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}'
+        if self.am.activate_agent == self.num_qubits:
+            ##TODO  clean qubits?
+            try:
+                dist, other_dist, self_dist = self.compute_dist(self.chip,self.am.activate_agent)
+                self.dist_rec[self.am.activate_agent - 1] = f'{dist}'
+                # calc reward
+                if dist is None:
+                    terminateds = {"__all__": True}
+                    rewards = {f'agent_{self.am.activate_agent}': -2}
+                else:
+                    self.sw.next(dist)
+                    self.reward = self.reward_function(dist=dist, last_dist=self.last_dist)
+                    self.last_dist = dist
+            except Exception as e:
+                print(f'compute dist error: {e} at step {self.steps}')
+                self.chip.print_state()
 
 
         truncated = {}
@@ -177,12 +170,12 @@ class Env_5(MultiAgentEnv):
                     }
                  }
 
-    def compute_dist(self,player):
+    def compute_dist(self,chip:Chip, player:int):
         gates = get_gates_fixed()
 
         depth = 1
         new = True
-        layer = deepcopy(self.chip.state)
+        layer = deepcopy(chip.state)
 
         i = 0
         other_dist = 0
@@ -190,8 +183,8 @@ class Env_5(MultiAgentEnv):
         while i < len(gates):
             start, goal = gates[i]
 
-            sr,sc = self.chip.q_coor(start)
-            gr,gc =  self.chip.q_coor(goal)
+            sr,sc = chip.q_coor(start)
+            gr,gc =  chip.q_coor(goal)
             path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
 
             if start == player or goal == player:
@@ -215,7 +208,7 @@ class Env_5(MultiAgentEnv):
                     # append_data(file_path=path,data=str(self.chip.state))
                     return None,None,None
                 else:
-                    layer = deepcopy(self.chip.state)
+                    layer = deepcopy(chip.state)
                     depth += 1
                     new = True
             else:
@@ -276,21 +269,6 @@ class Env_5(MultiAgentEnv):
 
 
 if __name__ == '__main__':
-    env = Env_5()
-    print(isinstance(env.o_space, gym.spaces.dict.Dict))
-    if not isinstance(env.o_space, gym.spaces.dict.Dict):
-        print(env.o_space['observations'])
-    # env.reset()
-    # env.chip.print_state()
-    # for i in range(10):
-    #     pn = ((i) % 10) + 1
-    #     a =random.randint(0, env.DoneAct-1)
-    #     print(f'player{pn}->{a}')
-    #     act ={f'agent_{pn}':a}
-    #
-    #     env.step(act)
-    # env.chip.print_state()
     pass
-
 
 

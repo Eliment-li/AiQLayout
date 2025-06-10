@@ -109,13 +109,5 @@ def calculate_total_distance(coords) -> float:
 
     return total_distance
 if __name__ == '__main__':
-    # env = Env_0()
-    # obs,_ = env.reset()
-    # pprint(obs)
-    print(gym.spaces.Box(
-        low=0,
-        high=128,
-        shape=(2, 3),
-        dtype=np.uint8
-    ).sample())
+    pass
 

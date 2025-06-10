@@ -163,7 +163,8 @@ def evaluate_v2(base_config, args, results):
 
         last_player = env.am.activate_agent
         obs, reward, terminated, truncated, info = env.step(warpped_act) # after step, env.am.activate_agent  will turn to next
-
+        print('#######')
+        print(f'valid position={env.chip.valid_positions}')
         if f'agent_{last_player}' in terminated and terminated[f'agent_{last_player}']:
             print(f'player {last_player} done')
         if reward is not None:

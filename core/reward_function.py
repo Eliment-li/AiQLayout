@@ -104,23 +104,6 @@ class RewardFunction:
 
 
 
-def test_rf(distance: list):
-    sw = SlideWindow(5)
-    total = 0
-    rf = RewardFunction()
-
-    last_dist = distance[0]
-    for i in range(1,len(distance)):
-        dist = distance[i]
-        reward = rf.rfv2(init_dist=distance[0],last_dist=last_dist, dist=dist,avg_dist=sw.current_avg)
-        last_dist = dist
-
-        total *= 0.99
-        total += reward
-
-        sw.next(dist)
-        print("reward: ", reward,'total:',total)
-
 
 if __name__ == '__main__':
     d =[24.2409,	25.21]
