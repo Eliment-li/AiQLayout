@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from ray import tune
 from ray.air.constants import TRAINING_ITERATION
 from ray.rllib.algorithms import PPOConfig
@@ -10,6 +12,7 @@ import os
 from ray.rllib.utils.framework import try_import_torch
 from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
 
+from core.custom_ppo_rl_module import CustomDefaultPPOTorchRLModule
 from envs.env_4 import Env_4
 from envs.env_5 import Env_5
 
@@ -64,7 +67,7 @@ def get_rl_module_specs():
     rl_module_specs = {
             'policy_{}'.format(i): RLModuleSpec(
                 model_config=model_config,
-                #module_class = ActionMaskingTorchRLModule
+                module_class = CustomDefaultPPOTorchRLModule
             ) for i in range(1, int(args.num_qubits) + 1)
     }
     return rl_module_specs
@@ -89,9 +92,9 @@ if __name__ == "__main__":
 
     args = ConfigSingleton().get_args()
     stop = {
-            f"{ENV_RUNNER_RESULTS}/{NUM_ENV_STEPS_SAMPLED_LIFETIME}": (
-                args.stop_timesteps
-            ),
+            # f"{ENV_RUNNER_RESULTS}/{NUM_ENV_STEPS_SAMPLED_LIFETIME}": (
+            #     args.stop_timesteps
+            # ),
             TRAINING_ITERATION: args.stop_iters,
     }
 
@@ -151,6 +154,7 @@ if __name__ == "__main__":
             num_gpus_per_learner= args.num_gpus_per_learner
         )
     )
+    # pprint(base_config.to_dict())
     # .rl_module(
     #     rl_module_spec=MultiRLModuleSpec(rl_module_specs={
     #         "learning_policy": RLModuleSpec(),
