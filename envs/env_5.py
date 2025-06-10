@@ -118,7 +118,7 @@ class Env_5(MultiAgentEnv):
         ret = {
             f'agent_{self.am.activate_agent}':{
                 'observations': obs,
-                'action_mask': self.chip.valid_positions * -1e10
+                'action_mask': self.chip.valid_positions
             }
         }
         return ret

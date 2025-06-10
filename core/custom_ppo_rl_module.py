@@ -47,6 +47,7 @@ class CustomDefaultPPOTorchRLModule(TorchRLModule, DefaultPPORLModule):
     def _forward_train(self, batch: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """Train forward pass (keep embeddings for possible shared value func. call)."""
         output = {}
+
         encoder_outs = self.encoder(batch)
         output[Columns.EMBEDDINGS] = encoder_outs[ENCODER_OUT][CRITIC]
         if Columns.STATE_OUT in encoder_outs:
