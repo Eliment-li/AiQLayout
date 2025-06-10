@@ -118,7 +118,7 @@ class Env_5(MultiAgentEnv):
         ret = {
             f'agent_{self.am.activate_agent}':{
                 'observations': obs,
-                'action_mask': self.chip.valid_positions
+                'action_mask': self.chip.valid_positions * -1e10
             }
         }
         return ret
@@ -137,9 +137,10 @@ class Env_5(MultiAgentEnv):
         # last_dist = self.distance_to_m(self.am.activate_agent)
         success = self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
         if not success:
-            # print(f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}')
-            # print(self.chip.valid_positions)
-            # self.chip.print_state()
+            print(f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}')
+            print(self.chip.valid_positions)
+            self.chip.print_state()
+            pprint(self.chip.valid_positions)
             terminateds = {"__all__": True}
             rewards = {f'agent_{self.am.activate_agent}': -2}
             return self._get_obs(), rewards, terminateds, {}, self._get_infos()

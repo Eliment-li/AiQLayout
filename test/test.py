@@ -1,8 +1,10 @@
 import numpy as np
 import random
 
+import torch
 from gymnasium.spaces import Discrete
 from matplotlib import pyplot as plt
+from ray.rllib.utils.torch_utils import FLOAT_MIN
 
 
 def generate_irregular_obstacle(size, complexity=0.75, density=0.75):
@@ -107,8 +109,8 @@ if __name__ == "__main__":
     # # 可视化地图
     # visualize_map(obstacle_map)
 
-    pos = [(1,2),(3,4)]
-    pre = pos[0]
-    pos[0] = (5,6)
-    print(pre)
-
+    arr = torch.zeros(10, dtype=float)
+    print(arr)
+    arr[1] = 1
+    arr = torch.clamp(torch.log(arr), min=FLOAT_MIN)
+    print(arr)
