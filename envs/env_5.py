@@ -139,6 +139,8 @@ class Env_5(MultiAgentEnv):
         assert success, f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}'
         if self.am.activate_agent == self.num_qubits:
             ##TODO  clean qubits?
+            #clean qubits
+            #self.chip.clean_qubits()
             try:
                 dist, other_dist, self_dist = self.compute_dist(self.chip,self.am.activate_agent)
                 self.dist_rec[self.am.activate_agent - 1] = f'{dist}'
@@ -265,6 +267,11 @@ class Env_5(MultiAgentEnv):
 
         else:
             r = rf_to_call(init_dist=self.init_dist, last_dist=last_dist, dist=dist, avg_dist=self.sw.current_avg)
+
+            self._agent_total_r = self._agent_total_r * 0.99 + r
+            # update max total r for the current agent
+            if self._agent_total_r > self._max_total_r:
+                self._max_total_r = self._agent_total_r
         return r
 
 
