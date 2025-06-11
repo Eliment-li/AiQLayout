@@ -103,9 +103,16 @@ def convert_gates_to_heat_map(x,y,gates):
 
 
 if __name__ == "__main__":
-    #gates = get_gates(10)
-    gates  = get_gates_fixed()
-    heatmap = convert_gates_to_heat_map(10, 10, gates)
-    plot_heatmap_data(heatmap)
-    cleaned = [tuple(float(x) for x in pair) for pair in gates]
-    print(cleaned)
+    # #gates = get_gates(10)
+    # gates  = get_gates_fixed()
+    # heatmap = convert_gates_to_heat_map(10, 10, gates)
+    # plot_heatmap_data(heatmap)
+    # cleaned = [tuple(float(x) for x in pair) for pair in gates]
+    # print(cleaned)
+    from mqt.bench import get_benchmark
+
+    # get a benchmark circuit on algorithmic level representing the GHZ state with 5 qubits
+    qc_algorithmic_level = get_benchmark(benchmark_name="ghz", level="alg", circuit_size=5)
+
+    # draw the circuit
+    print(qc_algorithmic_level.draw())
