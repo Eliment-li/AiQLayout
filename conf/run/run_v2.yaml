@@ -6,7 +6,7 @@ enable_broken_patch: False
 
 rf_version: 3
 num_qubits: 10
-env_max_step: 20
+env_max_step: 5
 #lstm
 use_lstm: False
 use_gae: True
@@ -25,7 +25,7 @@ kl_target: 0.08
 
 #learning rate
 gamma: 0.99
-lr_grid: [1.0e-4]
+lr_grid: [5.0e-5]
 gamma_grid: [0.99]
 #fcnet
 fcnet_activation: Swish
@@ -38,7 +38,7 @@ enable_cnn: True
 
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters:  4 # Default: default_iters
+stop_iters:  3 # Default: default_iters
 
 # If run --as-release-test, --as-test must also be set.
 as_test: false

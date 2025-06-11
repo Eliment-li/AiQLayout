@@ -222,7 +222,6 @@ def evaluate(base_config, args, results):
             COMPONENT_LEARNER_GROUP,
             COMPONENT_LEARNER,
             COMPONENT_RL_MODULE,
-
            # 'policy_1' # DEFAULT_MODULE_ID,
         )
     )
@@ -298,20 +297,14 @@ def evaluate(base_config, args, results):
 
         obs, reward, terminated, truncated, info = env.step(actions)
         rewrads.append(reward['agent_1'])
-        distance.append(info['agent_1']['distance'])
+        distance.append(info['agent_1']['_max_total_r'])
         # Keep our `Episode` instance updated at all times.
         # update_episode()
         stop_timesteps -= 1
         if  terminated['__all__'] or truncated or stop_timesteps <= 0:
             pprint(obs)
-            #print(f'{terminated},{truncated},{stop_timesteps}')
             break
 
-    # print(rewrads)
-    #plot_reward([rewrads,distance])
-
-    # save_results(actions)
-    # print(env.chip.state)wan
 
 def save_results(actions,rewards,distance,max_total_r,init_chip_state,final_chip_state):
     args = ConfigSingleton().get_args()
