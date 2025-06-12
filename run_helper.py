@@ -213,7 +213,7 @@ def append_swanlab(tune_callbacks,args,config,group,name = None):
             api_key=wandb_key,
             project=project,
             workspace='Eliment-li',
-            upload_checkpoints=False,
+            upload_checkpoints=True,
             **kwargs,
         )
     )
