@@ -20,6 +20,9 @@ from ray.tune.experiment import Trial
 from ray.tune.logger import LoggerCallback
 from ray.tune.utils import flatten_dict
 from ray.util.queue import Queue
+
+from config import ConfigSingleton
+
 '''
 migrate from the WandbLoggerCallback
 https://docs.ray.io/en/latest/tune/api/doc/ray.air.integrations.wandb.WandbLoggerCallback.html
@@ -152,6 +155,10 @@ class _SandbLabLoggingActor:
         os.environ["WANDB_START_METHOD"] = "thread"
         run = self._swanlab.init(*self.args, **self.kwargs)
         run.config.trial_log_path = self._logdir
+        #log config file
+        args = ConfigSingleton().get_args()
+        text = self._swanlab.Text(str(args))
+        self._swanlab.log(text,print_to_console = True)
 
         #_run_swanlab_process_run_info_hook(run)
         while True:
@@ -176,7 +183,9 @@ class _SandbLabLoggingActor:
         self._swanlab.finish()
 
     def _handle_checkpoint(self, checkpoint_path: str):
-        print(f'handle checkpoint yourself, paht={checkpoint_path}')
+        text = swanlab.Text(checkpoint_path)
+        swanlab.log({f"checkpoint": text},step= int(checkpoint_path[-4:]))
+        # print(f'logging the checkpoint path, paht={checkpoint_path}')
 
     def _handle_result(self, result: Dict) -> Tuple[Dict, Dict]:
         config_update = result.get("config", {}).copy()
@@ -411,6 +420,7 @@ class SwanLabLoggerCallback(LoggerCallback):
                 self._trial_queues[trial].put((_QueueItem.CHECKPOINT, checkpoint_root))
 
     def log_trial_end(self, trial: "Trial", failed: bool = False):
+
         self._signal_logging_actor_stop(trial=trial)
         self._cleanup_logging_actors()
 
