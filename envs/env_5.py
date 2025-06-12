@@ -31,16 +31,26 @@ we compute the reward each round
 '''
 init_q_pos  = [
             (0,1),
-            (0,2),
-            (0,3),
-            (0,4),
-            (0,5),
+            (1,1),
+            (2,1),
+            (3,1),
+            (4,1),
+            (5,1),
 
-            (2, 1),
-            (2, 2),
+
+            (0, 3),
+            (1, 3),
             (2, 3),
-            (2, 4),
+            (3, 3),
+            (4, 3),
+            (5, 3),
+
+            (0, 5),
+            (1, 5),
             (2, 5),
+            (3, 5),
+            (4, 5),
+            (5, 5),
 ]
 class Env_5(MultiAgentEnv):
 
@@ -84,7 +94,7 @@ class Env_5(MultiAgentEnv):
         self.action_spaces = {f"agent_{i+1}":  self.a_space for i in range(self.num_qubits)}
         self.pe = positionalencoding2d(self.chip.rows,self.chip.cols,4)
         self.sw = SlideWindow(50)
-
+        self.r_scale = RewardScaling(shape=1, gamma=0.9)
     def reset(self, *, seed=None, options=None):
         self.steps = 0
         self.chip.reset(q_pos=[])
@@ -102,6 +112,7 @@ class Env_5(MultiAgentEnv):
         self._agent_total_r = 0
         self.last_dist = self.min_sum_dist
         self.init_dist = self.min_sum_dist
+        print(f'init_dist: {self.init_dist}')
         # self.sw =SlideWindow(50)
 
         infos = {f'agent_{i + 1}':  'default' for i in range(self.num_qubits)}
@@ -145,8 +156,9 @@ class Env_5(MultiAgentEnv):
                 self.dist_rec[self.am.activate_agent - 1] = f'{dist}'
                 # calc reward
                 if dist is None:
-                    terminateds = {"__all__": True}
-                    rewards = {f'agent_{self.am.activate_agent}': -2}
+                    # terminateds = {"__all__": True}
+                    # rewards = {f'agent_{self.am.activate_agent}': -2}
+                    self.reward = self.r_scale(-4)
                 else:
                     self.sw.next(dist)
                     self.reward = self.reward_function(dist=dist, last_dist=self.last_dist)
@@ -271,10 +283,14 @@ class Env_5(MultiAgentEnv):
             # update max total r for the current agent
             if self._agent_total_r > self._max_total_r:
                 self._max_total_r = self._agent_total_r
+
+        if args.reward_scaling:
+            r =self.r_scale(r)
         return r
 
 
 if __name__ == '__main__':
-    pass
+    env = Env_5()
+    env.reset()
 
 

@@ -1,11 +1,13 @@
 #chip
-chip_rows: 8
-chip_cols: 8
+chip_rows: 7
+chip_cols: 7
 verbose: 1
 enable_broken_patch: False
 
+reward_scaling: True
+
 rf_version: 3
-num_qubits: 10
+num_qubits: 18
 env_max_step: 10
 #lstm
 use_lstm: False
@@ -25,15 +27,15 @@ kl_target: 0.08
 
 #learning rate
 gamma: 0.99
-lr_grid: [5.0e-5]
+lr_grid: [1.0e-4]
 gamma_grid: [0.99]
 #fcnet
 fcnet_activation: Swish
-fcnet_hiddens: [512, 512]
-head_fcnet_hiddens: [512,256,128]
+fcnet_hiddens: [1024, 1024]
+head_fcnet_hiddens: [1024,512,256]
 #cnn
 conv_activation: Swish
-enable_cnn: True
+enable_cnn: False
 
 
 

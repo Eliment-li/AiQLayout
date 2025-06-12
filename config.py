@@ -6,6 +6,8 @@ import torch
 from hydra import initialize, compose
 from threading import Lock
 from omegaconf import OmegaConf
+from sympy import pprint
+
 from utils.file_util import get_root_dir
 from shared_memory_dict import SharedMemoryDict
 
@@ -66,6 +68,12 @@ class ConfigSingleton:
 
     def get_args(self):
         return self.args
+
+    def to_string(self):
+        """
+        返回配置的字符串表示
+        """
+        return OmegaConf.to_yaml(self.args)
     @staticmethod
     def update(self, key, value):
         """
@@ -165,13 +173,6 @@ if __name__ == "__main__":
     # 第一次初始化
     global_config = ConfigSingleton()
     args = global_config.get_args()
-    args.num_gpus_per_learner = 2
-    print(args.num_gpus_per_learner)
-    # get again
-    another_config_instance = ConfigSingleton()
-    print(another_config_instance.get_args())
-
-    # verify Singleton
-    print(global_config is another_config_instance)  # True
+    print(global_config.to_string())
 
 

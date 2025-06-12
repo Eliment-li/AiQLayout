@@ -160,6 +160,7 @@ class SlideWindow:
             self.total -= self.queue.popleft()
         self.queue.append(val)
         self.total += val
+        return self.current_avg
 
     def reset(self):
         self.queue.clear()
@@ -174,12 +175,37 @@ class SlideWindow:
 
 
 if __name__ == '__main__':
-    conv_filters = [
-        [16, 1, 1, 'same'],  # 过滤器数量，卷积核大小 步幅
-        [32, 3, 1,'valid'],  # 过滤器数量，卷积核大小 步幅
-        [64, 3, 1,'valid'],  # 过滤器数量，卷积核大小 步幅
-    ]
-    input_size = (10, 10)
-    print("\n测试案例1: 混合padding模式")
-    final = CNN.calculate_conv_output_size(input_size, conv_filters)
-    print("最终输出维度:", final)
+    # 测试基本功能
+    print("=== 测试基本功能 ===")
+    ma = SlideWindow(3)
+    print(f"添加1，平均值: {ma.next(1):.2f}")  # 期望: 1.00
+    print(f"添加2，平均值: {ma.next(2):.2f}")  # 期望: 1.50
+    print(f"添加3，平均值: {ma.next(3):.2f}")  # 期望: 2.00
+    print(f"添加4，平均值: {ma.next(4):.2f}")  # 期望: 3.00 (1被移除)
+
+    # 测试重置功能
+    print("\n=== 测试重置功能 ===")
+    ma.reset()
+    print(f"重置后当前平均值: {ma.current_avg:.2f}")  # 期望: 0.00
+    print(f"添加5，平均值: {ma.next(5):.2f}")  # 期望: 5.00
+    print(f"添加10，平均值: {ma.next(10):.2f}")  # 期望: 7.50
+
+    # 测试边界情况
+    print("\n=== 测试边界情况 ===")
+    ma = SlideWindow(2)
+    print(f"添加0，平均值: {ma.next(0):.2f}")  # 期望: 0.00
+    print(f"添加-1，平均值: {ma.next(-1):.2f}")  # 期望: -0.50
+    print(f"添加1，平均值: {ma.next(1):.2f}")  # 期望: 0.00 (-1和1)
+
+    # 测试窗口大小为1
+    print("\n=== 测试窗口大小为1 ===")
+    ma = SlideWindow(1)
+    print(f"添加10，平均值: {ma.next(10):.2f}")  # 期望: 10.00
+    print(f"添加20，平均值: {ma.next(20):.2f}")  # 期望: 20.00
+
+    # 测试无效窗口大小
+    print("\n=== 测试无效窗口大小 ===")
+    try:
+        ma = SlideWindow(0)
+    except ValueError as e:
+        print(f"捕获到预期错误: {e}")  # 期望: 窗口大小必须为正整数

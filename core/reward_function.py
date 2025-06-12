@@ -4,10 +4,12 @@ from mimetypes import inited
 import numpy as np
 import queue
 
+from sympy import pprint
 from sympy.abc import alpha
 
 from collections import deque
 
+from core.reward_scaling import RewardScaling
 from utils.calc_util import SlideWindow
 
 
@@ -77,7 +79,7 @@ class RewardFunction:
         k2 = np.log(abs(k2)+1) if k2 > 0 else -np.log(abs(k2)+1)
 
         if k2 > 0:
-            r = (math.pow((1 + k2), 2) - 1) * (1+abs(k1))
+            r = (math.pow((1 + k2), 2) - 1) * (1 + abs(k1))
         elif k2 < 0:
             r = (math.pow((1 - k2), 2) - 1) * (1 +abs(k1)) * -1.15 -0.05
         else:
@@ -106,18 +108,19 @@ class RewardFunction:
 
 
 if __name__ == '__main__':
-    d =[24.2409,	25.21]
-    init = 24.2409
-    last = d[0]
-    #[np.float64(24.2409), np.float64(11.4605), np.float64(12.4472), np.float64(13.6338)],
+    init_dist = 483
+    last_dist = init_dist
+    dist = [556,616,553,566,551,550,532]
     sw = SlideWindow(50)
+    rs = RewardScaling(shape=1, gamma=0.9)
+    r_rec=[]
+    rs_erc = []
+    for d in dist:
 
-    r = RewardFunction().rfv2(init_dist=init,last_dist=last,dist=d[0],avg_dist=0)
-    sw.next(last)
-    print(r)
-
-
-    last = d[0]
-    r = RewardFunction().rfv2(init_dist=init, last_dist=last, dist=d[1], avg_dist=sw.current_avg)
-    sw.next(last)
-    print(r)
+        sw.next(d)
+        r = RewardFunction().rfv3(init_dist=init_dist,last_dist=last_dist,dist=d,avg_dist=sw.current_avg)
+        last_dist = d
+        r_rec.append(r)
+        rs_erc.append(rs(r))
+    print(r_rec)
+    print(rs_erc)

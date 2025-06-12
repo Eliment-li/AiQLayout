@@ -156,9 +156,8 @@ class _SandbLabLoggingActor:
         run = self._swanlab.init(*self.args, **self.kwargs)
         run.config.trial_log_path = self._logdir
         #log config file
-        args = ConfigSingleton().get_args()
-        text = self._swanlab.Text(str(args))
-        self._swanlab.log(text,print_to_console = True)
+
+        print(ConfigSingleton().to_string())
 
         #_run_swanlab_process_run_info_hook(run)
         while True:
@@ -172,6 +171,8 @@ class _SandbLabLoggingActor:
 
             assert item_type == _QueueItem.RESULT
             log, config_update = self._handle_result(item_content)
+            # print(f'config_update={config_update}')
+            # print(f'_swanlab.config={self._swanlab.config}')
             try:
                 self._swanlab.config.update(config_update, allow_val_change=True)
                 self._swanlab.log(log, step=log.get(TRAINING_ITERATION))

@@ -199,7 +199,7 @@ def append_swanlab(tune_callbacks,args,config,group,name = None):
     )
     kwargs = {
         "name": name if name else args.wandb_run_name,
-        "group":group
+        # "group":group
         #"silent": True
     }
     tune_callbacks.append(
