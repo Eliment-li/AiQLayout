@@ -63,7 +63,7 @@ class Env_5(MultiAgentEnv):
         self.o_space =Box(
                             low=-5,
                             high=self.num_qubits + 1,
-                            shape=(4+1,args.chip_rows,args.chip_cols),
+                            shape=(4+1+1,args.chip_rows,args.chip_cols),
                             dtype=np.float32,
                             )
 
@@ -112,7 +112,10 @@ class Env_5(MultiAgentEnv):
         repeat_state = np.repeat(self.chip.state[np.newaxis, :, :], 4, axis=0)
         obs = repeat_state + self.pe
         pm =np.expand_dims(self.chip.position_mask(self.am.activate_agent), axis=0)
-        obs = np.concatenate((obs,pm),axis=0)  # (4, rows, cols) -> (4+1, rows, cols)
+        obs = np.concatenate((obs,pm),axis = 0)  # (4, rows, cols) -> (4+1, rows, cols)
+        chip_state = deepcopy(self.chip.state)
+        chip_state = np.expand_dims(chip_state, axis=0)  # (rows, cols) -> (1, rows, cols)
+        obs = np.concatenate((obs,chip_state),axis = 0) # (5, rows, cols) -> (4+1+1, rows, cols)
         # return {
         #     f'agent_{self.am.activate_agent}': obs
         # }
