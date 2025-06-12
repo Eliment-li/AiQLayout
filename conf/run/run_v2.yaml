@@ -6,7 +6,7 @@ enable_broken_patch: False
 
 rf_version: 3
 num_qubits: 10
-env_max_step: 5
+env_max_step: 10
 #lstm
 use_lstm: False
 use_gae: True

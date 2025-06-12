@@ -134,7 +134,6 @@ class Env_5(MultiAgentEnv):
         # else:
         row = act // self.chip.cols
         col = act % self.chip.cols
-        # last_dist = self.distance_to_m(self.am.activate_agent)
         success = self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
         assert success, f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}'
         if self.am.activate_agent == self.num_qubits:
@@ -268,7 +267,7 @@ class Env_5(MultiAgentEnv):
         else:
             r = rf_to_call(init_dist=self.init_dist, last_dist=last_dist, dist=dist, avg_dist=self.sw.current_avg)
 
-            self._agent_total_r = self._agent_total_r * 0.99 + r
+            self._agent_total_r = self._agent_total_r * args.gamma + r
             # update max total r for the current agent
             if self._agent_total_r > self._max_total_r:
                 self._max_total_r = self._agent_total_r
