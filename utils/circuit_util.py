@@ -66,6 +66,22 @@ def get_gates_fixed():
                      (6.0, 8.0), (11.0, 11.0), (7.0, 9.0), (5.0, 12.0)]).astype(int)
 
 
+def get_heat_map_resize():
+    return [[0.04705882, 0., 0., 0., 0.,
+      0., 0.],
+     [0.18039216, 0.18039216, 0.01568628, 0.00392157, 0.,
+      0., 0.],
+     [0.05490196, 0.21176471, 0.11764706, 0., 0.,
+      0., 0.],
+     [0.16470589, 0.17254902, 0.40392157, 0.34901962, 0.00392157,
+      0.00784314, 0.],
+     [0.13333334, 0.26666668, 0.41568628, 0.42745098, 0.14117648,
+      0., 0.00392157],
+     [0.07058824, 0.1764706, 0.27058825, 0.42352942, 0.2627451,
+      0.08627451, 0.00784314],
+     [0.04705882, 0.17254902, 0.14901961, 0.17254902, 0.14509805,
+      0.13333334, 0.00392157]]
+
 def  get_gates(num_qubits:int,size = 200,format=None ):
     # 设置正态分布的均值和标准差
     mean = 10  # 均值
@@ -114,11 +130,43 @@ def convert_gates_to_heat_map(x,y,gates):
 
     return heatmap_data
 
+import numpy as np
+from PIL import Image
+def resize_2d_matrix(matrix, target_size):
+    """
+    使用 Lanczos 重采样缩放二维矩阵
+    :param matrix: 输入矩阵 (n x n)
+    :param target_size: 目标尺寸 (m, m)
+    :return: 缩放后的矩阵 (m x m)
+    """
+    # 1. 将矩阵转为 Pillow Image 对象
+    if matrix.dtype == np.float64 or matrix.dtype == np.float32:
+        # 如果是浮点型，假设范围在 [0, 1]，转为 [0, 255] 的 uint8
+        img = Image.fromarray((matrix * 255).astype(np.uint8))
+    else:
+        # 直接转换（假设是 uint8 或其他兼容类型）
+        img = Image.fromarray(matrix)
 
+    # 2. 使用 Lanczos 重采样
+    img_resized = img.resize(target_size, Image.LANCZOS)
+
+    # 3. 转回 NumPy 矩阵
+    resized_matrix = np.array(img_resized)
+
+    # 如果是浮点型输入，转换回 [0, 1] 范围
+    if matrix.dtype == np.float64 or matrix.dtype == np.float32:
+        resized_matrix = resized_matrix.astype(np.float32) / 255.0
+
+    return resized_matrix
 if __name__ == "__main__":
     gates = get_gates(18)
     # gates  = get_gates_fixed()
     heatmap = convert_gates_to_heat_map(18, 18, gates)
-    plot_heatmap_data(heatmap)
-    cleaned = [tuple(float(x) for x in pair) for pair in gates]
-    print(cleaned)
+    #pprint(heatmap)
+    # plot_heatmap_data(heatmap)
+    # plot_heatmap_data(resize_2d_matrix(heatmap,(7,7)))
+
+    # cleaned = [tuple(float(x) for x in pair) for pair in gates]
+    # print(cleaned)
+    resize = resize_2d_matrix(heatmap,(7,7))
+    print(repr(resize))

@@ -27,7 +27,7 @@ kl_target: 0.08
 
 #learning rate
 gamma: 0.99
-lr_grid: [1.0e-4]
+lr_grid: [5.0e-5]
 gamma_grid: [0.99]
 #fcnet
 fcnet_activation: Swish
@@ -35,7 +35,7 @@ fcnet_hiddens: [1024, 1024]
 head_fcnet_hiddens: [1024,512,256]
 #cnn
 conv_activation: Swish
-enable_cnn: False
+enable_cnn: True
 
 
 

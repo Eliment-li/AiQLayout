@@ -151,9 +151,8 @@ class Env_5(MultiAgentEnv):
         success = self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
         assert success, f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}'
         if self.am.activate_agent == self.num_qubits:
-            ##TODO  clean qubits?
             #clean qubits
-            #self.chip.clean_qubits()
+            self.chip.clean_qubits()
             try:
                 dist, other_dist, self_dist = self.compute_dist(self.chip,self.am.activate_agent)
                 self.dist_rec[self.am.activate_agent - 1] = f'{dist}'
