@@ -18,7 +18,7 @@ from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
-from utils.circuit_util import get_gates_fixed
+from utils.circuit_util import get_gates_fixed, resize_2d_matrix, resize_3d_array, get_heat_map
 from utils.csv_util import append_data
 from utils.position import positionalencoding2d
 
@@ -35,31 +35,29 @@ init_q_pos  = [
             (2,1),
             (3,1),
             (4,1),
-            (5,1),
-
 
             (0, 3),
             (1, 3),
             (2, 3),
             (3, 3),
             (4, 3),
-            (5, 3),
 
-            (0, 5),
-            (1, 5),
-            (2, 5),
-            (3, 5),
-            (4, 5),
-            (5, 5),
+            #
+            # (0, 5),
+            # (1, 5),
+            # (2, 5),
+            # (3, 5),
+            # (4, 5),
+            # (5, 5),
 ]
 class Env_5(MultiAgentEnv):
 
     def __init__(self, config=None):
         super().__init__()
-        self.steps = 0
+        self.steps = 1
         self.num_qubits = args.num_qubits
         print(f'init env_5 with {self.num_qubits} qubits')
-        self.max_step = args.env_max_step * self.num_qubits
+        self.max_step = args.env_max_step *self.num_qubits
         # define chip
         self.DoneAct = args.chip_rows * args.chip_cols
         self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=[])
@@ -73,7 +71,7 @@ class Env_5(MultiAgentEnv):
         self.o_space =Box(
                             low=-5,
                             high=self.num_qubits + 1,
-                            shape=(4+1+1,args.chip_rows,args.chip_cols),
+                            shape=(4+1+1+1,10,10),
                             dtype=np.float32,
                             )
 
@@ -95,8 +93,9 @@ class Env_5(MultiAgentEnv):
         self.pe = positionalencoding2d(self.chip.rows,self.chip.cols,4)
         self.sw = SlideWindow(50)
         self.r_scale = RewardScaling(shape=1, gamma=0.9)
+        self.heat_map = get_heat_map()
     def reset(self, *, seed=None, options=None):
-        self.steps = 0
+        self.steps = 1
         self.chip.reset(q_pos=[])
         self.chip.clean_qubits()
         self.am.reset_agents()
@@ -120,13 +119,21 @@ class Env_5(MultiAgentEnv):
         return self._get_obs(),infos
 
     def _get_obs(self):
-        repeat_state = np.repeat(self.chip.state[np.newaxis, :, :], 4, axis=0)
+        chip_state = deepcopy(self.chip.state)
+        repeat_state = np.repeat(chip_state[np.newaxis, :, :], 4, axis=0)
         obs = repeat_state + self.pe
         pm =np.expand_dims(self.chip.position_mask(self.am.activate_agent), axis=0)
         obs = np.concatenate((obs,pm),axis = 0)  # (4, rows, cols) -> (4+1, rows, cols)
-        chip_state = deepcopy(self.chip.state)
+
         chip_state = np.expand_dims(chip_state, axis=0)  # (rows, cols) -> (1, rows, cols)
+
         obs = np.concatenate((obs,chip_state),axis = 0) # (5, rows, cols) -> (4+1+1, rows, cols)
+
+        zoom_factor = (10/7, 10/7)
+        obs  = resize_3d_array(obs,zoom_factor)
+
+        heat_map = [self.heat_map]
+        obs = np.concatenate((obs, heat_map), axis=0)  # (6, rows, cols) -> (4+1+1+1, rows, cols)
         # return {
         #     f'agent_{self.am.activate_agent}': obs
         # }
@@ -151,8 +158,6 @@ class Env_5(MultiAgentEnv):
         success = self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
         assert success, f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}'
         if self.am.activate_agent == self.num_qubits:
-            #clean qubits
-            self.chip.clean_qubits()
             try:
                 dist, other_dist, self_dist = self.compute_dist(self.chip,self.am.activate_agent)
                 self.dist_rec[self.am.activate_agent - 1] = f'{dist}'
@@ -162,9 +167,11 @@ class Env_5(MultiAgentEnv):
                     # rewards = {f'agent_{self.am.activate_agent}': -2}
                     self.reward = self.r_scale(-4)
                 else:
-                    self.sw.next(dist)
                     self.reward = self.reward_function(dist=dist, last_dist=self.last_dist)
+                    self.sw.next(dist)
                     self.last_dist = dist
+                if not terminateds["__all__"]:
+                    self.chip.clean_qubits()
             except Exception as e:
                 print(f'compute dist error: {e} at step {self.steps}')
                 self.chip.print_state()

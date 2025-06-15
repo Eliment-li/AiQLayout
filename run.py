@@ -48,9 +48,10 @@ LSTM settings
 def get_rl_module_specs():
     if args.enable_cnn:
         conv_filters = [
-            [16, 1, 1,'same'],  # 过滤器数量，卷积核大小 步幅
             [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
-            [64, 3, 1],  # 过滤器数量，卷积核大小 步幅
+            [64, 3, 2],  # 过滤器数量，卷积核大小 步幅
+            [128, 3, 2],  # 过滤器数量，卷积核大小 步幅
+            [256, 3, 2],  # 过滤器数量，卷积核大小 步幅
         ]
     else:
         conv_filters = None
@@ -84,7 +85,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--iter", '-i',type=int, help="train iter", default=None)
-    parser.add_argument("--swanlab", '-w',type=bool, help="enable_swanlab",default=False)
+    parser.add_argument("--swanlab", '-w',type=bool, help="enable_swanlab",default=True)
     parser.add_argument("--wandb_group", '-wg',type=str, help="wandb_group",default='default')
     parser.add_argument("--checkpoint", '-c',type=str, help="best checkpoint",default=None)
     parser.add_argument("--run_name", '-name',type=str, help="wandb project run name",default=None)

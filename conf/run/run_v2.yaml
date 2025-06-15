@@ -7,7 +7,7 @@ enable_broken_patch: False
 reward_scaling: True
 
 rf_version: 3
-num_qubits: 18
+num_qubits: 10
 env_max_step: 10
 #lstm
 use_lstm: False
@@ -31,8 +31,8 @@ lr_grid: [5.0e-5]
 gamma_grid: [0.99]
 #fcnet
 fcnet_activation: Swish
-fcnet_hiddens: [1024, 1024]
-head_fcnet_hiddens: [1024,512,256]
+fcnet_hiddens: [512, 512]
+head_fcnet_hiddens: [256,128]
 #cnn
 conv_activation: Swish
 enable_cnn: True
