@@ -55,8 +55,13 @@ def read_df(abs_path=None, relative_path=None):
     # Display the dataframe
     return df
 
+def is_2d(array):
+    if not isinstance(array, (list, tuple)):
+        return False
+    return all(isinstance(row, (list, tuple)) for row in array) and len(array) > 0
 
 def write_data(file_path, data):
+    assert is_2d(data), "Data must be a 2D array (list of lists or tuples)"
     # 确保文件夹存在
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     # 写入数据
@@ -65,6 +70,8 @@ def write_data(file_path, data):
         writer.writerows(data)
 
 def append_data(file_path, data):
+    #make sure data is 2-d array
+    assert is_2d(data), "Data must be a 2D array (list of lists or tuples)"
      # 确保文件夹存在
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     # 追加数据
