@@ -219,14 +219,6 @@ class Env_6(MultiAgentEnv):
                 continue
             elif len(path)==0:
                 if new:
-                    #已经刷新过但是无法找到路径
-                    # print('path = 0')
-                    # print(f'agent {player} the dist is None in compute_dist')
-                    # print(f'from{start}({sr},{sc}) to {goal} gr,gc=({gr},{gc})')
-                    # print(self.chip.q_pos)
-                    # print(layer)
-                    # path = Path(args.results_evaluate_path, (args.time_id + '_results.csv'))
-                    # append_data(file_path=path,data=str(self.chip.state))
                     return None,None,None
                 else:
                     layer = deepcopy(chip.state)
@@ -250,13 +242,6 @@ class Env_6(MultiAgentEnv):
            terminateds = {"__all__": True}
         else:
             terminateds = {"__all__": False}
-            # for i in range(len(self.done)):
-            #     if self.done[i]:
-            #         terminateds.update({f'agent_{i + 1}': True})
-            #     else:
-            #         terminateds.update({'__all__': False})
-            #         terminateds.update({f'agent_{i + 1}': False})
-
         return terminateds
 
     def reward_function(self,dist,last_dist):
@@ -283,6 +268,10 @@ class Env_6(MultiAgentEnv):
 
             # update min_dist
             self.min_sum_dist = dist
+
+            #save the chip state
+            state = deepcopy(self.chip.state)
+
 
         else:
             r = rf_to_call(init_dist=self.init_dist, last_dist=last_dist, dist=dist, avg_dist=self.sw.current_avg)

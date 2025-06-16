@@ -72,7 +72,6 @@ def evaluate_v2(base_config, args, results):
             COMPONENT_ENV_TO_MODULE_CONNECTOR,
         )
     )
-    print(" ok")
 
     print("Restore RLModule from checkpoint ...", end="")
     rl_module = MultiRLModule.from_checkpoint(
@@ -85,7 +84,6 @@ def evaluate_v2(base_config, args, results):
             # 'policy_1' # DEFAULT_MODULE_ID,
         )
     )
-    print(" ok")
 
     # For the module-to-env pipeline, we will use the convenient config utility.
     print("Restore module-to-env connector from checkpoint ...", end="")
@@ -117,8 +115,6 @@ def evaluate_v2(base_config, args, results):
     obs, info = env.reset()
     init_chip_state = deepcopy(env.chip.state)
 
-    # init_dist  = [info[f'agent_{i+1}'] for i in range(env.num_qubits)]
-    # print('init_dist:',init_dist)
     env.chip.print_state()
     terminated, truncated = False, False
     stop_timesteps = 800
@@ -188,10 +184,6 @@ def evaluate_v2(base_config, args, results):
             break
     final_chip_state=deepcopy(env.chip.state)
     env.chip.print_state()
-    # print('rewards:\n',rewrads)
-    # print('distance:\n',distance)
-    #TODO refactor plot_reward
-    #plot_reward([rewrads, distance])
     save_results(actions,rewrads,distance,max_total_r,init_chip_state,final_chip_state)
 
     #show_trace(actions)
