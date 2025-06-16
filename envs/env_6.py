@@ -1,4 +1,5 @@
 import math
+import traceback
 from copy import deepcopy
 from pathlib import Path
 from pprint import pprint
@@ -10,6 +11,7 @@ from gymnasium import register
 from gymnasium.spaces import  Discrete, Box,Dict
 from numpy import dtype
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
+from shared_memory_dict import SharedMemoryDict
 
 from config import ConfigSingleton
 from core.agents import AgentsManager
@@ -95,6 +97,9 @@ class Env_6(MultiAgentEnv):
         self.sw = SlideWindow(50)
         self.r_scale = RewardScaling(shape=1, gamma=0.9)
         self.heat_map = get_heat_map()
+
+        self.smd = SharedMemoryDict(name='env', size=1024)
+        self.smd['min_dist'] = math.inf
     def reset(self, *, seed=None, options=None):
         self.steps = 1
         self.chip.reset(q_pos=[])
@@ -114,6 +119,8 @@ class Env_6(MultiAgentEnv):
 
         infos = {f'agent_{i + 1}':  'default' for i in range(self.num_qubits)}
         #infos = {f'agent_{i + 1}':  self.am(1).init_dist for i in range(self.num_qubits)}
+
+        self.test_flag = True
         return self._get_obs(),infos
 
     def _get_obs(self):
@@ -173,7 +180,7 @@ class Env_6(MultiAgentEnv):
                 #     self.chip.clean_qubits()
             except Exception as e:
                 print(f'compute dist error: {e} at step {self.steps}')
-                self.chip.print_state()
+                traceback.print_exc()
 
 
         truncated = {}
@@ -269,13 +276,11 @@ class Env_6(MultiAgentEnv):
             # update min_dist
             self.min_sum_dist = dist
 
-            #save the chip state
-            state = deepcopy(self.chip.state)
-
-
+            if dist < self.smd['min_dist']:
+                self.smd['min_dist'] = dist
+                self.smd['best_state'] = deepcopy(self.chip.state)
         else:
             r = rf_to_call(init_dist=self.init_dist, last_dist=last_dist, dist=dist, avg_dist=self.sw.current_avg)
-
             self._agent_total_r = self._agent_total_r * args.gamma + r
             # update max total r for the current agent
             if self._agent_total_r > self._max_total_r:
@@ -284,6 +289,8 @@ class Env_6(MultiAgentEnv):
         if args.reward_scaling:
             r =self.r_scale(r)
         return r
+
+
 
 
 if __name__ == '__main__':

@@ -1,11 +1,15 @@
+from pathlib import Path
 from pprint import pprint
 
+import numpy as np
 from ray import tune
 from ray.air.constants import TRAINING_ITERATION
 from ray.rllib.algorithms import PPOConfig
 from ray.rllib.core.rl_module import RLModuleSpec
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 from ray.rllib.utils.metrics import ENV_RUNNER_RESULTS, NUM_ENV_STEPS_SAMPLED_LIFETIME
+from shared_memory_dict import SharedMemoryDict
+from swankit.env import is_windows
 
 from config import ConfigSingleton
 import os
@@ -17,6 +21,7 @@ from core.custom_ppo_rl_module import CustomDefaultPPOTorchRLModule
 from envs.env_4 import Env_4
 from envs.env_5 import Env_5
 from envs.env_6 import Env_6
+from utils.csv_util import append_data, write_data
 
 torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
@@ -79,6 +84,14 @@ def get_policys():
     policies = {'policy_{}'.format(i) for i in range(1, int(args.num_qubits) + 1)}
     return policies
 
+def save_state():
+    smd = SharedMemoryDict(name='env', size=1024)
+    dist = smd['min_dist']
+    state = smd['best_state']
+    path = Path(args.results_evaluate_path, (args.time_id + '_good_results.csv'))
+    write_data(file_path=path, data=[[dist]])
+    state = np.array(state).astype(int)
+    append_data(file_path=path, data=state)
 if __name__ == "__main__":
 
     #set custom run config before init args
@@ -92,8 +105,12 @@ if __name__ == "__main__":
     parser.add_argument("--run_name", '-name',type=str, help="wandb project run name",default=None)
 
     cmd_args = parser.parse_args()
-
     args = ConfigSingleton().get_args()
+
+    if is_windows():
+        print('run on windows')
+        cmd_args.swanlab = False
+        args.enable_cnn = False
     stop = {
             # f"{ENV_RUNNER_RESULTS}/{NUM_ENV_STEPS_SAMPLED_LIFETIME}": (
             #     args.stop_timesteps
@@ -170,10 +187,13 @@ if __name__ == "__main__":
     #     }),
     # )
     #
+
+
     if cmd_args.checkpoint is not None:
         results = cmd_args.checkpoint
     else:
         results = train(config = base_config, cmd_args = cmd_args,args=args,enable_swanlab=cmd_args.swanlab,stop=stop)
+        save_state()
     evaluate_v2(base_config,args,results)
 
     # print(base_config.to_dict())
