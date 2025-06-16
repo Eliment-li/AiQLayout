@@ -10,10 +10,11 @@ from gymnasium import register
 from gymnasium.spaces import  Discrete, Box,Dict
 from numpy import dtype
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
+from shared_memory_dict import SharedMemoryDict
 
 from config import ConfigSingleton
 from core.agents import AgentsManager
-from core.chip import Chip, ChipAction
+from core.chip import Chip, ChipAction, QubitState
 from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
@@ -21,6 +22,7 @@ from utils.calc_util import SlideWindow
 from utils.circuit_util import get_gates_fixed, resize_2d_matrix, resize_3d_array, get_heat_map
 from utils.csv_util import append_data
 from utils.position import positionalencoding2d
+from utils.route_util import bfs_route
 
 args = ConfigSingleton().get_args()
 rfunctions = RewardFunction()
@@ -30,17 +32,27 @@ actor act one by one
 we compute the reward each round 
 '''
 init_q_pos  = [
-            (0,1),
-            (1,1),
-            (2,1),
-            (3,1),
-            (4,1),
-
-            (0, 3),
-            (1, 3),
-            (2, 3),
-            (3, 3),
-            (4, 3),
+    (2,2),
+    (2,4),
+    (2,6),
+    (2,8),
+    (4,2),
+    (4,4),
+    (4,6),
+    (4,8),
+    (6,2),
+    (6,4),
+            # (0,1),
+            # (1,1),
+            # (2,1),
+            # (3,1),
+            # (4,1),
+            #
+            # (0, 3),
+            # (1, 3),
+            # (2, 3),
+            # (3, 3),
+            # (4, 3),
 
             #
             # (0, 5),
@@ -94,6 +106,8 @@ class Env_5(MultiAgentEnv):
         self.sw = SlideWindow(50)
         self.r_scale = RewardScaling(shape=1, gamma=0.9)
         self.heat_map = get_heat_map()
+        self.smd = SharedMemoryDict(name='env', size=1024)
+        self.smd['min_dist'] = math.inf
     def reset(self, *, seed=None, options=None):
         self.steps = 1
         self.chip.reset(q_pos=[])
@@ -126,8 +140,8 @@ class Env_5(MultiAgentEnv):
 
         obs = np.concatenate((obs,chip_state),axis = 0) # (5, rows, cols) -> (4+1+1, rows, cols)
 
-        zoom_factor = (10/7, 10/7)
-        obs  = resize_3d_array(obs,zoom_factor)
+        # zoom_factor = (10/7, 10/7)
+        # obs  = resize_3d_array(obs,zoom_factor)
 
         heat_map = [self.heat_map]
         obs = np.concatenate((obs, heat_map), axis=0)  # (6, rows, cols) -> (4+1+1+1, rows, cols)
@@ -137,7 +151,7 @@ class Env_5(MultiAgentEnv):
         ret = {
             f'agent_{self.am.activate_agent}':{
                 'observations': obs,
-                'action_mask': self.chip.valid_positions
+                'action_mask': deepcopy(self.chip.valid_positions)
             }
         }
         return ret
@@ -201,21 +215,25 @@ class Env_5(MultiAgentEnv):
         self_dist = 0
         while i < len(gates):
             start, goal = gates[i]
-
             sr,sc = chip.q_coor(start)
-            gr,gc =  chip.q_coor(goal)
-            path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
+            #
+            if  goal == QubitState.MAGIC.value:
+                dist = bfs_route(self.chip.state,start_row=sr,start_col=sc,target_values= {QubitState.MAGIC.value})['distance']
+            else:
+                gr, gc = chip.q_coor(goal)
+                path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
+                dist = len(path)
 
             if start == player or goal == player:
-                self_dist += len(path)
+                self_dist += dist
             else:
-                other_dist += len(path)
+                other_dist += dist
 
-            if len(path) == 2:
+            if dist == 2:
                 #the two qubits are already connected
                 i += 1
                 continue
-            elif len(path)==0:
+            elif dist==0:
                 if new:
                     #已经刷新过但是无法找到路径
                     # print('path = 0')
@@ -281,6 +299,10 @@ class Env_5(MultiAgentEnv):
 
             # update min_dist
             self.min_sum_dist = dist
+
+            if dist < self.smd['min_dist']:
+                self.smd['min_dist'] = dist
+                self.smd['best_state'] = deepcopy(self.chip.state)
 
         else:
             r = rf_to_call(init_dist=self.init_dist, last_dist=last_dist, dist=dist, avg_dist=self.sw.current_avg)
