@@ -56,7 +56,7 @@ class Env_6(MultiAgentEnv):
         super().__init__()
         self.steps = 1
         self.num_qubits = args.num_qubits
-        print(f'init env_5 with {self.num_qubits} qubits')
+        print(f'init env_6 with {self.num_qubits} qubits')
         self.max_step = args.env_max_step *self.num_qubits
         # define chip
         self.DoneAct = args.chip_rows * args.chip_cols
