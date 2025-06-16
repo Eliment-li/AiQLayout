@@ -97,14 +97,11 @@ class Env_5(MultiAgentEnv):
     def reset(self, *, seed=None, options=None):
         self.steps = 1
         self.chip.reset(q_pos=[])
-        self.chip.clean_qubits()
         self.am.reset_agents()
         self.dist_rec = [[] for i in range(self.num_qubits)]
 
         temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=init_q_pos)
         self.min_sum_dist = self.compute_dist(temp_chip,self.am.activate_agent)[0]
-
-        #clean the init position
 
         self.reward = 0
         self._max_total_r = -np.inf
@@ -170,8 +167,8 @@ class Env_5(MultiAgentEnv):
                     self.reward = self.reward_function(dist=dist, last_dist=self.last_dist)
                     self.sw.next(dist)
                     self.last_dist = dist
-                if not terminateds["__all__"]:
-                    self.chip.clean_qubits()
+                # if not terminateds["__all__"]:
+                #     self.chip.clean_qubits()
             except Exception as e:
                 print(f'compute dist error: {e} at step {self.steps}')
                 self.chip.print_state()
