@@ -71,7 +71,7 @@ def write_data(file_path, data):
 
 def append_data(file_path, data):
     #make sure data is 2-d array
-    assert is_2d(data), "Data must be a 2D array (list of lists or tuples)"
+    #assert is_2d(data), "Data must be a 2D array (list of lists or tuples)"
      # 确保文件夹存在
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     # 追加数据

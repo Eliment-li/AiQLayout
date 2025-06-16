@@ -87,11 +87,15 @@ def get_policys():
 def save_state():
     smd = SharedMemoryDict(name='env', size=1024)
     dist = smd['min_dist']
-    state = smd['best_state']
-    path = Path(args.results_evaluate_path, (args.time_id + '_good_results.csv'))
-    write_data(file_path=path, data=[[dist]])
-    state = np.array(state).astype(int)
-    append_data(file_path=path, data=state)
+    if 'best_state'in smd.keys():
+        state = smd['best_state']
+        path = Path(args.results_evaluate_path, (args.time_id + '_good_results.csv'))
+        write_data(file_path=path, data=[[dist]])
+        state = np.array(state).astype(int)
+        print(f'best state = {state}, state shape = {state.shape},min_dist = {dist}')
+        append_data(file_path=path, data=state)
+    else:
+        print('no best state found in shared memory dict')
 if __name__ == "__main__":
 
     #set custom run config before init args
