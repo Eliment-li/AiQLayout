@@ -16,6 +16,7 @@ from core.custom_flatten_observations import CustomFlattenObservations
 from core.custom_ppo_rl_module import CustomDefaultPPOTorchRLModule
 from envs.env_4 import Env_4
 from envs.env_5 import Env_5
+from envs.env_6 import Env_6
 
 torch, _ = try_import_torch()
 from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
@@ -85,7 +86,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--iter", '-i',type=int, help="train iter", default=None)
-    parser.add_argument("--swanlab", '-w',type=bool, help="enable_swanlab",default=True)
+    parser.add_argument("--swanlab", '-w',type=bool, help="enable_swanlab",default=False)
     parser.add_argument("--wandb_group", '-wg',type=str, help="wandb_group",default='default')
     parser.add_argument("--checkpoint", '-c',type=str, help="best checkpoint",default=None)
     parser.add_argument("--run_name", '-name',type=str, help="wandb project run name",default=None)
@@ -103,12 +104,17 @@ if __name__ == "__main__":
     if cmd_args.iter is not None:
         stop[TRAINING_ITERATION] = cmd_args.iter
 
+    Envs = {
+        "Env5": Env_5,
+        "Env6": Env_6,
+        # 添加更多环境映射...
+    }
     base_config = (
         # get_trainable_cls(args.algo_class)
         # .get_default_config()
         PPOConfig()
         .environment(
-            env=Env_5,
+            env=Envs[f'Env{args.env_version}'],
             env_config={"key": "value"},
         )
         .training(
@@ -172,5 +178,5 @@ if __name__ == "__main__":
 
     # print(base_config.to_dict())
     #
-    # results = r'C:/Users/Administrator/ray_results/PPO_2025-06-03_10-47-15/PPO_0ead1_00000/checkpoint_000003'
+    # results = r'C:/Users/Administrator/ray_results/PPO_2025-06-16_10-21-46/PPO_a700d_00000/checkpoint_000002'
     # evaluate_v2(base_config,args,results)
