@@ -1,4 +1,4 @@
-env_version: 6
+env_version: 5
 #chip
 chip_rows: 7
 chip_cols: 7
@@ -28,11 +28,11 @@ kl_target: 0.08
 
 #learning rate
 gamma: 0.99
-lr_grid: [5.0e-5]
+lr_grid: [1.0e-4]
 gamma_grid: [0.99]
 #fcnet
 fcnet_activation: Swish
-fcnet_hiddens: [512, 512]
+fcnet_hiddens: [512, 512,512]
 head_fcnet_hiddens: [256,128]
 #cnn
 conv_activation: Swish
@@ -41,7 +41,7 @@ enable_cnn: True
 
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters:  3 # Default: default_iters
+stop_iters:  1 # Default: default_iters
 
 # If run --as-release-test, --as-test must also be set.
 as_test: false
