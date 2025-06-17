@@ -111,24 +111,31 @@ if __name__ == "__main__":
 
 
 
+    # # 示例用法
+    # n = 100  # 原始尺寸
+    # m = 32  # 目标尺寸
+    #
+    # # 生成一个随机矩阵（可以是 uint8 或 float32）
+    # original_matrix_uint8 = np.random.randint(0, 256, (n, n), dtype=np.uint8)  # 0-255
+    # original_matrix_float = np.random.rand(n, n).astype(np.float32)  # 0-1
+    #
+    # # 缩放
+    # resized_uint8 = resize_2d_matrix(original_matrix_uint8, (m, m))
+    # resized_float = resize_2d_matrix(original_matrix_float, (m, m))
+    #
+    # print("Original shape (uint8):", original_matrix_uint8.shape)
+    # print("Resized shape (uint8):", resized_uint8.shape)
+    # print("Original shape (float):", original_matrix_float.shape)
+    # print("Resized shape (float):", resized_float.shape)
 
+    import numpy as np
+    import pennylane as qml
 
+    op = qml.RZ(np.pi / 8, wires=0)
 
+    # Get the gate decomposition in ['T', 'T*', 'H']
+    ops = qml.ops.sk_decomposition(op,basis_set=['T', 'H','S','X'], epsilon=1e-1)
+    print(ops)
 
-    # 示例用法
-    n = 100  # 原始尺寸
-    m = 32  # 目标尺寸
-
-    # 生成一个随机矩阵（可以是 uint8 或 float32）
-    original_matrix_uint8 = np.random.randint(0, 256, (n, n), dtype=np.uint8)  # 0-255
-    original_matrix_float = np.random.rand(n, n).astype(np.float32)  # 0-1
-
-    # 缩放
-    resized_uint8 = resize_2d_matrix(original_matrix_uint8, (m, m))
-    resized_float = resize_2d_matrix(original_matrix_float, (m, m))
-
-    print("Original shape (uint8):", original_matrix_uint8.shape)
-    print("Resized shape (uint8):", resized_uint8.shape)
-    print("Original shape (float):", original_matrix_float.shape)
-    print("Resized shape (float):", resized_float.shape)
-
+    # Get the approximate matrix from the ops
+    matrix_sk = qml.prod(*reversed(ops)).matrix()
