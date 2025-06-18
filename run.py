@@ -86,13 +86,14 @@ def get_policys():
 
 def save_state():
     smd = SharedMemoryDict(name='env', size=1024)
-    dist = smd['min_dist']
+    for k in smd.keys():
+        print(f'key = {k}, value = {smd[k]}')
     if 'best_state'in smd.keys():
         state = smd['best_state']
+        dist = smd['min_dist']
         path = Path(args.results_evaluate_path, (args.time_id + '_good_results.csv'))
         write_data(file_path=path, data=[[dist]])
         state = np.array(state).astype(int)
-        print(f'best state = {state}, state shape = {state.shape},min_dist = {dist}')
         append_data(file_path=path, data=state)
     else:
         print('no best state found in shared memory dict')

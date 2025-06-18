@@ -281,36 +281,34 @@ class Env_5(MultiAgentEnv):
         rf_to_call = getattr(rfunctions, rf_name, None)
         assert callable(rf_to_call)
 
-        p = self.am.activate_agent - 1
+        reward_compen = False
+        # p = self.am.activate_agent - 1
         # _min_dist = self.min_dist[p]
         if dist == None:
             #fail
             r = -2
-        elif (dist < self.min_sum_dist ):
-            # 当 dist 首次出现这么小, 那么计算后的 total reward 也应该比之前所有的都大
-            # factor = (1 + ( _min_dist - dist) / (_min_dist))
-            factor = 1.1
-            r = (self._max_total_r - self._agent_total_r * args.gamma) * factor
-            if r < 0.2:
-                r = 0.2
-            if r < 0:
-                r = 0.1
-            self._agent_total_ = self._agent_total_r * args.gamma + r
-
-            # update min_dist
-            self.min_sum_dist = dist
-
-            if dist < self.smd['min_dist']:
-                self.smd['min_dist'] = dist
-                self.smd['best_state'] = deepcopy(self.chip.state)
-
         else:
-            r = rf_to_call(init_dist=self.init_dist, last_dist=last_dist, dist=dist, avg_dist=self.sw.current_avg)
-
+            if (dist < self.min_sum_dist) and reward_compen:
+                # 当 dist 首次出现这么小, 那么计算后的 total reward 也应该比之前所有的都大
+                factor = 1.1
+                r = (self._max_total_r - self._agent_total_r * args.gamma) * factor
+                if r < 0.2:
+                    r = 0.2
+                if r < 0:
+                    r = 0.1
+            else:
+                r = rf_to_call(init_dist=self.init_dist, last_dist=last_dist, dist=dist, avg_dist=self.sw.current_avg)
+            #update _agent_total_r
             self._agent_total_r = self._agent_total_r * args.gamma + r
-            # update max total r for the current agent
+            # update _max_total_r for the current agent
             if self._agent_total_r > self._max_total_r:
                 self._max_total_r = self._agent_total_r
+
+        if (dist < self.min_sum_dist) and (dist < self.smd['min_dist']):
+                # update min_dist
+                self.min_sum_dist = dist
+                self.smd['min_dist'] = dist
+                self.smd['best_state'] = deepcopy(self.chip.state)
 
         if args.reward_scaling:
             r =self.r_scale(r)
