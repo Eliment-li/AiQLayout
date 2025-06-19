@@ -1,3 +1,4 @@
+import numpy as np
 from fontTools.ttLib.tables.ttProgram import instructions
 
 
@@ -169,7 +170,7 @@ def re_sign_patch_id(instructions):
     """
     patch_id_map = {}
     new_instructions = []
-    current_patch_id = 0
+    current_patch_id = 1
 
     for row in instructions:
         inst = row[0]
@@ -204,6 +205,21 @@ def re_sign_patch_id(instructions):
         # 将新的指令和计数添加到新列表中
         new_instructions.append([new_inst, cnt])
     return new_instructions
+
+
+def inst_to_heatmap(instructions):
+    #todo, let shape comes from args
+    heat_map = np.zeros(shape=(11,11))
+    for i in range(len(instructions)):
+        ins = instructions[i][0]
+        cnt = instructions[i][1]
+        if ins.startswith('Request_M'):
+            match1 = re.match(r'Request_M (/d+):Z,M:X', ins)
+            q1 = match1.group(1)
+            q2 = 0
+        elif ins.startswith('Plus_Mear_Two'):
+            #TODO count the Z and X
+            match1 = re.match(r'Plus_Mear_Two (/d+):Z,(/d+):X', ins)
 
 
 # 使用示例
