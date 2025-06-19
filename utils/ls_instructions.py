@@ -13,6 +13,15 @@ def ls_instructions_to_dependency():
          to
          [patchId, Request M]
          [MultiBodyMeasure patchId:Z,patchId:X]
+         
+     4.
+     convert
+        'Init 3706 |+>'
+        'MultiBodyMeasure 8:Z,3706:Z'
+        'MultiBodyMeasure 6:X,3706:X'
+     to
+        |+> can be put in a patch,which the patch is  in a path that connecting the  8 and 6
+        Plus_Mear_Two 8:Z,6:X
      '''
 def print_ins(instructions):
     for ins in instructions:
@@ -20,6 +29,35 @@ def print_ins(instructions):
             print(ins)
 
 import re
+
+def convert_plus_and_measure(instructions,i):
+    line = instructions[i]
+    if  i + 2 < len(instructions):
+        next_line1 = instructions[i + 1].strip()
+        next_line2 = instructions[i + 2].strip()
+        if next_line1.startswith('MultiBodyMeasure') and next_line2.startswith('MultiBodyMeasure'):
+            # 提取Init的数字
+            match1 = re.match(r'Init (\d+) \|(\+|0)>', line)
+            # 提取MultiBodyMeasure的参数
+            match2 = re.match(r'MultiBodyMeasure (\d+):Z,(\d+):[Z,X]', next_line1)
+            match3 = re.match(r'MultiBodyMeasure (\d+):[Z,X],(\d+):[Z,X]', next_line2)
+            if match1 and match2 and match3:
+                patch_id = match1.group(1)
+                patch_id_1 = match2.group(1)
+                patch_id_2 = match2.group(2)
+                patch_id_3 = match3.group(1)
+                patch_id_4 = match3.group(2)
+                assert patch_id == patch_id_2 and patch_id==patch_id_4, "Mismatched patch IDs in Init and MultiBodyMeasure"
+                # 返回转换后的行
+                line =  f"Plus_Mear_Two {patch_id_1}:Z,{patch_id_3}:X"
+                return line, i + 3
+
+
+    return None, i + 1  # 如果没有匹配，返回 None 和下一个索引
+
+
+
+
 
 
 def process_file(input_file, output_file):
@@ -60,16 +98,23 @@ def process_file(input_file, output_file):
                 else:
                     i += 1
                     print('magic state unused')
+
+            elif line.startswith('Init'):
+                inst,i = convert_plus_and_measure(lines,i)
+                instructions.append(inst)
             else:
                 # 如果不是需要特殊处理的行，直接写入
                 #outfile.write(line + '\n')
                 instructions.append(line)
                 i += 1
         #print_ins(instructions)
-        res = handle_repeated_lines(instructions)
-        print_ins(res)
+        ins_cnt = handle_repeated_lines(instructions)
+        ins_resign = re_sign_patch_id(ins_cnt)
+        print_ins(ins_resign)
 
-
+'''
+group the adjcent repeated lines 
+'''
 def handle_repeated_lines(arr):
     if not arr:  # 处理空数组情况
         return []
@@ -88,8 +133,77 @@ def handle_repeated_lines(arr):
 
     # 添加最后一个元素的统计
     result.append([current_element, count])
-
     return result
+
+
+import re
+
+'''
+resign the patch id of patchs
+'''
+def replace_numbers_in_string(s, replacement_map):
+    '''
+    ['Init 3706 |+>', 1]
+    ['MultiBodyMeasure 8:Z,3706:Z', 1]
+    ['MultiBodyMeasure 6:X,3706:X', 1]
+    这类命令视为
+    Plus_Mear_Two 8:Z,6:X
+    '''
+    # 使用正则表达式找到所有连续的数字
+    pattern = re.compile(r'\d+')
+
+    # 定义一个替换函数，用于处理每个匹配到的数字
+    def replace_match(match):
+        num_str = match.group()
+        # 如果数字在映射中，则替换，否则保持原样
+        return str(replacement_map.get(num_str, num_str))
+
+    # 使用sub方法进行替换
+    return pattern.sub(replace_match, s)
+
+
+
+def re_sign_patch_id(instructions):
+    """
+    将指令中的patch_id重新签名为从0开始的连续整数
+    """
+    patch_id_map = {}
+    new_instructions = []
+    current_patch_id = 0
+
+    for row in instructions:
+        inst = row[0]
+        match1= re.match(r'Request_M (\d+):Z,M:X', inst)
+        match2= re.match(r'Init (\d+)*', inst)
+        match3 = re.match(r'MultiBodyMeasure (\d+):[Z,X],(\d+):[Z,X]', inst)
+        if match1:
+            patch_id = match1.group(1)
+            if patch_id not in patch_id_map:
+                patch_id_map[patch_id] = current_patch_id
+                current_patch_id += 1
+        elif match2:
+            patch_id = match2.group(1)
+            if patch_id not in patch_id_map:
+                patch_id_map[patch_id] = current_patch_id
+                current_patch_id += 1
+        elif match3:
+            patch_id1 = match3.group(1)
+            patch_id2 = match3.group(2)
+            if patch_id1 not in patch_id_map:
+                patch_id_map[patch_id1] = current_patch_id
+                current_patch_id += 1
+            if patch_id2 not in patch_id_map:
+                patch_id_map[patch_id2] = current_patch_id
+                current_patch_id += 1
+    print(patch_id_map)
+    for row in instructions:
+        inst = row[0]
+        cnt = row[1]
+        # 替换patch_id为新的连续整数
+        new_inst = replace_numbers_in_string(inst, patch_id_map)
+        # 将新的指令和计数添加到新列表中
+        new_instructions.append([new_inst, cnt])
+    return new_instructions
 
 
 # 使用示例
