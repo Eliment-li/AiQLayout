@@ -57,10 +57,6 @@ def convert_plus_and_measure(instructions,i):
     return None, i + 1  # 如果没有匹配，返回 None 和下一个索引
 
 
-
-
-
-
 def process_file(input_file, output_file):
     # 定义需要删除的行开头
     prefixes_to_remove = ['SGate', 'HGate', 'LogicalPauli', 'MeasureSinglePatch']
@@ -112,6 +108,9 @@ def process_file(input_file, output_file):
         ins_cnt = handle_repeated_lines(instructions)
         ins_resign = re_sign_patch_id(ins_cnt)
         print_ins(ins_resign)
+        ins_heat = inst_to_heatmap(ins_resign)
+        print(repr(ins_heat))
+
 
 '''
 group the adjcent repeated lines 
@@ -119,7 +118,6 @@ group the adjcent repeated lines
 def handle_repeated_lines(arr):
     if not arr:  # 处理空数组情况
         return []
-
     result = []
     current_element = arr[0]
     count = 1
@@ -209,20 +207,39 @@ def re_sign_patch_id(instructions):
 
 def inst_to_heatmap(instructions):
     #todo, let shape comes from args
-    heat_map = np.zeros(shape=(11,11))
+    heat_map = np.zeros(shape=(11,11)).astype(int)
     for i in range(len(instructions)):
         ins = instructions[i][0]
         cnt = instructions[i][1]
         if ins.startswith('Request_M'):
-            match1 = re.match(r'Request_M (/d+):Z,M:X', ins)
-            q1 = match1.group(1)
+            match = re.match(r'Request_M (\d+):Z,M:X', ins)
+            q1 = int(match.group(1))
             q2 = 0
         elif ins.startswith('Plus_Mear_Two'):
             #TODO count the Z and X
-            match1 = re.match(r'Plus_Mear_Two (/d+):Z,(/d+):X', ins)
+            match = re.match(r'Plus_Mear_Two (\d+):Z,(\d+):X', ins)
+            q1 = int(match.group(1))
+            q2 = int(match.group(2))
+        if q1 >=q2:
+            heat_map[q1][q2] +=cnt
+        else:
+            heat_map[q2][q1] +=cnt
 
+    return heat_map
 
-# 使用示例
-input_filename = 'd:/ls.txt'  # 替换为你的输入文件名
-output_filename = 'd:/out.txt'  # 替换为你的输出文件名
-process_file(input_filename, output_filename)
+# # 使用示例
+# input_filename = 'd:/ls.txt'  # 替换为你的输入文件名
+# output_filename = 'd:/out.txt'  # 替换为你的输出文件名
+# process_file(input_filename, output_filename)
+def get_heat_map():
+    return np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [3290, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [2879, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [3291, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+           [3691, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0],
+           [4097, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0],
+           [4507, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0],
+           [4925, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0],
+           [5343, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0],
+           [5755, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+           [6578, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0]]).astype(float)

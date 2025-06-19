@@ -203,63 +203,78 @@ class Env_5(MultiAgentEnv):
                     }
                  }
 
-    def compute_dist(self,chip:Chip, player:int):
-        gates = get_gates_fixed()
-
-        depth = 1
-        new = True
-        layer = deepcopy(chip.state)
-
-        i = 0
-        other_dist = 0
-        self_dist = 0
-        while i < len(gates):
-            start, goal = gates[i]
-            sr,sc = chip.q_coor(start)
-            #
-            if  goal == QubitState.MAGIC.value:
-                dist = bfs_route(self.chip.state,start_row=sr,start_col=sc,target_values= {QubitState.MAGIC.value})['distance']
-            else:
+    def compute_dist_v2(self,chip:Chip, player:int):
+        sum_dist= 0
+        for i in range(self.num_qubits):
+            j=0
+            while j<=i:
+                cnt = self.heat_map[i][j]
+                start = i + 1
+                goal = j + 1
+                sr, sc = chip.q_coor(start)
                 gr, gc = chip.q_coor(goal)
-                path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
-                dist = len(path)
-
-            if start == player or goal == player:
-                self_dist += dist
-            else:
-                other_dist += dist
-
-            if dist == 2:
-                #the two qubits are already connected
-                i += 1
-                continue
-            elif dist==0:
-                if new:
-                    #已经刷新过但是无法找到路径
-                    # print('path = 0')
-                    # print(f'agent {player} the dist is None in compute_dist')
-                    # print(f'from{start}({sr},{sc}) to {goal} gr,gc=({gr},{gc})')
-                    # print(self.chip.q_pos)
-                    # print(layer)
-                    # path = Path(args.results_evaluate_path, (args.time_id + '_results.csv'))
-                    # append_data(file_path=path,data=str(self.chip.state))
-                    return None,None,None
+                if j == QubitState.MAGIC.value:
+                    dist = bfs_route(self.chip.state, start_row=sr, start_col=sc, target_values={QubitState.MAGIC.value})['distance']
                 else:
-                    layer = deepcopy(chip.state)
-                    depth += 1
-                    new = True
-            else:
-                #occupy the path
-                for p in path:
-                    layer[p[0]][p[1]] = -3
-                new = False
-                i+=1
+                    path = a_star_path((sr, sc), (gr, gc), chip.state, goal)
+                    dist = len(path)
+                    if dist == 0:
+                        return None, None, None
+                j+=1
+                sum_dist+=(cnt*dist)
+                dist = 0
 
-        sum = other_dist + self_dist
-        return sum,other_dist,self_dist
+        return sum_dist, None,None
+
+    def compute_dist(self,chip:Chip, player:int):
+        return self.compute_dist_v2(chip, player)
+        #TODO consider  schedule the gates
+        # gates = get_gates_fixed()
+        # depth = 1
+        # new = True
+        # layer = deepcopy(chip.state)
+        #
+        # i = 0
+        # other_dist = 0
+        # self_dist = 0
+        # while i < len(gates):
+        #     start, goal = gates[i]
+        #     sr,sc = chip.q_coor(start)
+        #     #
+        #     if  goal == QubitState.MAGIC.value:
+        #         dist = bfs_route(self.chip.state,start_row=sr,start_col=sc,target_values= {QubitState.MAGIC.value})['distance']
+        #     else:
+        #         gr, gc = chip.q_coor(goal)
+        #         path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
+        #         dist = len(path)
+        #
+        #     if start == player or goal == player:
+        #         self_dist += dist
+        #     else:
+        #         other_dist += dist
+        #
+        #     if dist == 2:
+        #         #the two qubits are already connected
+        #         i += 1
+        #         continue
+        #     elif dist==0:
+        #         if new:
+        #             return None,None,None
+        #         else:
+        #             layer = deepcopy(chip.state)
+        #             depth += 1
+        #             new = True
+        #     else:
+        #         #occupy the path
+        #         for p in path:
+        #             layer[p[0]][p[1]] = -3
+        #         new = False
+        #         i+=1
+        #
+        # sum = other_dist + self_dist
+        # return sum,other_dist,self_dist
 
     def is_terminated(self):
-
         if self.steps >= self.max_step:
            terminateds = {"__all__": True}
         elif self.am.is_all_done():
