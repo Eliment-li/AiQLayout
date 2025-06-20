@@ -1,29 +1,5 @@
 import numpy as np
-from fontTools.ttLib.tables.ttProgram import instructions
-
-
-def ls_instructions_to_dependency():
-    pass
-    ''' this fuction:
-     1. takes a list of LSInstructions ,each row for one instruction
-     2. remove single patch(logical qubit) operations, like measure, init, etc.
-     3. convert the following instructions 
-         RequestMagicState patchId
-         MultiBodyMeasure 0:Z,2:X
-         MeasureSinglePatch 2 Z
-         to
-         [patchId, Request M]
-         [MultiBodyMeasure patchId:Z,patchId:X]
-         
-     4.
-     convert
-        'Init 3706 |+>'
-        'MultiBodyMeasure 8:Z,3706:Z'
-        'MultiBodyMeasure 6:X,3706:X'
-     to
-        |+> can be put in a patch,which the patch is  in a path that connecting the  8 and 6
-        Plus_Mear_Two 8:Z,6:X
-     '''
+import os
 def print_ins(instructions):
     for ins in instructions:
         if len(ins)>0:
@@ -227,10 +203,6 @@ def inst_to_heatmap(instructions):
 
     return heat_map
 
-# # 使用示例
-# input_filename = 'd:/ls.txt'  # 替换为你的输入文件名
-# output_filename = 'd:/out.txt'  # 替换为你的输出文件名
-# process_file(input_filename, output_filename)
 def get_heat_map():
     return np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
            [3290, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -243,3 +215,35 @@ def get_heat_map():
            [5343, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0],
            [5755, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
            [6578, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0]]).astype(float)
+
+
+''' this fuction:
+     1. takes a list of LSInstructions ,each row for one instruction
+     2. remove single patch(logical qubit) operations, like measure, init, etc.
+     3. convert the following instructions 
+         RequestMagicState patchId
+         MultiBodyMeasure 0:Z,2:X
+         MeasureSinglePatch 2 Z
+         to
+         [patchId, Request M]
+         [MultiBodyMeasure patchId:Z,patchId:X]
+
+     4.
+     convert
+        'Init 3706 |+>'
+        'MultiBodyMeasure 8:Z,3706:Z'
+        'MultiBodyMeasure 6:X,3706:X'
+     to
+        |+> can be put in a patch,which the patch is  in a path that connecting the  8 and 6
+        Plus_Mear_Two 8:Z,6:X
+     '''
+def phrase_ls_instructions(instructions:str):
+    pass
+
+if __name__ == '__main__':
+    input_directory = ''
+    input_directory=' '
+    for filename in os.listdir(input_directory):
+        input_file_path = os.path.join(input_directory, filename)
+        assert  os.path.isfile(input_file_path), f"Input file {input_file_path} does not exist."
+        output_file_path = os.path.join(input_directory, 'out', filename)
