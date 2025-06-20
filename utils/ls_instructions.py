@@ -37,8 +37,8 @@ def process_file(input_file, output_file):
     # 定义需要删除的行开头
     prefixes_to_remove = ['SGate', 'HGate', 'LogicalPauli', 'MeasureSinglePatch']
     instructions = []
-    with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
-        qubits_number = re.search(r"(\d+)\.qasm", input_file).group(1)
+    with open(input_file, 'r') as infile:
+        qubits_number =15 #re.search(r"_(\d+)\.txt$", input_file).group(1)
         lines = infile.readlines()
         i = 0
         while i < len(lines):
@@ -153,6 +153,7 @@ def re_sign_patch_id(instructions):
         inst = row[0]
         if inst is None:
             print('err, inst is none')
+            continue
         match1= re.match(r'Request_M (\d+):Z,M:X', inst)
         match2= re.match(r'Init (\d+)*', inst)
         match3 = re.match(r'MultiBodyMeasure (\d+):[Z,X],(\d+):[Z,X]', inst)
@@ -209,8 +210,8 @@ def inst_to_heatmap(instructions,qubits_number):
     heat_map = heat_map[1:, :-1]
     return heat_map
 
-def get_heat_map(qasm_file_path):
-    heat_map = process_file(qasm_file_path, '')
+def get_heat_map(file_path):
+    heat_map = process_file(file_path, '')
     return heat_map
 
 ''' this fuction:

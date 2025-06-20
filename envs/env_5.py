@@ -11,16 +11,18 @@ from gymnasium.spaces import  Discrete, Box,Dict
 from numpy import dtype
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 from shared_memory_dict import SharedMemoryDict
+from torch import layout
 
 from config import ConfigSingleton
 from core.agents import AgentsManager
-from core.chip import Chip, ChipAction, QubitState
+from core.chip import Chip, ChipAction, QubitState, QubitLayout
 from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
 from utils.circuit_util import get_gates_fixed, resize_2d_matrix, resize_3d_array
 from utils.csv_util import append_data
+from utils.file_util import get_root_dir
 from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
@@ -32,49 +34,23 @@ use agent manager to manage agents
 actor act one by one
 we compute the reward each round 
 '''
-init_q_pos  = [
-    (2,2),
-    (2,4),
-    (2,6),
-    (2,8),
-    (4,2),
-    (4,4),
-    (4,6),
-    (4,8),
-    (6,2),
-    (6,4),
-            # (0,1),
-            # (1,1),
-            # (2,1),
-            # (3,1),
-            # (4,1),
-            #
-            # (0, 3),
-            # (1, 3),
-            # (2, 3),
-            # (3, 3),
-            # (4, 3),
-
-            #
-            # (0, 5),
-            # (1, 5),
-            # (2, 5),
-            # (3, 5),
-            # (4, 5),
-            # (5, 5),
-]
+rootdir = Path(get_root_dir())
 class Env_5(MultiAgentEnv):
 
     def __init__(self, config=None):
         super().__init__()
         self.steps = 1
+
         self.num_qubits = args.num_qubits
+        self.lsi_file_path = rootdir / Path(args.lsi_file_path)
+        print(self.lsi_file_path)
+        self.heat_map = get_heat_map(file_path = self.lsi_file_path)
+
         print(f'init env_5 with {self.num_qubits} qubits')
         self.max_step = args.env_max_step *self.num_qubits
         # define chip
         self.DoneAct = args.chip_rows * args.chip_cols
         self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=[])
-        self.chip.print_state()
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
 
@@ -106,7 +82,7 @@ class Env_5(MultiAgentEnv):
         self.pe = positionalencoding2d(self.chip.rows,self.chip.cols,4)
         self.sw = SlideWindow(50)
         self.r_scale = RewardScaling(shape=1, gamma=0.9)
-        self.heat_map = get_heat_map()
+
         self.smd = SharedMemoryDict(name='env', size=1024)
         self.smd['min_dist'] = math.inf
     def reset(self, *, seed=None, options=None):
@@ -115,7 +91,8 @@ class Env_5(MultiAgentEnv):
         self.am.reset_agents()
         self.dist_rec = [[] for i in range(self.num_qubits)]
 
-        temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=init_q_pos)
+        # self.done = [False for i in range(self.num_qubits)]
+        temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,layout=QubitLayout.GRID)
         self.min_sum_dist = self.compute_dist(temp_chip,self.am.activate_agent)[0]
 
         self.reward = 0
