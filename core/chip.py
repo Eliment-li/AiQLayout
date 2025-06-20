@@ -7,6 +7,7 @@ from enum import Enum
 import numpy as np
 import torch
 from openpyxl.compat import deprecated
+from torch import layout
 
 from config import ConfigSingleton
 
@@ -29,10 +30,17 @@ class QubitState(Enum):
     MAGIC = -1 # magic state
     BROKEN = -2 #broken, unavailable
 
+class QubitLayout(Enum):
+    RANDOM = 0
+    GRID = 1
+    GIVEN = 2
 
 
 class Chip():
-    def __init__(self,rows: int,cols: int, q_pos = None,num_qubits=None, broken_pos:list = []):
+    '''
+    must run reset() before use the chip
+    '''
+    def __init__(self,rows: int,cols: int,layout:QubitLayout=QubitLayout.GRID, q_pos = [],num_qubits=None, broken_pos:list = []):
         '''
         :param rows:
         :param cols:
@@ -41,14 +49,16 @@ class Chip():
         self.channel = 1
         self._cols = cols
         self._rows = rows
-        if num_qubits:
-            self._num_qubits = num_qubits
-        else:
-            self._num_qubits = args.num_qubits
-        self.reset(q_pos = q_pos)
+        self.q_pos = q_pos
+        self.layout = layout
+        self._num_qubits = num_qubits
+        self.reset(q_pos = q_pos,layout = self.layout)
 
     def init_by_state(self, s: np.ndarray):
         self._state = deepcopy(s)
+        #TODO init self._qubits_channel[i][j] = int
+        #               self._position_mask[qubit - 1][i][j] = 1
+        #               self.q_pos.append((i, j))
 
 
     def _random_init_qubits_layout(self):
@@ -63,29 +73,55 @@ class Chip():
                 self._qubits_channel[x][y] = i
                 self._position_mask[i-1][x][y] = 1
 
-                self._q_pos.append((x, y))
+                self.q_pos.append((x, y))
                 i += 1
             else:
                 continue
 
-    def _init_qubits_layout(self,q_pos):
+    def _init_qubits_layout(self,layout :QubitLayout = QubitLayout.GIVEN,q_pos=[]):
+        if layout ==QubitLayout.GRID:
+            qubit = 1
+            i = 1
+
+            while i < self.rows - 1:
+                j = 1
+                while j< self.cols - 1:
+                    if qubit > self._num_qubits:
+                        return
+                    if self._state[i][j] == 0 and self._broken_channel[i][j] == 0:
+                        self._state[i][j] = qubit
+                        self._qubits_channel[i][j] = qubit
+                        self._position_mask[qubit - 1][i][j] = 1
+                        self.q_pos.append((i, j))
+                        qubit += 1
+                    j+=2
+                i+=2
+            if qubit < self._num_qubits:
+                print(f"Warning: only {qubit-1} qubits are placed, but {self._num_qubits} are required.")
+                #TODO try random laytout for rest qubit
+            else:
+                return
+
+        if len(q_pos) == 0:
+            self.q_pos = [(None, None)] * self.num_qubits
+            print('q_pos in reset is empty')
+            return
 
         assert len(q_pos) == self.num_qubits, \
             f"len(q_pos) = {len(q_pos)} but self.num_qubits = {self.num_qubits} They should be equal"
         i = 1
         for r, c in q_pos:
             if self._state[r][c] == 0:
-
                 self._state[r][c] = i
                 self._qubits_channel[r][c] = i
                 self._position_mask[i - 1][r][c] = 1
-                self._q_pos.append((r, c))
+                self.q_pos.append((r, c))
                 i += 1
             else:
                 continue
 
     def clean_qubits(self):
-        self._q_pos = [(None,None)]*self.num_qubits
+        self.q_pos = [(None,None)]*self.num_qubits
         self._position_mask = np.zeros((self._num_qubits, self._rows, self._cols), dtype=np.float32)
         self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
 
@@ -94,7 +130,7 @@ class Chip():
         self.valid_positions = torch.ones((self._rows * self._cols))
 
 
-    def reset(self,q_pos = None):
+    def reset(self,q_pos,layout: QubitLayout = QubitLayout.GRID):
        self._state = np.zeros((self._rows, self._cols), dtype=np.float32)
        self._broken_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
        self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
@@ -104,17 +140,8 @@ class Chip():
        # if args.enable_broken_patch:
        #     self._add_broken_patch()
 
-       if q_pos is None:
-            print('q_pos in reset is None')
-            self._q_pos = []
-            self. _random_init_qubits_layout()
-       elif len(q_pos) ==0 :
-            self._q_pos = [(None, None)] * self.num_qubits
-            print('q_pos in reset is empty')
-       else:
-           #qubits must be init in the last
-           self._q_pos = []
-           self._init_qubits_layout(q_pos)
+       self.q_pos = []
+       self._init_qubits_layout(q_pos=q_pos,layout=layout)
 
        self.valid_positions = torch.ones((self._rows * self._cols), dtype=torch.float32)
        flatten_obs = self._state.ravel()
@@ -122,7 +149,7 @@ class Chip():
            if flatten_obs[i] != 0:
                self.valid_positions[i] = 0
 
-       # for r, c in self._q_pos:
+       # for r, c in self.q_pos:
        #     if r is not None and c is not None :
        #        self.valid_positions[r * self._rows + c] = 0
        #
@@ -174,7 +201,7 @@ class Chip():
         if self._state[new_r, new_c] != 0:
             return False
         else:
-            old_r, old_c = self._q_pos[player - 1]
+            old_r, old_c = self.q_pos[player - 1]
             if old_r is not None and old_c is not None:
                 self._state[old_r, old_c] = 0
                 self._position_mask[player - 1][old_r, old_c] = 0
@@ -188,7 +215,7 @@ class Chip():
             self.valid_positions[new_r * self._rows + new_c] = 0
 
             # occupy the new position
-            self._q_pos[player - 1] = (new_r, new_c)
+            self.q_pos[player - 1] = (new_r, new_c)
         # if torch.sum(self.valid_positions == 0).item() > (self.num_qubits+len(self._magic_state)):
         #     print('number of 0(invalid position) too many')
         #     self.print_state()
@@ -196,7 +223,7 @@ class Chip():
 
 
     def move(self, player: int, act:int):
-        old_r,old_c = self._q_pos[player - 1]
+        old_r,old_c = self.q_pos[player - 1]
 
         assert act in ChipAction, f"{act} is not a valid action"
 
@@ -237,7 +264,7 @@ class Chip():
             self._qubits_channel[new_r, new_c] = player
 
             #occupy the new position
-            self._q_pos[player - 1] = (new_r, new_c)
+            self.q_pos[player - 1] = (new_r, new_c)
             return True
 
     def route_to_magic_state(self, player: int):
@@ -245,7 +272,7 @@ class Chip():
         :param player:
         :return: the length to magic state
         '''
-        px,py = self._q_pos[player - 1]
+        px,py = self.q_pos[player - 1]
         # use dfs to find the shortest path to magic state(value that equal to -1)
 
         path_len,path = bfs_find_target(self._state, px, py)
@@ -274,8 +301,8 @@ class Chip():
         if np.any(overlap):
             # 找出冲突位置
             conflicts = np.where(overlap)
-            conflict_q_pos = list(zip(conflicts[0], conflicts[1]))
-            raise ValueError(f"在位置 {conflict_q_pos} 处发现非零元素冲突 {arr1},\n {arr2}")
+            conflictq_pos = list(zip(conflicts[0], conflicts[1]))
+            raise ValueError(f"在位置 {conflictq_pos} 处发现非零元素冲突 {arr1},\n {arr2}")
 
         # 合并数组，非零元素优先
         result = np.where(arr1 != 0, arr1, arr2)
@@ -285,15 +312,11 @@ class Chip():
         return self._position_mask[player - 1]
 
     def q_coor(self,player):
-        return self._q_pos[player - 1]
+        return self.q_pos[player - 1]
 
 
 
 
-    @property
-    # start from index 1
-    def q_pos(self):
-        return self._q_pos
 
     @property
     def state(self):
@@ -336,18 +359,18 @@ class Chip():
 
 #test code
 if __name__ == '__main__':
-    chip = Chip(10,10,q_pos=[],num_qubits=10)
-    chip.reset()
+    chip = Chip(10,10,layout = QubitLayout.GRID,num_qubits=10)
     chip.print_state()
+    # chip.reset()
     print(chip.valid_positions)
 
-    for i in range(10000):
-        player = random.randint(1,10)
-        x = random.randint(0,9)
-        y = random.randint(0,9)
-        chip.goto(player,x,y)
-    chip.print_state()
-    print(chip.valid_positions)
+    # for i in range(10000):
+    #     player = random.randint(1,10)
+    #     x = random.randint(0,9)
+    #     y = random.randint(0,9)
+    #     chip.goto(player,x,y)
+    # chip.print_state()
+    # print(chip.valid_positions)
 
 
 
