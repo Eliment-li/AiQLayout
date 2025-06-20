@@ -19,8 +19,9 @@ from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
-from utils.circuit_util import get_gates_fixed, resize_2d_matrix, resize_3d_array, get_heat_map
+from utils.circuit_util import get_gates_fixed, resize_2d_matrix, resize_3d_array
 from utils.csv_util import append_data
+from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
 
@@ -139,9 +140,8 @@ class Env_5(MultiAgentEnv):
         chip_state = np.expand_dims(chip_state, axis=0)  # (rows, cols) -> (1, rows, cols)
 
         obs = np.concatenate((obs,chip_state),axis = 0) # (5, rows, cols) -> (4+1+1, rows, cols)
-
-        # zoom_factor = (10/7, 10/7)
-        # obs  = resize_3d_array(obs,zoom_factor)
+        zoom_factor = (self.chip.rows/len(self.heat_map), self.chip.cols/len(self.heat_map[0]))
+        obs  = resize_3d_array(obs,zoom_factor)
 
         heat_map = [self.heat_map]
         obs = np.concatenate((obs, heat_map), axis=0)  # (6, rows, cols) -> (4+1+1+1, rows, cols)
@@ -222,7 +222,6 @@ class Env_5(MultiAgentEnv):
                         return None, None, None
                 j+=1
                 sum_dist+=(cnt*dist)
-                dist = 0
 
         return sum_dist, None,None
 
