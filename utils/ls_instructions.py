@@ -29,8 +29,8 @@ def convert_plus_and_measure(instructions,i):
                 line =  f"Plus_Mear_Two {patch_id_1}:Z,{patch_id_3}:X"
                 return line, i + 3
 
-
-    return None, i + 1  # 如果没有匹配，返回 None 和下一个索引
+    inst = None
+    return inst, i + 1  # 如果没有匹配，返回 None 和下一个索引
 
 
 def process_file(input_file, output_file):
@@ -38,6 +38,7 @@ def process_file(input_file, output_file):
     prefixes_to_remove = ['SGate', 'HGate', 'LogicalPauli', 'MeasureSinglePatch']
     instructions = []
     with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
+        qubits_number = re.search(r"(\d+)\.qasm", input_file).group(1)
         lines = infile.readlines()
         i = 0
         while i < len(lines):
@@ -71,9 +72,10 @@ def process_file(input_file, output_file):
                 else:
                     i += 1
                     print('magic state unused')
-
             elif line.startswith('Init'):
                 inst,i = convert_plus_and_measure(lines,i)
+                if inst is  None:
+                    print(lines)
                 instructions.append(inst)
             else:
                 # 如果不是需要特殊处理的行，直接写入
@@ -83,9 +85,10 @@ def process_file(input_file, output_file):
         #print_ins(instructions)
         ins_cnt = handle_repeated_lines(instructions)
         ins_resign = re_sign_patch_id(ins_cnt)
-        print_ins(ins_resign)
-        ins_heat = inst_to_heatmap(ins_resign)
+        # print_ins(ins_resign)
+        ins_heat = inst_to_heatmap(ins_resign,int(qubits_number))
         print(repr(ins_heat))
+        return ins_heat
 
 
 '''
@@ -148,6 +151,8 @@ def re_sign_patch_id(instructions):
 
     for row in instructions:
         inst = row[0]
+        if inst is None:
+            print('err, inst is none')
         match1= re.match(r'Request_M (\d+):Z,M:X', inst)
         match2= re.match(r'Init (\d+)*', inst)
         match3 = re.match(r'MultiBodyMeasure (\d+):[Z,X],(\d+):[Z,X]', inst)
@@ -170,7 +175,7 @@ def re_sign_patch_id(instructions):
             if patch_id2 not in patch_id_map:
                 patch_id_map[patch_id2] = current_patch_id
                 current_patch_id += 1
-    print(patch_id_map)
+    # print(patch_id_map)
     for row in instructions:
         inst = row[0]
         cnt = row[1]
@@ -181,9 +186,9 @@ def re_sign_patch_id(instructions):
     return new_instructions
 
 
-def inst_to_heatmap(instructions):
-    #todo, let shape comes from args
-    heat_map = np.zeros(shape=(11,11)).astype(int)
+def inst_to_heatmap(instructions,qubits_number):
+
+    heat_map = np.zeros(shape=(qubits_number+1,qubits_number+1)).astype(int)
     for i in range(len(instructions)):
         ins = instructions[i][0]
         cnt = instructions[i][1]
@@ -200,22 +205,13 @@ def inst_to_heatmap(instructions):
             heat_map[q1][q2] +=cnt
         else:
             heat_map[q2][q1] +=cnt
-
+    #drop the first row and last column
+    heat_map = heat_map[1:, :-1]
     return heat_map
 
-def get_heat_map():
-    return np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [3290, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [2879, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [3291, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0],
-           [3691, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0],
-           [4097, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0],
-           [4507, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0],
-           [4925, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0],
-           [5343, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0],
-           [5755, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-           [6578, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0]]).astype(float)
-
+def get_heat_map(qasm_file_path):
+    heat_map = process_file(qasm_file_path, '')
+    return heat_map
 
 ''' this fuction:
      1. takes a list of LSInstructions ,each row for one instruction
@@ -241,9 +237,10 @@ def phrase_ls_instructions(instructions:str):
     pass
 
 if __name__ == '__main__':
-    input_directory = ''
-    input_directory=' '
+    input_directory = r'D:\sync\mqtbench\ls_inst'
+    output_directory = 'D:\sync\mqtbench\out'
     for filename in os.listdir(input_directory):
-        input_file_path = os.path.join(input_directory, filename)
-        assert  os.path.isfile(input_file_path), f"Input file {input_file_path} does not exist."
-        output_file_path = os.path.join(input_directory, 'out', filename)
+        print(f'================== process file {filename} ===================================')
+        input_file = os.path.join(input_directory, filename)
+        output_file = os.path.join(output_directory, filename)
+        process_file(input_file,output_file)
