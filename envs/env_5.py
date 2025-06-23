@@ -15,7 +15,7 @@ from torch import layout
 
 from config import ConfigSingleton
 from core.agents import AgentsManager
-from core.chip import Chip, ChipAction, QubitState, QubitLayout
+from core.chip import Chip, ChipAction, QubitState, QubitLayoutType
 from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
@@ -57,7 +57,7 @@ class Env_5(MultiAgentEnv):
         # define chip
 
 
-        self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=[])
+        self.chip = Chip(rows=args.chip_rows,layout_type=QubitLayoutType.EMPTY, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=[])
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
 
@@ -81,13 +81,17 @@ class Env_5(MultiAgentEnv):
         self.smd['min_dist'] = math.inf
     def reset(self, *, seed=None, options=None):
         self.steps = 1
-        self.chip.reset(q_pos=[])
+
+        #Just for computing min_sum_dist
+        temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
+                         layout_type=QubitLayoutType.GRID)
+        self.min_sum_dist = self.compute_dist(temp_chip, self.am.activate_agent)[0]
+
+        self.chip.reset(q_pos=[],layout_type=QubitLayoutType.EMPTY)
         self.am.reset_agents()
         self.dist_rec = [[] for i in range(self.num_qubits)]
 
-        # self.done = [False for i in range(self.num_qubits)]
-        temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,layout=QubitLayout.GRID)
-        self.min_sum_dist = self.compute_dist(temp_chip,self.am.activate_agent)[0]
+
 
         self.reward = 0
         self._max_total_r = -np.inf
@@ -119,6 +123,14 @@ class Env_5(MultiAgentEnv):
         # return {
         #     f'agent_{self.am.activate_agent}': obs
         # }
+
+        # m = [1,4,7,19,20,49,50,79,80,92,95,98]
+        # for index in m:
+        #     if self.chip.valid_positions[index]!=0:
+        #         print(self.chip.valid_positions)
+        #         raise ValueError(f'valid position {index} is not 0')
+
+
         ret = {
             f'agent_{self.am.activate_agent}':{
                 'observations': obs,
@@ -135,7 +147,9 @@ class Env_5(MultiAgentEnv):
         row = act // self.chip.cols
         col = act % self.chip.cols
         success = self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
-        assert success, f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}'
+        if not success:
+            print(self.chip)
+            raise ValueError(f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}')
         if self.am.activate_agent == self.num_qubits:
             try:
                 dist, other_dist, self_dist = self.compute_dist(self.chip,self.am.activate_agent)
@@ -300,5 +314,11 @@ class Env_5(MultiAgentEnv):
 if __name__ == '__main__':
     env = Env_5()
     env.reset()
+    print(env.chip)
+    print(env.chip.q_pos)
+    print(env.chip.valid_positions)
+    for i in range(len(env.chip.valid_positions)):
+        if env.chip.valid_positions[i] ==0:
+            print(i)
 
 
