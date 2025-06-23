@@ -149,7 +149,7 @@ def resize_3d_array(array_3d, zoom_factor):
     return array_3d_zoomed
 
 
-def resize_2d_matrix(matrix, target_size):
+def resize_2d_matrix(matrix, r,c):
     """
     使用 Lanczos 重采样缩放二维矩阵
     :param matrix: 输入矩阵 (n x n)
@@ -165,7 +165,7 @@ def resize_2d_matrix(matrix, target_size):
         img = Image.fromarray(matrix)
 
     # 2. 使用 Lanczos 重采样
-    img_resized = img.resize(target_size, Image.LANCZOS)
+    img_resized = img.resize((r,c), Image.LANCZOS)
 
     # 3. 转回 NumPy 矩阵
     resized_matrix = np.array(img_resized)
