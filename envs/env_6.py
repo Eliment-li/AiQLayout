@@ -20,8 +20,10 @@ from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
-from utils.circuit_util import get_gates_fixed, resize_2d_matrix, resize_3d_array, get_heat_map
+from utils.circuit_util import get_gates_fixed, resize_2d_matrix, resize_3d_array
 from utils.csv_util import append_data
+from utils.file_util import get_root_dir
+from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 
 args = ConfigSingleton().get_args()
@@ -50,6 +52,7 @@ init_q_pos  = [
             # (4, 5),
             # (5, 5),
 ]
+rootdir = Path(get_root_dir())
 class Env_6(MultiAgentEnv):
 
     def __init__(self, config=None):
@@ -96,7 +99,8 @@ class Env_6(MultiAgentEnv):
 
         self.sw = SlideWindow(50)
         self.r_scale = RewardScaling(shape=1, gamma=0.9)
-        self.heat_map = get_heat_map()
+        self.lsi_file_path = rootdir / Path(args.lsi_file_path)
+        self.heat_map = get_heat_map(self.lsi_file_path)
 
         self.smd = SharedMemoryDict(name='env', size=1024)
         self.smd['min_dist'] = math.inf

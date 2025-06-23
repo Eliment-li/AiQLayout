@@ -39,44 +39,38 @@ class Env_5(MultiAgentEnv):
 
     def __init__(self, config=None):
         super().__init__()
-        self.steps = 1
-
         self.num_qubits = args.num_qubits
+        self.OBS_ROW = max(args.chip_rows, self.num_qubits)
+        self.OBS_COL = max(args.chip_cols, self.num_qubits)
+        print(f'OBS_ROW: {self.OBS_ROW}, OBS_COL: {self.OBS_COL}')
+
         self.lsi_file_path = rootdir / Path(args.lsi_file_path)
         print(self.lsi_file_path)
+
         self.heat_map = get_heat_map(file_path = self.lsi_file_path)
+        self.RESIZE_HEATMAP = resize_2d_matrix(deepcopy(self.heat_map), r  = self.OBS_ROW,c = self.OBS_COL)
+        self.RESIZE_HEATMAP = [self.RESIZE_HEATMAP]
 
         print(f'init env_5 with {self.num_qubits} qubits')
         self.max_step = args.env_max_step *self.num_qubits
+
         # define chip
-        self.DoneAct = args.chip_rows * args.chip_cols
+
+
         self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=[])
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
 
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
-
         self.a_space = Discrete(args.chip_rows * args.chip_cols)
         self.o_space =Box(
                             low=-5,
                             high=self.num_qubits + 1,
-                            shape=(4+1+1+1,10,10),
+                            shape=(4+1+1+1,self.OBS_ROW,self.OBS_COL),
                             dtype=np.float32,
                             )
 
-        # self.o_space = Dict(
-        #     {
-        #         "action_mask": Box(0.0, 1.0, shape=(self.a_space.n,)),
-        #         "observations":Box(
-        #                     low=-5,
-        #                     high=self.num_qubits + 1,
-        #                     shape=(4+1,args.chip_rows,args.chip_cols),
-        #                     dtype=np.float32,
-        #                     )
-        #
-        #
-        #     }
-        # )
+
         self.observation_spaces = {f"agent_{i+1}": self.o_space for i in range(self.num_qubits)}
         self.action_spaces = {f"agent_{i+1}":  self.a_space for i in range(self.num_qubits)}
         self.pe = positionalencoding2d(self.chip.rows,self.chip.cols,4)
@@ -115,13 +109,13 @@ class Env_5(MultiAgentEnv):
         obs = np.concatenate((obs,pm),axis = 0)  # (4, rows, cols) -> (4+1, rows, cols)
 
         chip_state = np.expand_dims(chip_state, axis=0)  # (rows, cols) -> (1, rows, cols)
-
         obs = np.concatenate((obs,chip_state),axis = 0) # (5, rows, cols) -> (4+1+1, rows, cols)
-        zoom_factor = (self.chip.rows/len(self.heat_map), self.chip.cols/len(self.heat_map[0]))
+
+        zoom_factor = (self.OBS_ROW/self.chip.rows, self.OBS_COL/self.chip.cols)
+        #resize
         obs  = resize_3d_array(obs,zoom_factor)
 
-        heat_map = [self.heat_map]
-        obs = np.concatenate((obs, heat_map), axis=0)  # (6, rows, cols) -> (4+1+1+1, rows, cols)
+        obs = np.concatenate((obs, self.RESIZE_HEATMAP), axis=0)  # (6, rows, cols) -> (4+1+1+1, rows, cols)
         # return {
         #     f'agent_{self.am.activate_agent}': obs
         # }
@@ -137,10 +131,7 @@ class Env_5(MultiAgentEnv):
         terminateds = self.is_terminated()
         act = action[f'agent_{self.am.activate_agent}']
         rewards = {f'agent_{self.am.activate_agent}': self.reward}
-        # if act == self.DoneAct or self.am.is_done(self.am.activate_agent):
-        #     self.am.set_done(self.am.activate_agent)
-            #dist, other_dist, self_dist = self.compute_dist(self.am.activate_agent)
-        # else:
+
         row = act // self.chip.cols
         col = act % self.chip.cols
         success = self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
