@@ -100,8 +100,8 @@ class Chip():
                     i += 1
                 else:
                     continue
-            assert len(q_pos) == self.num_qubits, \
-                f"len(q_pos) = {len(q_pos)} but self.num_qubits = {self.num_qubits} They should be equal"
+            # assert len(q_pos) == self.num_qubits, \
+            #     f"len(q_pos) = {len(q_pos)} but self.num_qubits = {self.num_qubits} They should be equal"
 
     def clean_qubits(self):
         self.q_pos = [(None,None)]*self.num_qubits

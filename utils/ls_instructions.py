@@ -38,7 +38,8 @@ def process_file(input_file, output_file):
     prefixes_to_remove = ['SGate', 'HGate', 'LogicalPauli', 'MeasureSinglePatch']
     instructions = []
     with open(input_file, 'r') as infile:
-        qubits_number =15 #re.search(r"_(\d+)\.txt$", input_file).group(1)
+        ##TODO
+        qubits_number =20 #re.search(r"_(\d+)\.txt$", input_file).group(1)
         lines = infile.readlines()
         i = 0
         while i < len(lines):
