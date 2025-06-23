@@ -48,11 +48,14 @@ from results.plot_results import plot_reward
 from utils.csv_util import write_data, append_data
 from utils.file_util import get_root_dir
 
-Envs = {
-    "Env5": Env_5(),
-    "Env6": Env_6(),
-    # 添加更多环境映射...
-}
+def get_env(env_version):
+    print('get_env env_version=',env_version)
+    if env_version == 5:
+        return Env_5()
+    elif env_version == 6:
+        return Env_6()
+
+
 def evaluate_v2(base_config, args, results):
     if isinstance(results, str):
         best_path = results
@@ -61,7 +64,7 @@ def evaluate_v2(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Envs[f'Env{args.env_version}']
+    env =get_env(args.env_version)
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
@@ -136,6 +139,7 @@ def evaluate_v2(base_config, args, results):
         new_input = {}
         obs = input_dict['default_policy']['obs'][0]
         new_input[ f'policy_{env.am.activate_agent}'] = {'obs': obs}
+
 
         # No exploration.
         module_out = rl_module._forward_inference(new_input)
