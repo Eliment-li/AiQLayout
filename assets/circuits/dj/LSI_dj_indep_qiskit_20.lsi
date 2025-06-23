@@ -1,0 +1,94 @@
+HGate 2
+HGate 4
+HGate 7
+HGate 10
+HGate 13
+HGate 14
+HGate 16
+HGate 17
+HGate 18
+Init 1000000 |+>
+MultiBodyMeasure 0:Z,1000000:Z
+MultiBodyMeasure 19:X,1000000:X
+MeasureSinglePatch 1000000 Z
+Init 1000001 |+>
+MultiBodyMeasure 1:Z,1000001:Z
+MultiBodyMeasure 19:X,1000001:X
+MeasureSinglePatch 1000001 Z
+Init 1000002 |+>
+MultiBodyMeasure 2:Z,1000002:Z
+MultiBodyMeasure 19:X,1000002:X
+MeasureSinglePatch 1000002 Z
+HGate 2
+Init 1000003 |+>
+MultiBodyMeasure 3:Z,1000003:Z
+MultiBodyMeasure 19:X,1000003:X
+MeasureSinglePatch 1000003 Z
+Init 1000004 |+>
+MultiBodyMeasure 4:Z,1000004:Z
+MultiBodyMeasure 19:X,1000004:X
+MeasureSinglePatch 1000004 Z
+HGate 4
+Init 1000005 |+>
+MultiBodyMeasure 5:Z,1000005:Z
+MultiBodyMeasure 19:X,1000005:X
+MeasureSinglePatch 1000005 Z
+Init 1000006 |+>
+MultiBodyMeasure 6:Z,1000006:Z
+MultiBodyMeasure 19:X,1000006:X
+MeasureSinglePatch 1000006 Z
+Init 1000007 |+>
+MultiBodyMeasure 7:Z,1000007:Z
+MultiBodyMeasure 19:X,1000007:X
+MeasureSinglePatch 1000007 Z
+HGate 7
+Init 1000008 |+>
+MultiBodyMeasure 8:Z,1000008:Z
+MultiBodyMeasure 19:X,1000008:X
+MeasureSinglePatch 1000008 Z
+Init 1000009 |+>
+MultiBodyMeasure 9:Z,1000009:Z
+MultiBodyMeasure 19:X,1000009:X
+MeasureSinglePatch 1000009 Z
+Init 1000010 |+>
+MultiBodyMeasure 10:Z,1000010:Z
+MultiBodyMeasure 19:X,1000010:X
+MeasureSinglePatch 1000010 Z
+HGate 10
+Init 1000011 |+>
+MultiBodyMeasure 11:Z,1000011:Z
+MultiBodyMeasure 19:X,1000011:X
+MeasureSinglePatch 1000011 Z
+Init 1000012 |+>
+MultiBodyMeasure 12:Z,1000012:Z
+MultiBodyMeasure 19:X,1000012:X
+MeasureSinglePatch 1000012 Z
+Init 1000013 |+>
+MultiBodyMeasure 13:Z,1000013:Z
+MultiBodyMeasure 19:X,1000013:X
+MeasureSinglePatch 1000013 Z
+HGate 13
+Init 1000014 |+>
+MultiBodyMeasure 14:Z,1000014:Z
+MultiBodyMeasure 19:X,1000014:X
+MeasureSinglePatch 1000014 Z
+HGate 14
+Init 1000015 |+>
+MultiBodyMeasure 15:Z,1000015:Z
+MultiBodyMeasure 19:X,1000015:X
+MeasureSinglePatch 1000015 Z
+Init 1000016 |+>
+MultiBodyMeasure 16:Z,1000016:Z
+MultiBodyMeasure 19:X,1000016:X
+MeasureSinglePatch 1000016 Z
+HGate 16
+Init 1000017 |+>
+MultiBodyMeasure 17:Z,1000017:Z
+MultiBodyMeasure 19:X,1000017:X
+MeasureSinglePatch 1000017 Z
+HGate 17
+Init 1000018 |+>
+MultiBodyMeasure 18:Z,1000018:Z
+MultiBodyMeasure 19:X,1000018:X
+MeasureSinglePatch 1000018 Z
+HGate 18
