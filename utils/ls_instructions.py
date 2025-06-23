@@ -87,9 +87,9 @@ def process_file(input_file, output_file):
         ins_resign = re_sign_patch_id(ins_cnt)
         # print_ins(ins_resign)
         ins_heat = inst_to_heatmap(ins_resign,int(qubits_number))
-        print(repr(ins_heat))
+        #print(repr(ins_heat))
+        print(f'heatmap shape = {ins_heat.shape}')
         return ins_heat
-
 
 '''
 group the adjcent repeated lines 
@@ -157,6 +157,7 @@ def re_sign_patch_id(instructions):
         match1= re.match(r'Request_M (\d+):Z,M:X', inst)
         match2= re.match(r'Init (\d+)*', inst)
         match3 = re.match(r'MultiBodyMeasure (\d+):[Z,X],(\d+):[Z,X]', inst)
+        match4 = re.match(r'Plus_Mear_Two (\d+):Z,(\d+):X', inst)
         if match1:
             patch_id = match1.group(1)
             if patch_id not in patch_id_map:
@@ -176,6 +177,17 @@ def re_sign_patch_id(instructions):
             if patch_id2 not in patch_id_map:
                 patch_id_map[patch_id2] = current_patch_id
                 current_patch_id += 1
+        elif match4:
+            patch_id1 = match4.group(1)
+            patch_id2 = match4.group(2)
+            if patch_id1 not in patch_id_map:
+                patch_id_map[patch_id1] = current_patch_id
+                current_patch_id += 1
+            if patch_id2 not in patch_id_map:
+                patch_id_map[patch_id2] = current_patch_id
+                current_patch_id += 1
+        else:
+            raise ValueError(f"Unknown instruction format: {inst}")
     # print(patch_id_map)
     for row in instructions:
         inst = row[0]
@@ -189,7 +201,7 @@ def re_sign_patch_id(instructions):
 
 def inst_to_heatmap(instructions,qubits_number):
 
-    heat_map = np.zeros(shape=(qubits_number+1,qubits_number+1)).astype(int)
+    heat_map = np.zeros(shape=(qubits_number+1,qubits_number+1)).astype(float)
     for i in range(len(instructions)):
         ins = instructions[i][0]
         cnt = instructions[i][1]
@@ -237,11 +249,13 @@ def get_heat_map(file_path):
 def phrase_ls_instructions(instructions:str):
     pass
 
+#test code
 if __name__ == '__main__':
     input_directory = r'D:\sync\mqtbench\ls_inst'
-    output_directory = 'D:\sync\mqtbench\out'
-    for filename in os.listdir(input_directory):
-        print(f'================== process file {filename} ===================================')
-        input_file = os.path.join(input_directory, filename)
-        output_file = os.path.join(output_directory, filename)
-        process_file(input_file,output_file)
+    output_directory = r'D:\sync\mqtbench\out'
+    #for filename in os.listdir(input_directory):
+    file_name = r'D:\sync\mqtbench\ls_inst\LSI_qftentangled_indep_qiskit_15.lsi'
+    print(f'================== process file {file_name} ===================================')
+    input_file = os.path.join(input_directory, file_name)
+    output_file = os.path.join(output_directory, file_name)
+    process_file(input_file,output_file)
