@@ -94,7 +94,8 @@ def save_state():
         path = Path(args.results_evaluate_path, (args.time_id + '_good_results.csv'))
         write_data(file_path=path, data=[[dist]])
         state = np.array(state).astype(int)
-        append_data(file_path=path, data=state)
+        state = repr(state)
+        append_data(file_path=path, data=[[state]])
     else:
         print('no best state found in shared memory dict')
 if __name__ == "__main__":
