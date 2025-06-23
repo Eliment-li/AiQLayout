@@ -193,7 +193,7 @@ if __name__ == "__main__":
     # )
     #
 
-
+    #
     if cmd_args.checkpoint is not None:
         results = cmd_args.checkpoint
     else:
@@ -203,5 +203,5 @@ if __name__ == "__main__":
 
     # print(base_config.to_dict())
     #
-    # results = r'C:/Users/Administrator/ray_results/PPO_2025-06-16_10-21-46/PPO_a700d_00000/checkpoint_000002'
+    # results = r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_71b632214bf64e1f818c612bcaadcb3b'
     # evaluate_v2(base_config,args,results)

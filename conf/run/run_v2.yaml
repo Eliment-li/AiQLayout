@@ -9,7 +9,7 @@ reward_scaling: True
 
 rf_version: 3
 num_qubits: 15
-lsi_file_path: assets/circuits/qft/LSI_qftentangled_indep_qiskit_15.txt
+lsi_file_path: assets/circuits/qft/LSI_qftentangled_indep_qiskit_15.lsi
 env_max_step: 10
 #lstm
 use_lstm: False
