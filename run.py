@@ -90,9 +90,13 @@ def save_state():
         print(f'key = {k}, value = {smd[k]}')
     if 'best_state'in smd.keys():
         state = smd['best_state']
-        dist = smd['min_dist']
+        min_dist = smd['min_dist']
+        min_dist = f'min_dist = {min_dist}'
+        init_dist = smd['init_dist']
+        init_dist = f'init_dist = {init_dist}'
         path = Path(args.results_evaluate_path, (args.time_id + '_good_results.csv'))
-        write_data(file_path=path, data=[[dist]])
+        write_data(file_path=path, data=[[min_dist]])
+        append_data(file_path=path, data=[[init_dist]])
         state = np.array(state).astype(int)
         state = repr(state)
         append_data(file_path=path, data=[[state]])

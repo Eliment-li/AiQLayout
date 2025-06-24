@@ -99,6 +99,7 @@ class Env_5(MultiAgentEnv):
         self.last_dist = self.min_sum_dist
         self.init_dist = self.min_sum_dist
         print(f'init_dist: {self.init_dist}')
+        self.smd['init_dist'] = self.init_dist
         # self.sw =SlideWindow(50)
 
         infos = {f'agent_{i + 1}':  'default' for i in range(self.num_qubits)}
