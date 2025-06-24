@@ -126,15 +126,57 @@ if __name__ == "__main__":
     # print("Resized shape (uint8):", resized_uint8.shape)
     # print("Original shape (float):", original_matrix_float.shape)
     # print("Resized shape (float):", resized_float.shape)
+    # import numpy as np
+    # import pennylane as qml
+    #
+    # #op = qml.RY(np.pi / 3, wires=0)
+    # op = qml.RY(1.2444656817555668, wires=0)
+    #
+    # # Get the gate decomposition in ['T', 'T*', 'H']
+    # ops = qml.ops.sk_decomposition(op, epsilon=1e-3)
+    # print(ops)
+    #
+    # # Get the approximate matrix from the ops
+    # matrix_sk = qml.prod(*reversed(ops)).matrix()
+    '''
+    see https://docs.quantum.ibm.com/api/qiskit/qiskit.circuit.library.U2Gate
+    u2(phi, lambda) == circuit.u(pi/2, phi, lambda)
+    '''
+    from qiskit import QuantumCircuit
     import numpy as np
-    import pennylane as qml
 
-    #op = qml.RY(np.pi / 3, wires=0)
-    op = qml.RY(1.2444656817555668, wires=0)
+    qc = QuantumCircuit(1)
+    phi = 0.3  # 任意相位参数
+    lambda_ = 0.7  # 任意相位参数
 
-    # Get the gate decomposition in ['T', 'T*', 'H']
-    ops = qml.ops.sk_decomposition(op, epsilon=1e-3)
-    print(ops)
+    # 原始 u2 门
+    qc.u(theta=np.pi/2,phi=phi, lam=lambda_, qubit=0)
 
-    # Get the approximate matrix from the ops
-    matrix_sk = qml.prod(*reversed(ops)).matrix()
+    # 等效分解为 rz 和 ry
+    qc_decomposed = QuantumCircuit(1)
+    qc_decomposed.rz(lambda_, 0)  # 第一步：Rz(λ)
+    qc_decomposed.ry(np.pi / 2, 0)  # 第二步：Ry(π/2)
+    qc_decomposed.rz(phi, 0)  # 第三步：Rz(φ)
+
+    from qiskit.quantum_info import Operator
+
+    # 原始 u2 门的算符
+    op_u2 = Operator(qc)
+    # 分解后的算符
+    op_decomposed = Operator(qc_decomposed)
+
+    print(op_u2)
+    print(op_decomposed)
+
+    print("u2 门和分解后的门是否等价:", op_u2.equiv(op_decomposed))  # 输出应为 True
+
+    '''
+    decompose u2(phi,lambda) q[1];
+    to 
+    rz(lambda) q[1];
+    h q[1];
+    rz(np.pi/2) q[1];
+    h q[1];
+    rz(phi) q[1];
+    '''
+
