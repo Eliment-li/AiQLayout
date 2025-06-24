@@ -31,8 +31,8 @@ def get_root_dir():
     # root_dir = os.path.dirname(current_dir)
     # 方法二
     root_dir = os.path.dirname(os.path.abspath(__file__))
-    #drop folder name 'utils'
-    root_dir = root_dir[:-6]
+    #drop folder name 'utils/file'
+    root_dir = root_dir[:-11]
     return root_dir
 
 def write(file,content):
