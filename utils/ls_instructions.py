@@ -42,9 +42,7 @@ def process_file(input_file, output_file):
     prefixes_to_remove = ['SGate', 'HGate', 'LogicalPauli', 'MeasureSinglePatch']
     instructions = []
     with open(input_file, 'r') as infile:
-        print(f'processing file {input_file}')
         qubits_number = re.search(r"_(\d+)\.lsi$", str(input_file)).group(1)
-
         assert int(qubits_number) == int(args.num_qubits), f"qubits number {qubits_number} not match args.num_qubits {args.num_qubits}"
 
         lines = infile.readlines()
