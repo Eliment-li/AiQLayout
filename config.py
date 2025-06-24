@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -61,8 +62,11 @@ class ConfigSingleton:
         if 'wandb_run_name' in self.smd:
             self.args['wandb_run_name'] = self.smd['wandb_run_name']
         else:
-            self.args['wandb_run_name'] = self.args.time_id
-            self.smd['wandb_run_name'] = self.args.time_id
+
+            match = re.search(r"LSI.*", self.args.lsi_file_path)
+            circuit = match.group()
+            self.args['wandb_run_name'] = self.args.time_id + '_'+circuit
+            self.smd['wandb_run_name'] = self.args.time_id + '_'+circuit
 
 
     def get_args(self):
@@ -172,6 +176,5 @@ if __name__ == "__main__":
     # 第一次初始化
     global_config = ConfigSingleton()
     args = global_config.get_args()
-    print(global_config.to_string())
-
+    print(args.wandb_run_name)
 
