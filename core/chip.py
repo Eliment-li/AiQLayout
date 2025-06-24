@@ -159,24 +159,51 @@ class Chip():
             else:
                 continue
 
-
+    '''
+    从0行0列开始，逆时针旋转，转一圈回到起点，
+    从第0个位置开始，每间隔两个空白，第三个元素置为 magic state
+    '''
     def _init_magic_state(self):
-        self._magic_state = [
-            (0,1),
-            (0,4),
-            (0,7),
-            (1,9),
-            (4,9),
-            (7,9),
-            (9,8),
-            (9,5),
-            (9,2),
-            (8,0),
-            (5,0),
-            (2,0),
-        ]
-        for (x, y) in self._magic_state:
-            self.state[x][y] = QubitState.MAGIC.value
+        matrix = self.state
+        rows = len(matrix)
+        cols = len(matrix[0])
+
+        # 定义四个方向的边界
+        top = 0
+        bottom = rows - 1
+        left = 0
+        right = cols - 1
+
+        # 收集外围元素的顺序
+        elements = []
+
+        # 左列，从上到下
+        for i in range(top, bottom + 1):
+            elements.append((i, left))
+
+        # 底行，从左到右（不包括第一个，因为左列已经包含）
+        for j in range(left + 1, right + 1):
+            elements.append((bottom, j))
+
+        # 右列，从下到上（如果有多于一行）
+        if top < bottom:
+            for i in range(bottom - 1, top, -1):
+                elements.append((i, right))
+
+        # 顶行，从右到左（如果有多于一列）
+        if left < right:
+            for j in range(right, left, -1):
+                elements.append((top, j))
+
+        # 每隔两个元素将第三个元素设为-1
+        count = 0
+        for i, j in elements:
+            count += 1
+            if count % 3 == 0:
+                matrix[i][j] = QubitState.MAGIC.value
+
+        #return matrix
+
 
 
     def goto(self,player:int, new_r,new_c):
@@ -337,7 +364,7 @@ class Chip():
 
 #test code
 if __name__ == '__main__':
-    chip = Chip(10,10,layout = QubitLayoutType.GRID,num_qubits=10)
+    chip = Chip(15,15,layout_type = QubitLayoutType.GRID,num_qubits=50)
     chip.print_state()
     # chip.reset()
     print(chip.valid_positions)
