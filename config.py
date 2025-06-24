@@ -6,9 +6,8 @@ import torch
 from hydra import initialize, compose
 from threading import Lock
 from omegaconf import OmegaConf
-from sympy import pprint
 
-from utils.file_util import get_root_dir
+from utils.file.file_util import get_root_dir
 from shared_memory_dict import SharedMemoryDict
 
 class ConfigSingleton:

@@ -1,32 +1,19 @@
-import os
-import argparse
 import json
-import logging
 import os
 from pathlib import Path
 from pprint import pprint
-import random
 from shared_memory_dict import SharedMemoryDict
-import re
 import time
 from copy import deepcopy
 from typing import (
-    TYPE_CHECKING,
-    Any,
     Dict,
-    List,
     Optional,
-    Tuple,
-    Type,
-    Union,
 )
 
 from ray.rllib.utils.metrics import (
-    DIFF_NUM_GRAD_UPDATES_VS_SAMPLER_POLICY,
     ENV_RUNNER_RESULTS,
     EPISODE_RETURN_MEAN,
     EVALUATION_RESULTS,
-    NUM_ENV_STEPS_TRAINED,
     NUM_ENV_STEPS_SAMPLED_LIFETIME,
 )
 
@@ -40,13 +27,11 @@ from ray.rllib.core.rl_module import MultiRLModule
 from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
 
 from config import ConfigSingleton
-from core.chip_visualizer import show_trace
 from envs.env_4 import Env_4
 from envs.env_5 import Env_5
 from envs.env_6 import Env_6
-from results.plot_results import plot_reward
-from utils.csv_util import write_data, append_data
-from utils.file_util import get_root_dir
+from utils.file.csv_util import write_data, append_data
+
 
 def get_env(env_version):
     print('get_env env_version=',env_version)

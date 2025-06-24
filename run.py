@@ -1,5 +1,4 @@
 from pathlib import Path
-from pprint import pprint
 
 import numpy as np
 from ray import tune
@@ -7,30 +6,24 @@ from ray.air.constants import TRAINING_ITERATION
 from ray.rllib.algorithms import PPOConfig
 from ray.rllib.core.rl_module import RLModuleSpec
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
-from ray.rllib.utils.metrics import ENV_RUNNER_RESULTS, NUM_ENV_STEPS_SAMPLED_LIFETIME
 from shared_memory_dict import SharedMemoryDict
 from swankit.env import is_windows
 
 from config import ConfigSingleton
-import os
 from ray.rllib.utils.framework import try_import_torch
 from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
 
 from core.custom_flatten_observations import CustomFlattenObservations
 from core.custom_ppo_rl_module import CustomDefaultPPOTorchRLModule
-from envs.env_4 import Env_4
 from envs.env_5 import Env_5
 from envs.env_6 import Env_6
-from utils.csv_util import append_data, write_data
+from utils.file.csv_util import append_data, write_data
 
 torch, _ = try_import_torch()
-from ray.rllib.connectors.env_to_module.flatten_observations import FlattenObservations
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
 from run_helper import train
 from utils.evaluate import evaluate_v2
-from ray.rllib.examples.rl_modules.classes.action_masking_rlm import (
-    ActionMaskingTorchRLModule,
-)
+
 '''
 Gaming the Quantum bit Placement with AI
 '''

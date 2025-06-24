@@ -2,27 +2,21 @@ import math
 import traceback
 from copy import deepcopy
 from pathlib import Path
-from pprint import pprint
-import  random
 
-import gymnasium as gym
 import numpy as np
-from gymnasium import register
-from gymnasium.spaces import  Discrete, Box,Dict
-from numpy import dtype
+from gymnasium.spaces import  Discrete, Box
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 from shared_memory_dict import SharedMemoryDict
 
 from config import ConfigSingleton
 from core.agents import AgentsManager
-from core.chip import Chip, ChipAction
+from core.chip import Chip
 from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
-from utils.circuit_util import get_gates_fixed, resize_2d_matrix, resize_3d_array
-from utils.csv_util import append_data
-from utils.file_util import get_root_dir
+from utils.circuit_util import get_gates_fixed, resize_3d_array
+from utils.file.file_util import get_root_dir
 from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 

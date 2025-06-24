@@ -1,8 +1,3 @@
-import os
-from datetime import datetime
-
-import matplotlib
-
 from config import ConfigSingleton
 
 # if os.environ.get('DISPLAY', '') == '':
@@ -13,8 +8,7 @@ from config import ConfigSingleton
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator  # 用于设置整数刻度
-from pathlib import Path
-from utils.file_util import get_root_dir
+
 args = ConfigSingleton().get_args()
 
 
