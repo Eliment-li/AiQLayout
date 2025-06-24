@@ -126,5 +126,15 @@ if __name__ == "__main__":
     # print("Resized shape (uint8):", resized_uint8.shape)
     # print("Original shape (float):", original_matrix_float.shape)
     # print("Resized shape (float):", resized_float.shape)
-    pass
+    import numpy as np
+    import pennylane as qml
 
+    #op = qml.RY(np.pi / 3, wires=0)
+    op = qml.RY(1.2444656817555668, wires=0)
+
+    # Get the gate decomposition in ['T', 'T*', 'H']
+    ops = qml.ops.sk_decomposition(op, epsilon=1e-3)
+    print(ops)
+
+    # Get the approximate matrix from the ops
+    matrix_sk = qml.prod(*reversed(ops)).matrix()

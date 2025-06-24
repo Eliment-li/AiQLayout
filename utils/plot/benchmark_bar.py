@@ -28,7 +28,7 @@ title = [
     'Real Amplitudes ansatz',
 ]
 # # get data
-# path = rootdir + sep + 'data' + sep + 'depth_benchmark_plot.xlsx'
+path = r'd:/sync/AiQLayout_data/sum_up.xlsx'
 # sheets, dfs = ExcelUtil.read_by_sheet(path)
 # # pharse data
 # for sheet in sheets:
