@@ -1,10 +1,8 @@
+import re
+
 import numpy as np
 import random
-
-import torch
-from gymnasium.spaces import Discrete
 from matplotlib import pyplot as plt
-from ray.rllib.utils.torch_utils import FLOAT_MIN
 
 
 def generate_irregular_obstacle(size, complexity=0.75, density=0.75):
@@ -94,6 +92,7 @@ def visualize_map(map_grid):
     plt.show()
 
 
+
 '''test code'''
 # 示例使用
 if __name__ == "__main__":
@@ -127,15 +126,5 @@ if __name__ == "__main__":
     # print("Resized shape (uint8):", resized_uint8.shape)
     # print("Original shape (float):", original_matrix_float.shape)
     # print("Resized shape (float):", resized_float.shape)
+    pass
 
-    import numpy as np
-    import pennylane as qml
-
-    op = qml.RZ(np.pi / 8, wires=0)
-
-    # Get the gate decomposition in ['T', 'T*', 'H']
-    ops = qml.ops.sk_decomposition(op,basis_set=['T', 'H','S','X'], epsilon=1e-1)
-    print(ops)
-
-    # Get the approximate matrix from the ops
-    matrix_sk = qml.prod(*reversed(ops)).matrix()
