@@ -5,7 +5,7 @@ import numpy as np
 from core.chip import Chip
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
-from utils.circuit_util import get_gates, get_gates_fixed
+from utils.circuit_util import get_gates
 
 
 class Agent():
@@ -32,53 +32,6 @@ class Agent():
         assert not self.done , "trying to  activate an agent that is already done."
         self.activate = True
 
-    def compute_dist(self,player):
-        gates = get_gates_fixed()
-
-        depth = 1
-        new = True
-        layer = deepcopy(self.chip.state)
-
-        i = 0
-        other_dist = 0
-        self_dist = 0
-        while i < len(gates):
-            start, goal = gates[i]
-
-            sr,sc = self.chip.q_pos[start - 1]
-            gr,gc = self.chip.q_pos[goal - 1]
-            path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
-            path_len = len(path)
-            if start == player or goal == player:
-                self_dist += path_len
-            else:
-                other_dist += path_len
-            if path_len == 2:
-                #the two qubits are already connected
-                i += 1
-                continue
-            elif path_len ==0:
-                if new:
-                    #已经刷新过但是无法找到路径
-                    # print('path = 0')
-                    # path = Path(args.results_evaluate_path, (args.time_id + '_results.csv'))
-                    # append_data(file_path=path,data=str(self.chip.state))
-                    # self.chip.print_state()
-                    # print(f'from{start} to {goal}')
-                    return None,None,None
-                else:
-                    layer = deepcopy(self.chip.state)
-                    depth += 1
-                    new = True
-            else:
-                #occupy the path
-                for p in path:
-                    layer[p[0]][p[1]] = -3
-                new = False
-                i+=1
-
-
-        return other_dist,self_dist,depth
 
 
 

@@ -15,7 +15,7 @@ from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
-from utils.circuit_util import get_gates_fixed, resize_3d_array
+from utils.circuit_util import get_random_gates, resize_3d_array
 from utils.file.file_util import get_root_dir
 from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
@@ -197,7 +197,7 @@ class Env_6(MultiAgentEnv):
                  }
 
     def compute_dist(self,chip:Chip, player:int):
-        gates = get_gates_fixed()
+        gates = get_random_gates()
 
         depth = 1
         new = True
