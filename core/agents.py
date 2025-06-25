@@ -5,7 +5,6 @@ import numpy as np
 from core.chip import Chip
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow
-from utils.circuit_util import get_gates
 
 
 class Agent():
