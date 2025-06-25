@@ -14,7 +14,7 @@ from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow, normalize_MinMaxScaler
-from utils.circuit_util import resize_2d_matrix, resize_3d_array
+from utils.circuit_util import resize_2d_matrix, resize_3d_array, get_random_gates
 from utils.file.file_util import get_root_dir
 from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
@@ -48,8 +48,6 @@ class Env_5(MultiAgentEnv):
         print(f'init env_5 with {self.num_qubits} qubits')
         self.max_step = args.env_max_step *self.num_qubits
 
-        # define chip
-
 
         self.chip = Chip(rows=args.chip_rows,layout_type=QubitLayoutType.EMPTY, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=[])
         #agnet manager
@@ -73,6 +71,8 @@ class Env_5(MultiAgentEnv):
 
         self.smd = SharedMemoryDict(name='env', size=1024)
         self.smd['min_dist'] = math.inf
+
+        self.gates = get_random_gates()
     def reset(self, *, seed=None, options=None):
         self.steps = 1
 
@@ -179,6 +179,41 @@ class Env_5(MultiAgentEnv):
                         'max_total_r':self._max_total_r
                     }
                  }
+    def compute_depth(self,chip:Chip):
+        gates = self.gates
+        depth = 0
+        layer = deepcopy(chip.state)
+        new = True
+        i=0
+        while i < len(gates):
+            start, goal = gates[i]
+            sr,sc = chip.q_coor(start)
+            #
+            if  goal == QubitState.MAGIC.value:
+                path,dist,target_m= bfs_route(self.chip.state, start_row=sr, start_col=sc, target_values={QubitState.MAGIC.value})
+            else:
+                gr, gc = chip.q_coor(goal)
+                path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
+                dist = len(path)
+            if path is None:
+                if new:
+                    return None, None, None
+                else:
+                    layer = deepcopy(chip.state)
+                    depth += 1
+                    new = True
+                    #keep i the same
+            elif dist == 2:
+                #the two qubits are already connected
+                i += 1
+                continue
+            else:
+                #occupy the path
+                for p in path:
+                    layer[p[0]][p[1]] = -3
+                new = False
+                i+=1
+        return depth
 
     def compute_dist_v2(self,chip:Chip, player:int):
         sum_dist= 0
@@ -191,7 +226,7 @@ class Env_5(MultiAgentEnv):
                 sr, sc = chip.q_coor(start)
                 gr, gc = chip.q_coor(goal)
                 if j == QubitState.MAGIC.value:
-                    dist = bfs_route(self.chip.state, start_row=sr, start_col=sc, target_values={QubitState.MAGIC.value})['distance']
+                    path,dist,target_m= bfs_route(self.chip.state, start_row=sr, start_col=sc, target_values={QubitState.MAGIC.value})
                 else:
                     path = a_star_path((sr, sc), (gr, gc), chip.state, goal)
                     dist = len(path)
