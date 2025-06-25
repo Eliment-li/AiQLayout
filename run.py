@@ -97,6 +97,8 @@ def save_state():
         print('no best state found in shared memory dict')
 if __name__ == "__main__":
 
+    SharedMemoryDict(name='ConfigSingleton', size=1024).cleanup()
+    SharedMemoryDict(name='env', size=1024).cleanup()
     #set custom run config before init args
     import argparse
 
