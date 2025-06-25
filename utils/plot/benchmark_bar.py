@@ -1,9 +1,11 @@
 import os
+import re
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 
+from utils.file.excel_util import ExcelUtil
 from utils.file.file_util import get_root_dir
 
 # from utils.file.excel_util import ExcelUtil
@@ -29,19 +31,18 @@ title = [
 ]
 # # get data
 path = r'd:/sync/AiQLayout_data/sum_up.xlsx'
-# sheets, dfs = ExcelUtil.read_by_sheet(path)
-# # pharse data
-# for sheet in sheets:
-#     df = dfs[sheet]
-#     circuits = df['circuit']
-#     # 从字符串中提取出该线路的比特数量 qnn/qnn_indep_qiskit_5.qasm-> 5
-#     labels = list(map(lambda x: ''.join(re.findall(r'\d', x)), circuits))
-#     #print(labels)
-#     labels_2d.append(labels)
-#     rl = df['rl']
-#     grid = df['grid']
-#
-#     data.update({sheet:(rl,grid)})
+sheets, dfs = ExcelUtil.read_by_sheet(path)
+# pharse data
+for sheet in sheets:
+    df = dfs[sheet]
+    circuits = df['circuit']
+    # 从字符串中提取出该线路的比特数量 qnn/qnn_indep_qiskit_5.qasm-> 5
+    qubits_number = list(map(lambda x: ''.join(re.findall(r'\d', x)), circuits))
+    #print(labels)
+    labels_2d.append(qubits_number)
+    rl = df['rl']
+    grid = df['grid']
+    data.update({sheet:(rl,grid)})
 
 
 data = {

@@ -1,7 +1,7 @@
 env_version: 5
 #chip
-chip_rows: 10
-chip_cols: 10
+chip_rows: 12
+chip_cols: 12
 verbose: 1
 enable_broken_patch: False
 
