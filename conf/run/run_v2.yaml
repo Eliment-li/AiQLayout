@@ -5,11 +5,14 @@ chip_cols: 12
 verbose: 1
 enable_broken_patch: False
 
+#random gate
+gates_size: 1000
+
 reward_scaling: True
 
 rf_version: 3
-num_qubits: 20
-lsi_file_path: assets/circuits/qft/LSI_qftentangled_indep_qiskit_20.lsi
+num_qubits: 5
+lsi_file_path: assets/circuits/qft/LSI_qftentangled_indep_qiskit_5.lsi
 env_max_step: 10
 #lstm
 use_lstm: False
