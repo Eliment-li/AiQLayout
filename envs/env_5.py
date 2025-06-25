@@ -13,7 +13,7 @@ from core.chip import Chip, QubitState, QubitLayoutType
 from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
-from utils.calc_util import SlideWindow
+from utils.calc_util import SlideWindow, normalize_MinMaxScaler
 from utils.circuit_util import resize_2d_matrix, resize_3d_array
 from utils.file.file_util import get_root_dir
 from utils.ls_instructions import get_heat_map
@@ -42,6 +42,7 @@ class Env_5(MultiAgentEnv):
 
         self.heat_map = get_heat_map(file_path = self.lsi_file_path)
         self.RESIZE_HEATMAP = resize_2d_matrix(deepcopy(self.heat_map), r  = self.OBS_ROW,c = self.OBS_COL)
+        self.RESIZE_HEATMAP = normalize_MinMaxScaler(self.RESIZE_HEATMAP)
         self.RESIZE_HEATMAP = [self.RESIZE_HEATMAP]
 
         print(f'init env_5 with {self.num_qubits} qubits')
@@ -311,8 +312,6 @@ if __name__ == '__main__':
     print(env.chip)
     print(env.chip.q_pos)
     print(env.chip.valid_positions)
-    for i in range(len(env.chip.valid_positions)):
-        if env.chip.valid_positions[i] ==0:
-            print(i)
+
 
 
