@@ -1,15 +1,15 @@
 env_version: 5
 #chip
-chip_rows: 12
-chip_cols: 12
+chip_rows: 10
+chip_cols: 10
 verbose: 1
 enable_broken_patch: False
 
 reward_scaling: True
 
 rf_version: 3
-num_qubits: 20
-lsi_file_path: assets/circuits/qft/LSI_qftentangled_indep_qiskit_20.lsi
+num_qubits: 15
+lsi_file_path: assets/circuits/dj/LSI_dj_indep_qiskit_15.lsi
 env_max_step: 10
 #lstm
 use_lstm: False
