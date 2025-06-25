@@ -16,3 +16,4 @@ shared-memory-dict
 wandb
 mqt.bench
 swanlab
+scikit-learn
