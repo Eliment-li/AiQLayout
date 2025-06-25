@@ -232,7 +232,6 @@ def inst_to_heatmap(instructions,qubits_number):
 def get_heat_map(file_path):
     heat_map = process_file(file_path, '')
     heat_map = normalize_MinMaxScaler(heat_map)
-    print(f'heat_map  = {heat_map}')
     return heat_map
 
 ''' this fuction:
