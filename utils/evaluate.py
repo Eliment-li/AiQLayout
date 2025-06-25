@@ -177,6 +177,7 @@ def evaluate_v2(base_config, args, results):
 
     #show_trace(actions)
     SharedMemoryDict(name='ConfigSingleton', size=1024).cleanup()
+    SharedMemoryDict(name='env', size=1024).cleanup()
 
 
 def evaluate(base_config, args, results):
