@@ -197,8 +197,7 @@ class Env_6(MultiAgentEnv):
                  }
 
     def compute_dist(self,chip:Chip, player:int):
-        gates = get_random_gates()
-
+        gates = []
         depth = 1
         new = True
         layer = deepcopy(chip.state)

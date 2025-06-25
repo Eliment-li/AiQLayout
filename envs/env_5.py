@@ -72,7 +72,7 @@ class Env_5(MultiAgentEnv):
         self.smd = SharedMemoryDict(name='env', size=1024)
         self.smd['min_dist'] = math.inf
 
-        self.gates = get_random_gates()
+        self.gates = get_random_gates(num_qubits=self.num_qubits, size=args.gates_size)
     def reset(self, *, seed=None, options=None):
         self.steps = 1
 
