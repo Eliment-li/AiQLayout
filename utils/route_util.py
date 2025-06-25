@@ -1,7 +1,7 @@
 from collections import deque
 
 
-def bfs_route(matrix, start_row, start_col, target_values):
+def bfs_route(matrix, start_row, start_col, target_values,broken=[]):
     """
     在二维矩阵中查找从起点到任意目标值的最短路径
 
@@ -57,10 +57,13 @@ def bfs_route(matrix, start_row, start_col, target_values):
             found_target = (r, c)
             break
 
+        #broken=[(0,1),(1,1),(2,1)]
+
         # 遍历四个方向
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
-
+            if (nr, nc) in broken:
+                continue
             # 检查新位置是否有效
             if 0 <= nr < rows and 0 <= nc < cols and not visited[nr][nc]:
                 visited[nr][nc] = True
@@ -69,7 +72,7 @@ def bfs_route(matrix, start_row, start_col, target_values):
 
     # 未找到目标节点
     if not found_target:
-        return None
+        return None,None,target_values
 
     # 回溯构建路径
     path = []
@@ -80,11 +83,13 @@ def bfs_route(matrix, start_row, start_col, target_values):
     path.append((start_row, start_col))
     path.reverse()  # 反转得到从起点到目标的顺序
 
-    return {
-        "path": path,
-        "distance": len(path) - 1,  # 步数=节点数-1
-        "target_reached": matrix[found_target[0]][found_target[1]]
-    }
+    distance = len(path) - 1  # 步数=节点数-1
+    # return {
+    #     "path": path,
+    #     "distance": len(path) - 1,  # 步数=节点数-1
+    #     "target_reached": matrix[found_target[0]][found_target[1]]
+    # }
+    return path,distance,matrix[found_target[0]][found_target[1]]
 
 
 if __name__ == '__main__':
@@ -98,18 +103,11 @@ if __name__ == '__main__':
 
     # 起点 (0,0) 值=1
     # 目标值集合 {7, 11, 15}
-    result = shortest_path_in_matrix(
+    path,distance,target = bfs_route(
         matrix=grid,
         start_row=0,
         start_col=0,
-        target_values={7, 11, 15}
+        target_values={23}
     )
 
-    if result:
-        print(f"最短路径长度: {result['distance']} 步")
-        print(f"到达的目标值: {result['target_reached']}")
-        print("路径坐标:")
-        for r, c in result["path"]:
-            print(f"({r}, {c}) -> {grid[r][c]}")
-    else:
-        print("未找到路径")
+    print(path)
