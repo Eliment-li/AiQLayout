@@ -1,6 +1,6 @@
 import math
 from collections import deque
-
+from sklearn.preprocessing import MinMaxScaler
 
 class ZScoreNormalizer:
     '''
@@ -36,6 +36,13 @@ class ZScoreNormalizer:
         std = math.sqrt(self.var / self.n) if self.n > 1 else 0
         # 返回 Z-Score 标准化值
         return (x - self.mean) / std if std > 0 else 0
+
+
+def normalize_MinMaxScaler(array:list):
+    scaler = MinMaxScaler()
+    normalized_array = scaler.fit_transform(array)
+    return normalized_array
+
 
 
 class CNN:
