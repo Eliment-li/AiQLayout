@@ -11,8 +11,8 @@ gates_size: 1000
 reward_scaling: True
 
 rf_version: 3
-num_qubits: 5
-lsi_file_path: assets/circuits/qft/LSI_qftentangled_indep_qiskit_5.lsi
+num_qubits: 25
+lsi_file_path: assets/circuits/dj/LSI_dj_indep_qiskit_25.lsi
 env_max_step: 10
 #lstm
 use_lstm: False

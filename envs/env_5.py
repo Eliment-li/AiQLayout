@@ -35,6 +35,13 @@ class Env_5(MultiAgentEnv):
         self.num_qubits = args.num_qubits
         self.OBS_ROW = max(args.chip_rows, self.num_qubits)
         self.OBS_COL = max(args.chip_cols, self.num_qubits)
+
+        if self.OBS_ROW >=20:
+            self.OBS_ROW = 20
+        if self.OBS_COL >=20:
+            self.OBS_COL = 20
+
+
         print(f'OBS_ROW: {self.OBS_ROW}, OBS_COL: {self.OBS_COL}')
 
         self.lsi_file_path = rootdir / Path(args.lsi_file_path)
