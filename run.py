@@ -78,7 +78,7 @@ def get_policys():
     return policies
 
 def save_state():
-    smd = SharedMemoryDict(name='env', size=1024)
+    smd = SharedMemoryDict(name='env', size=10240)
     for k in smd.keys():
         print(f'key = {k}, value = {smd[k]}')
     if 'best_state'in smd.keys():
@@ -97,8 +97,8 @@ def save_state():
         print('no best state found in shared memory dict')
 if __name__ == "__main__":
 
-    SharedMemoryDict(name='ConfigSingleton', size=1024).cleanup()
-    SharedMemoryDict(name='env', size=1024).cleanup()
+    SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
+    SharedMemoryDict(name='env', size=10240).cleanup()
     #set custom run config before init args
     import argparse
 

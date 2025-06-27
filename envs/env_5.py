@@ -41,7 +41,6 @@ class Env_5(MultiAgentEnv):
         if self.OBS_COL >=20:
             self.OBS_COL = 20
 
-
         print(f'OBS_ROW: {self.OBS_ROW}, OBS_COL: {self.OBS_COL}')
 
         self.lsi_file_path = rootdir / Path(args.lsi_file_path)
@@ -76,7 +75,7 @@ class Env_5(MultiAgentEnv):
         self.sw = SlideWindow(50)
         self.r_scale = RewardScaling(shape=1, gamma=0.9)
 
-        self.smd = SharedMemoryDict(name='env', size=1024)
+        self.smd = SharedMemoryDict(name='env', size=10240)
         self.smd['min_dist'] = math.inf
 
         self.gates = get_random_gates(num_qubits=self.num_qubits, size=args.gates_size)

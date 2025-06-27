@@ -96,7 +96,7 @@ class Env_6(MultiAgentEnv):
         self.lsi_file_path = rootdir / Path(args.lsi_file_path)
         self.heat_map = get_heat_map(self.lsi_file_path)
 
-        self.smd = SharedMemoryDict(name='env', size=1024)
+        self.smd = SharedMemoryDict(name='env', size=10240)
         self.smd['min_dist'] = math.inf
     def reset(self, *, seed=None, options=None):
         self.steps = 1

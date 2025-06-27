@@ -14,7 +14,7 @@ from shared_memory_dict import SharedMemoryDict
 class ConfigSingleton:
     _instance = None
     _lock = Lock()
-    smd = SharedMemoryDict(name='ConfigSingleton', size=1024)
+    smd = SharedMemoryDict(name='ConfigSingleton', size=10240)
 
     def __new__(cls, config_path="conf", job_name="config",version_base="1.2"):
         # 使用线程锁确保线程安全
