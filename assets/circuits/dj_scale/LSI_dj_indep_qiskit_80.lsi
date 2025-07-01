@@ -1,0 +1,2055 @@
+RequestMagicState 1000000
+MultiBodyMeasure 0:Z,1000000:X
+MeasureSinglePatch 1000000 Z
+SGate 0
+LogicalPauli 0 X
+RequestMagicState 1000001
+MultiBodyMeasure 0:Z,1000001:X
+MeasureSinglePatch 1000001 Z
+SGate 0
+LogicalPauli 0 X
+RequestMagicState 1000002
+MultiBodyMeasure 0:Z,1000002:X
+MeasureSinglePatch 1000002 Z
+SGate 0
+LogicalPauli 0 X
+RequestMagicState 1000003
+MultiBodyMeasure 0:Z,1000003:X
+MeasureSinglePatch 1000003 Z
+SGate 0
+LogicalPauli 0 X
+HGate 0
+RequestMagicState 1000004
+MultiBodyMeasure 1:Z,1000004:X
+MeasureSinglePatch 1000004 Z
+SGate 1
+LogicalPauli 1 X
+RequestMagicState 1000005
+MultiBodyMeasure 1:Z,1000005:X
+MeasureSinglePatch 1000005 Z
+SGate 1
+LogicalPauli 1 X
+RequestMagicState 1000006
+MultiBodyMeasure 1:Z,1000006:X
+MeasureSinglePatch 1000006 Z
+SGate 1
+LogicalPauli 1 X
+RequestMagicState 1000007
+MultiBodyMeasure 1:Z,1000007:X
+MeasureSinglePatch 1000007 Z
+SGate 1
+LogicalPauli 1 X
+HGate 1
+HGate 2
+RequestMagicState 1000008
+MultiBodyMeasure 3:Z,1000008:X
+MeasureSinglePatch 1000008 Z
+SGate 3
+LogicalPauli 3 X
+RequestMagicState 1000009
+MultiBodyMeasure 3:Z,1000009:X
+MeasureSinglePatch 1000009 Z
+SGate 3
+LogicalPauli 3 X
+RequestMagicState 1000010
+MultiBodyMeasure 3:Z,1000010:X
+MeasureSinglePatch 1000010 Z
+SGate 3
+LogicalPauli 3 X
+RequestMagicState 1000011
+MultiBodyMeasure 3:Z,1000011:X
+MeasureSinglePatch 1000011 Z
+SGate 3
+LogicalPauli 3 X
+HGate 3
+HGate 4
+RequestMagicState 1000012
+MultiBodyMeasure 5:Z,1000012:X
+MeasureSinglePatch 1000012 Z
+SGate 5
+LogicalPauli 5 X
+RequestMagicState 1000013
+MultiBodyMeasure 5:Z,1000013:X
+MeasureSinglePatch 1000013 Z
+SGate 5
+LogicalPauli 5 X
+RequestMagicState 1000014
+MultiBodyMeasure 5:Z,1000014:X
+MeasureSinglePatch 1000014 Z
+SGate 5
+LogicalPauli 5 X
+RequestMagicState 1000015
+MultiBodyMeasure 5:Z,1000015:X
+MeasureSinglePatch 1000015 Z
+SGate 5
+LogicalPauli 5 X
+HGate 5
+RequestMagicState 1000016
+MultiBodyMeasure 6:Z,1000016:X
+MeasureSinglePatch 1000016 Z
+SGate 6
+LogicalPauli 6 X
+RequestMagicState 1000017
+MultiBodyMeasure 6:Z,1000017:X
+MeasureSinglePatch 1000017 Z
+SGate 6
+LogicalPauli 6 X
+RequestMagicState 1000018
+MultiBodyMeasure 6:Z,1000018:X
+MeasureSinglePatch 1000018 Z
+SGate 6
+LogicalPauli 6 X
+RequestMagicState 1000019
+MultiBodyMeasure 6:Z,1000019:X
+MeasureSinglePatch 1000019 Z
+SGate 6
+LogicalPauli 6 X
+HGate 6
+HGate 7
+RequestMagicState 1000020
+MultiBodyMeasure 8:Z,1000020:X
+MeasureSinglePatch 1000020 Z
+SGate 8
+LogicalPauli 8 X
+RequestMagicState 1000021
+MultiBodyMeasure 8:Z,1000021:X
+MeasureSinglePatch 1000021 Z
+SGate 8
+LogicalPauli 8 X
+RequestMagicState 1000022
+MultiBodyMeasure 8:Z,1000022:X
+MeasureSinglePatch 1000022 Z
+SGate 8
+LogicalPauli 8 X
+RequestMagicState 1000023
+MultiBodyMeasure 8:Z,1000023:X
+MeasureSinglePatch 1000023 Z
+SGate 8
+LogicalPauli 8 X
+HGate 8
+RequestMagicState 1000024
+MultiBodyMeasure 9:Z,1000024:X
+MeasureSinglePatch 1000024 Z
+SGate 9
+LogicalPauli 9 X
+RequestMagicState 1000025
+MultiBodyMeasure 9:Z,1000025:X
+MeasureSinglePatch 1000025 Z
+SGate 9
+LogicalPauli 9 X
+RequestMagicState 1000026
+MultiBodyMeasure 9:Z,1000026:X
+MeasureSinglePatch 1000026 Z
+SGate 9
+LogicalPauli 9 X
+RequestMagicState 1000027
+MultiBodyMeasure 9:Z,1000027:X
+MeasureSinglePatch 1000027 Z
+SGate 9
+LogicalPauli 9 X
+HGate 9
+HGate 10
+RequestMagicState 1000028
+MultiBodyMeasure 11:Z,1000028:X
+MeasureSinglePatch 1000028 Z
+SGate 11
+LogicalPauli 11 X
+RequestMagicState 1000029
+MultiBodyMeasure 11:Z,1000029:X
+MeasureSinglePatch 1000029 Z
+SGate 11
+LogicalPauli 11 X
+RequestMagicState 1000030
+MultiBodyMeasure 11:Z,1000030:X
+MeasureSinglePatch 1000030 Z
+SGate 11
+LogicalPauli 11 X
+RequestMagicState 1000031
+MultiBodyMeasure 11:Z,1000031:X
+MeasureSinglePatch 1000031 Z
+SGate 11
+LogicalPauli 11 X
+HGate 11
+RequestMagicState 1000032
+MultiBodyMeasure 12:Z,1000032:X
+MeasureSinglePatch 1000032 Z
+SGate 12
+LogicalPauli 12 X
+RequestMagicState 1000033
+MultiBodyMeasure 12:Z,1000033:X
+MeasureSinglePatch 1000033 Z
+SGate 12
+LogicalPauli 12 X
+RequestMagicState 1000034
+MultiBodyMeasure 12:Z,1000034:X
+MeasureSinglePatch 1000034 Z
+SGate 12
+LogicalPauli 12 X
+RequestMagicState 1000035
+MultiBodyMeasure 12:Z,1000035:X
+MeasureSinglePatch 1000035 Z
+SGate 12
+LogicalPauli 12 X
+HGate 12
+HGate 13
+HGate 14
+RequestMagicState 1000036
+MultiBodyMeasure 15:Z,1000036:X
+MeasureSinglePatch 1000036 Z
+SGate 15
+LogicalPauli 15 X
+RequestMagicState 1000037
+MultiBodyMeasure 15:Z,1000037:X
+MeasureSinglePatch 1000037 Z
+SGate 15
+LogicalPauli 15 X
+RequestMagicState 1000038
+MultiBodyMeasure 15:Z,1000038:X
+MeasureSinglePatch 1000038 Z
+SGate 15
+LogicalPauli 15 X
+RequestMagicState 1000039
+MultiBodyMeasure 15:Z,1000039:X
+MeasureSinglePatch 1000039 Z
+SGate 15
+LogicalPauli 15 X
+HGate 15
+HGate 16
+HGate 17
+HGate 18
+HGate 19
+HGate 20
+RequestMagicState 1000040
+MultiBodyMeasure 21:Z,1000040:X
+MeasureSinglePatch 1000040 Z
+SGate 21
+LogicalPauli 21 X
+RequestMagicState 1000041
+MultiBodyMeasure 21:Z,1000041:X
+MeasureSinglePatch 1000041 Z
+SGate 21
+LogicalPauli 21 X
+RequestMagicState 1000042
+MultiBodyMeasure 21:Z,1000042:X
+MeasureSinglePatch 1000042 Z
+SGate 21
+LogicalPauli 21 X
+RequestMagicState 1000043
+MultiBodyMeasure 21:Z,1000043:X
+MeasureSinglePatch 1000043 Z
+SGate 21
+LogicalPauli 21 X
+HGate 21
+HGate 22
+HGate 23
+RequestMagicState 1000044
+MultiBodyMeasure 24:Z,1000044:X
+MeasureSinglePatch 1000044 Z
+SGate 24
+LogicalPauli 24 X
+RequestMagicState 1000045
+MultiBodyMeasure 24:Z,1000045:X
+MeasureSinglePatch 1000045 Z
+SGate 24
+LogicalPauli 24 X
+RequestMagicState 1000046
+MultiBodyMeasure 24:Z,1000046:X
+MeasureSinglePatch 1000046 Z
+SGate 24
+LogicalPauli 24 X
+RequestMagicState 1000047
+MultiBodyMeasure 24:Z,1000047:X
+MeasureSinglePatch 1000047 Z
+SGate 24
+LogicalPauli 24 X
+HGate 24
+RequestMagicState 1000048
+MultiBodyMeasure 25:Z,1000048:X
+MeasureSinglePatch 1000048 Z
+SGate 25
+LogicalPauli 25 X
+RequestMagicState 1000049
+MultiBodyMeasure 25:Z,1000049:X
+MeasureSinglePatch 1000049 Z
+SGate 25
+LogicalPauli 25 X
+RequestMagicState 1000050
+MultiBodyMeasure 25:Z,1000050:X
+MeasureSinglePatch 1000050 Z
+SGate 25
+LogicalPauli 25 X
+RequestMagicState 1000051
+MultiBodyMeasure 25:Z,1000051:X
+MeasureSinglePatch 1000051 Z
+SGate 25
+LogicalPauli 25 X
+HGate 25
+HGate 26
+HGate 27
+RequestMagicState 1000052
+MultiBodyMeasure 28:Z,1000052:X
+MeasureSinglePatch 1000052 Z
+SGate 28
+LogicalPauli 28 X
+RequestMagicState 1000053
+MultiBodyMeasure 28:Z,1000053:X
+MeasureSinglePatch 1000053 Z
+SGate 28
+LogicalPauli 28 X
+RequestMagicState 1000054
+MultiBodyMeasure 28:Z,1000054:X
+MeasureSinglePatch 1000054 Z
+SGate 28
+LogicalPauli 28 X
+RequestMagicState 1000055
+MultiBodyMeasure 28:Z,1000055:X
+MeasureSinglePatch 1000055 Z
+SGate 28
+LogicalPauli 28 X
+HGate 28
+HGate 29
+HGate 30
+RequestMagicState 1000056
+MultiBodyMeasure 31:Z,1000056:X
+MeasureSinglePatch 1000056 Z
+SGate 31
+LogicalPauli 31 X
+RequestMagicState 1000057
+MultiBodyMeasure 31:Z,1000057:X
+MeasureSinglePatch 1000057 Z
+SGate 31
+LogicalPauli 31 X
+RequestMagicState 1000058
+MultiBodyMeasure 31:Z,1000058:X
+MeasureSinglePatch 1000058 Z
+SGate 31
+LogicalPauli 31 X
+RequestMagicState 1000059
+MultiBodyMeasure 31:Z,1000059:X
+MeasureSinglePatch 1000059 Z
+SGate 31
+LogicalPauli 31 X
+HGate 31
+HGate 32
+HGate 33
+HGate 34
+RequestMagicState 1000060
+MultiBodyMeasure 35:Z,1000060:X
+MeasureSinglePatch 1000060 Z
+SGate 35
+LogicalPauli 35 X
+RequestMagicState 1000061
+MultiBodyMeasure 35:Z,1000061:X
+MeasureSinglePatch 1000061 Z
+SGate 35
+LogicalPauli 35 X
+RequestMagicState 1000062
+MultiBodyMeasure 35:Z,1000062:X
+MeasureSinglePatch 1000062 Z
+SGate 35
+LogicalPauli 35 X
+RequestMagicState 1000063
+MultiBodyMeasure 35:Z,1000063:X
+MeasureSinglePatch 1000063 Z
+SGate 35
+LogicalPauli 35 X
+HGate 35
+RequestMagicState 1000064
+MultiBodyMeasure 36:Z,1000064:X
+MeasureSinglePatch 1000064 Z
+SGate 36
+LogicalPauli 36 X
+RequestMagicState 1000065
+MultiBodyMeasure 36:Z,1000065:X
+MeasureSinglePatch 1000065 Z
+SGate 36
+LogicalPauli 36 X
+RequestMagicState 1000066
+MultiBodyMeasure 36:Z,1000066:X
+MeasureSinglePatch 1000066 Z
+SGate 36
+LogicalPauli 36 X
+RequestMagicState 1000067
+MultiBodyMeasure 36:Z,1000067:X
+MeasureSinglePatch 1000067 Z
+SGate 36
+LogicalPauli 36 X
+HGate 36
+HGate 37
+RequestMagicState 1000068
+MultiBodyMeasure 38:Z,1000068:X
+MeasureSinglePatch 1000068 Z
+SGate 38
+LogicalPauli 38 X
+RequestMagicState 1000069
+MultiBodyMeasure 38:Z,1000069:X
+MeasureSinglePatch 1000069 Z
+SGate 38
+LogicalPauli 38 X
+RequestMagicState 1000070
+MultiBodyMeasure 38:Z,1000070:X
+MeasureSinglePatch 1000070 Z
+SGate 38
+LogicalPauli 38 X
+RequestMagicState 1000071
+MultiBodyMeasure 38:Z,1000071:X
+MeasureSinglePatch 1000071 Z
+SGate 38
+LogicalPauli 38 X
+HGate 38
+RequestMagicState 1000072
+MultiBodyMeasure 39:Z,1000072:X
+MeasureSinglePatch 1000072 Z
+SGate 39
+LogicalPauli 39 X
+RequestMagicState 1000073
+MultiBodyMeasure 39:Z,1000073:X
+MeasureSinglePatch 1000073 Z
+SGate 39
+LogicalPauli 39 X
+RequestMagicState 1000074
+MultiBodyMeasure 39:Z,1000074:X
+MeasureSinglePatch 1000074 Z
+SGate 39
+LogicalPauli 39 X
+RequestMagicState 1000075
+MultiBodyMeasure 39:Z,1000075:X
+MeasureSinglePatch 1000075 Z
+SGate 39
+LogicalPauli 39 X
+HGate 39
+RequestMagicState 1000076
+MultiBodyMeasure 40:Z,1000076:X
+MeasureSinglePatch 1000076 Z
+SGate 40
+LogicalPauli 40 X
+RequestMagicState 1000077
+MultiBodyMeasure 40:Z,1000077:X
+MeasureSinglePatch 1000077 Z
+SGate 40
+LogicalPauli 40 X
+RequestMagicState 1000078
+MultiBodyMeasure 40:Z,1000078:X
+MeasureSinglePatch 1000078 Z
+SGate 40
+LogicalPauli 40 X
+RequestMagicState 1000079
+MultiBodyMeasure 40:Z,1000079:X
+MeasureSinglePatch 1000079 Z
+SGate 40
+LogicalPauli 40 X
+HGate 40
+RequestMagicState 1000080
+MultiBodyMeasure 41:Z,1000080:X
+MeasureSinglePatch 1000080 Z
+SGate 41
+LogicalPauli 41 X
+RequestMagicState 1000081
+MultiBodyMeasure 41:Z,1000081:X
+MeasureSinglePatch 1000081 Z
+SGate 41
+LogicalPauli 41 X
+RequestMagicState 1000082
+MultiBodyMeasure 41:Z,1000082:X
+MeasureSinglePatch 1000082 Z
+SGate 41
+LogicalPauli 41 X
+RequestMagicState 1000083
+MultiBodyMeasure 41:Z,1000083:X
+MeasureSinglePatch 1000083 Z
+SGate 41
+LogicalPauli 41 X
+HGate 41
+RequestMagicState 1000084
+MultiBodyMeasure 42:Z,1000084:X
+MeasureSinglePatch 1000084 Z
+SGate 42
+LogicalPauli 42 X
+RequestMagicState 1000085
+MultiBodyMeasure 42:Z,1000085:X
+MeasureSinglePatch 1000085 Z
+SGate 42
+LogicalPauli 42 X
+RequestMagicState 1000086
+MultiBodyMeasure 42:Z,1000086:X
+MeasureSinglePatch 1000086 Z
+SGate 42
+LogicalPauli 42 X
+RequestMagicState 1000087
+MultiBodyMeasure 42:Z,1000087:X
+MeasureSinglePatch 1000087 Z
+SGate 42
+LogicalPauli 42 X
+HGate 42
+HGate 43
+RequestMagicState 1000088
+MultiBodyMeasure 44:Z,1000088:X
+MeasureSinglePatch 1000088 Z
+SGate 44
+LogicalPauli 44 X
+RequestMagicState 1000089
+MultiBodyMeasure 44:Z,1000089:X
+MeasureSinglePatch 1000089 Z
+SGate 44
+LogicalPauli 44 X
+RequestMagicState 1000090
+MultiBodyMeasure 44:Z,1000090:X
+MeasureSinglePatch 1000090 Z
+SGate 44
+LogicalPauli 44 X
+RequestMagicState 1000091
+MultiBodyMeasure 44:Z,1000091:X
+MeasureSinglePatch 1000091 Z
+SGate 44
+LogicalPauli 44 X
+HGate 44
+HGate 45
+HGate 46
+HGate 47
+HGate 48
+RequestMagicState 1000092
+MultiBodyMeasure 49:Z,1000092:X
+MeasureSinglePatch 1000092 Z
+SGate 49
+LogicalPauli 49 X
+RequestMagicState 1000093
+MultiBodyMeasure 49:Z,1000093:X
+MeasureSinglePatch 1000093 Z
+SGate 49
+LogicalPauli 49 X
+RequestMagicState 1000094
+MultiBodyMeasure 49:Z,1000094:X
+MeasureSinglePatch 1000094 Z
+SGate 49
+LogicalPauli 49 X
+RequestMagicState 1000095
+MultiBodyMeasure 49:Z,1000095:X
+MeasureSinglePatch 1000095 Z
+SGate 49
+LogicalPauli 49 X
+HGate 49
+HGate 50
+RequestMagicState 1000096
+MultiBodyMeasure 51:Z,1000096:X
+MeasureSinglePatch 1000096 Z
+SGate 51
+LogicalPauli 51 X
+RequestMagicState 1000097
+MultiBodyMeasure 51:Z,1000097:X
+MeasureSinglePatch 1000097 Z
+SGate 51
+LogicalPauli 51 X
+RequestMagicState 1000098
+MultiBodyMeasure 51:Z,1000098:X
+MeasureSinglePatch 1000098 Z
+SGate 51
+LogicalPauli 51 X
+RequestMagicState 1000099
+MultiBodyMeasure 51:Z,1000099:X
+MeasureSinglePatch 1000099 Z
+SGate 51
+LogicalPauli 51 X
+HGate 51
+RequestMagicState 1000100
+MultiBodyMeasure 52:Z,1000100:X
+MeasureSinglePatch 1000100 Z
+SGate 52
+LogicalPauli 52 X
+RequestMagicState 1000101
+MultiBodyMeasure 52:Z,1000101:X
+MeasureSinglePatch 1000101 Z
+SGate 52
+LogicalPauli 52 X
+RequestMagicState 1000102
+MultiBodyMeasure 52:Z,1000102:X
+MeasureSinglePatch 1000102 Z
+SGate 52
+LogicalPauli 52 X
+RequestMagicState 1000103
+MultiBodyMeasure 52:Z,1000103:X
+MeasureSinglePatch 1000103 Z
+SGate 52
+LogicalPauli 52 X
+HGate 52
+RequestMagicState 1000104
+MultiBodyMeasure 53:Z,1000104:X
+MeasureSinglePatch 1000104 Z
+SGate 53
+LogicalPauli 53 X
+RequestMagicState 1000105
+MultiBodyMeasure 53:Z,1000105:X
+MeasureSinglePatch 1000105 Z
+SGate 53
+LogicalPauli 53 X
+RequestMagicState 1000106
+MultiBodyMeasure 53:Z,1000106:X
+MeasureSinglePatch 1000106 Z
+SGate 53
+LogicalPauli 53 X
+RequestMagicState 1000107
+MultiBodyMeasure 53:Z,1000107:X
+MeasureSinglePatch 1000107 Z
+SGate 53
+LogicalPauli 53 X
+HGate 53
+HGate 54
+RequestMagicState 1000108
+MultiBodyMeasure 55:Z,1000108:X
+MeasureSinglePatch 1000108 Z
+SGate 55
+LogicalPauli 55 X
+RequestMagicState 1000109
+MultiBodyMeasure 55:Z,1000109:X
+MeasureSinglePatch 1000109 Z
+SGate 55
+LogicalPauli 55 X
+RequestMagicState 1000110
+MultiBodyMeasure 55:Z,1000110:X
+MeasureSinglePatch 1000110 Z
+SGate 55
+LogicalPauli 55 X
+RequestMagicState 1000111
+MultiBodyMeasure 55:Z,1000111:X
+MeasureSinglePatch 1000111 Z
+SGate 55
+LogicalPauli 55 X
+HGate 55
+HGate 56
+RequestMagicState 1000112
+MultiBodyMeasure 57:Z,1000112:X
+MeasureSinglePatch 1000112 Z
+SGate 57
+LogicalPauli 57 X
+RequestMagicState 1000113
+MultiBodyMeasure 57:Z,1000113:X
+MeasureSinglePatch 1000113 Z
+SGate 57
+LogicalPauli 57 X
+RequestMagicState 1000114
+MultiBodyMeasure 57:Z,1000114:X
+MeasureSinglePatch 1000114 Z
+SGate 57
+LogicalPauli 57 X
+RequestMagicState 1000115
+MultiBodyMeasure 57:Z,1000115:X
+MeasureSinglePatch 1000115 Z
+SGate 57
+LogicalPauli 57 X
+HGate 57
+RequestMagicState 1000116
+MultiBodyMeasure 58:Z,1000116:X
+MeasureSinglePatch 1000116 Z
+SGate 58
+LogicalPauli 58 X
+RequestMagicState 1000117
+MultiBodyMeasure 58:Z,1000117:X
+MeasureSinglePatch 1000117 Z
+SGate 58
+LogicalPauli 58 X
+RequestMagicState 1000118
+MultiBodyMeasure 58:Z,1000118:X
+MeasureSinglePatch 1000118 Z
+SGate 58
+LogicalPauli 58 X
+RequestMagicState 1000119
+MultiBodyMeasure 58:Z,1000119:X
+MeasureSinglePatch 1000119 Z
+SGate 58
+LogicalPauli 58 X
+HGate 58
+HGate 59
+RequestMagicState 1000120
+MultiBodyMeasure 60:Z,1000120:X
+MeasureSinglePatch 1000120 Z
+SGate 60
+LogicalPauli 60 X
+RequestMagicState 1000121
+MultiBodyMeasure 60:Z,1000121:X
+MeasureSinglePatch 1000121 Z
+SGate 60
+LogicalPauli 60 X
+RequestMagicState 1000122
+MultiBodyMeasure 60:Z,1000122:X
+MeasureSinglePatch 1000122 Z
+SGate 60
+LogicalPauli 60 X
+RequestMagicState 1000123
+MultiBodyMeasure 60:Z,1000123:X
+MeasureSinglePatch 1000123 Z
+SGate 60
+LogicalPauli 60 X
+HGate 60
+HGate 61
+HGate 62
+RequestMagicState 1000124
+MultiBodyMeasure 63:Z,1000124:X
+MeasureSinglePatch 1000124 Z
+SGate 63
+LogicalPauli 63 X
+RequestMagicState 1000125
+MultiBodyMeasure 63:Z,1000125:X
+MeasureSinglePatch 1000125 Z
+SGate 63
+LogicalPauli 63 X
+RequestMagicState 1000126
+MultiBodyMeasure 63:Z,1000126:X
+MeasureSinglePatch 1000126 Z
+SGate 63
+LogicalPauli 63 X
+RequestMagicState 1000127
+MultiBodyMeasure 63:Z,1000127:X
+MeasureSinglePatch 1000127 Z
+SGate 63
+LogicalPauli 63 X
+HGate 63
+HGate 64
+HGate 65
+HGate 66
+RequestMagicState 1000128
+MultiBodyMeasure 67:Z,1000128:X
+MeasureSinglePatch 1000128 Z
+SGate 67
+LogicalPauli 67 X
+RequestMagicState 1000129
+MultiBodyMeasure 67:Z,1000129:X
+MeasureSinglePatch 1000129 Z
+SGate 67
+LogicalPauli 67 X
+RequestMagicState 1000130
+MultiBodyMeasure 67:Z,1000130:X
+MeasureSinglePatch 1000130 Z
+SGate 67
+LogicalPauli 67 X
+RequestMagicState 1000131
+MultiBodyMeasure 67:Z,1000131:X
+MeasureSinglePatch 1000131 Z
+SGate 67
+LogicalPauli 67 X
+HGate 67
+RequestMagicState 1000132
+MultiBodyMeasure 68:Z,1000132:X
+MeasureSinglePatch 1000132 Z
+SGate 68
+LogicalPauli 68 X
+RequestMagicState 1000133
+MultiBodyMeasure 68:Z,1000133:X
+MeasureSinglePatch 1000133 Z
+SGate 68
+LogicalPauli 68 X
+RequestMagicState 1000134
+MultiBodyMeasure 68:Z,1000134:X
+MeasureSinglePatch 1000134 Z
+SGate 68
+LogicalPauli 68 X
+RequestMagicState 1000135
+MultiBodyMeasure 68:Z,1000135:X
+MeasureSinglePatch 1000135 Z
+SGate 68
+LogicalPauli 68 X
+HGate 68
+HGate 69
+HGate 70
+HGate 71
+RequestMagicState 1000136
+MultiBodyMeasure 72:Z,1000136:X
+MeasureSinglePatch 1000136 Z
+SGate 72
+LogicalPauli 72 X
+RequestMagicState 1000137
+MultiBodyMeasure 72:Z,1000137:X
+MeasureSinglePatch 1000137 Z
+SGate 72
+LogicalPauli 72 X
+RequestMagicState 1000138
+MultiBodyMeasure 72:Z,1000138:X
+MeasureSinglePatch 1000138 Z
+SGate 72
+LogicalPauli 72 X
+RequestMagicState 1000139
+MultiBodyMeasure 72:Z,1000139:X
+MeasureSinglePatch 1000139 Z
+SGate 72
+LogicalPauli 72 X
+HGate 72
+HGate 73
+RequestMagicState 1000140
+MultiBodyMeasure 74:Z,1000140:X
+MeasureSinglePatch 1000140 Z
+SGate 74
+LogicalPauli 74 X
+RequestMagicState 1000141
+MultiBodyMeasure 74:Z,1000141:X
+MeasureSinglePatch 1000141 Z
+SGate 74
+LogicalPauli 74 X
+RequestMagicState 1000142
+MultiBodyMeasure 74:Z,1000142:X
+MeasureSinglePatch 1000142 Z
+SGate 74
+LogicalPauli 74 X
+RequestMagicState 1000143
+MultiBodyMeasure 74:Z,1000143:X
+MeasureSinglePatch 1000143 Z
+SGate 74
+LogicalPauli 74 X
+HGate 74
+RequestMagicState 1000144
+MultiBodyMeasure 75:Z,1000144:X
+MeasureSinglePatch 1000144 Z
+SGate 75
+LogicalPauli 75 X
+RequestMagicState 1000145
+MultiBodyMeasure 75:Z,1000145:X
+MeasureSinglePatch 1000145 Z
+SGate 75
+LogicalPauli 75 X
+RequestMagicState 1000146
+MultiBodyMeasure 75:Z,1000146:X
+MeasureSinglePatch 1000146 Z
+SGate 75
+LogicalPauli 75 X
+RequestMagicState 1000147
+MultiBodyMeasure 75:Z,1000147:X
+MeasureSinglePatch 1000147 Z
+SGate 75
+LogicalPauli 75 X
+HGate 75
+HGate 76
+RequestMagicState 1000148
+MultiBodyMeasure 77:Z,1000148:X
+MeasureSinglePatch 1000148 Z
+SGate 77
+LogicalPauli 77 X
+RequestMagicState 1000149
+MultiBodyMeasure 77:Z,1000149:X
+MeasureSinglePatch 1000149 Z
+SGate 77
+LogicalPauli 77 X
+RequestMagicState 1000150
+MultiBodyMeasure 77:Z,1000150:X
+MeasureSinglePatch 1000150 Z
+SGate 77
+LogicalPauli 77 X
+RequestMagicState 1000151
+MultiBodyMeasure 77:Z,1000151:X
+MeasureSinglePatch 1000151 Z
+SGate 77
+LogicalPauli 77 X
+HGate 77
+RequestMagicState 1000152
+MultiBodyMeasure 78:Z,1000152:X
+MeasureSinglePatch 1000152 Z
+SGate 78
+LogicalPauli 78 X
+RequestMagicState 1000153
+MultiBodyMeasure 78:Z,1000153:X
+MeasureSinglePatch 1000153 Z
+SGate 78
+LogicalPauli 78 X
+RequestMagicState 1000154
+MultiBodyMeasure 78:Z,1000154:X
+MeasureSinglePatch 1000154 Z
+SGate 78
+LogicalPauli 78 X
+RequestMagicState 1000155
+MultiBodyMeasure 78:Z,1000155:X
+MeasureSinglePatch 1000155 Z
+SGate 78
+LogicalPauli 78 X
+HGate 78
+HGate 79
+RequestMagicState 1000156
+MultiBodyMeasure 79:Z,1000156:X
+MeasureSinglePatch 1000156 Z
+SGate 79
+LogicalPauli 79 X
+RequestMagicState 1000157
+MultiBodyMeasure 79:Z,1000157:X
+MeasureSinglePatch 1000157 Z
+SGate 79
+LogicalPauli 79 X
+RequestMagicState 1000158
+MultiBodyMeasure 79:Z,1000158:X
+MeasureSinglePatch 1000158 Z
+SGate 79
+LogicalPauli 79 X
+RequestMagicState 1000159
+MultiBodyMeasure 79:Z,1000159:X
+MeasureSinglePatch 1000159 Z
+SGate 79
+LogicalPauli 79 X
+Init 1000160 |+>
+MultiBodyMeasure 0:Z,1000160:Z
+MultiBodyMeasure 79:X,1000160:X
+MeasureSinglePatch 1000160 Z
+HGate 0
+RequestMagicState 1000161
+MultiBodyMeasure 0:Z,1000161:X
+MeasureSinglePatch 1000161 Z
+SGate 0
+LogicalPauli 0 X
+RequestMagicState 1000162
+MultiBodyMeasure 0:Z,1000162:X
+MeasureSinglePatch 1000162 Z
+SGate 0
+LogicalPauli 0 X
+RequestMagicState 1000163
+MultiBodyMeasure 0:Z,1000163:X
+MeasureSinglePatch 1000163 Z
+SGate 0
+LogicalPauli 0 X
+RequestMagicState 1000164
+MultiBodyMeasure 0:Z,1000164:X
+MeasureSinglePatch 1000164 Z
+SGate 0
+LogicalPauli 0 X
+Init 1000165 |+>
+MultiBodyMeasure 1:Z,1000165:Z
+MultiBodyMeasure 79:X,1000165:X
+MeasureSinglePatch 1000165 Z
+HGate 1
+RequestMagicState 1000166
+MultiBodyMeasure 1:Z,1000166:X
+MeasureSinglePatch 1000166 Z
+SGate 1
+LogicalPauli 1 X
+RequestMagicState 1000167
+MultiBodyMeasure 1:Z,1000167:X
+MeasureSinglePatch 1000167 Z
+SGate 1
+LogicalPauli 1 X
+RequestMagicState 1000168
+MultiBodyMeasure 1:Z,1000168:X
+MeasureSinglePatch 1000168 Z
+SGate 1
+LogicalPauli 1 X
+RequestMagicState 1000169
+MultiBodyMeasure 1:Z,1000169:X
+MeasureSinglePatch 1000169 Z
+SGate 1
+LogicalPauli 1 X
+Init 1000170 |+>
+MultiBodyMeasure 2:Z,1000170:Z
+MultiBodyMeasure 79:X,1000170:X
+MeasureSinglePatch 1000170 Z
+HGate 2
+Init 1000171 |+>
+MultiBodyMeasure 3:Z,1000171:Z
+MultiBodyMeasure 79:X,1000171:X
+MeasureSinglePatch 1000171 Z
+HGate 3
+RequestMagicState 1000172
+MultiBodyMeasure 3:Z,1000172:X
+MeasureSinglePatch 1000172 Z
+SGate 3
+LogicalPauli 3 X
+RequestMagicState 1000173
+MultiBodyMeasure 3:Z,1000173:X
+MeasureSinglePatch 1000173 Z
+SGate 3
+LogicalPauli 3 X
+RequestMagicState 1000174
+MultiBodyMeasure 3:Z,1000174:X
+MeasureSinglePatch 1000174 Z
+SGate 3
+LogicalPauli 3 X
+RequestMagicState 1000175
+MultiBodyMeasure 3:Z,1000175:X
+MeasureSinglePatch 1000175 Z
+SGate 3
+LogicalPauli 3 X
+Init 1000176 |+>
+MultiBodyMeasure 4:Z,1000176:Z
+MultiBodyMeasure 79:X,1000176:X
+MeasureSinglePatch 1000176 Z
+HGate 4
+Init 1000177 |+>
+MultiBodyMeasure 5:Z,1000177:Z
+MultiBodyMeasure 79:X,1000177:X
+MeasureSinglePatch 1000177 Z
+HGate 5
+RequestMagicState 1000178
+MultiBodyMeasure 5:Z,1000178:X
+MeasureSinglePatch 1000178 Z
+SGate 5
+LogicalPauli 5 X
+RequestMagicState 1000179
+MultiBodyMeasure 5:Z,1000179:X
+MeasureSinglePatch 1000179 Z
+SGate 5
+LogicalPauli 5 X
+RequestMagicState 1000180
+MultiBodyMeasure 5:Z,1000180:X
+MeasureSinglePatch 1000180 Z
+SGate 5
+LogicalPauli 5 X
+RequestMagicState 1000181
+MultiBodyMeasure 5:Z,1000181:X
+MeasureSinglePatch 1000181 Z
+SGate 5
+LogicalPauli 5 X
+Init 1000182 |+>
+MultiBodyMeasure 6:Z,1000182:Z
+MultiBodyMeasure 79:X,1000182:X
+MeasureSinglePatch 1000182 Z
+HGate 6
+RequestMagicState 1000183
+MultiBodyMeasure 6:Z,1000183:X
+MeasureSinglePatch 1000183 Z
+SGate 6
+LogicalPauli 6 X
+RequestMagicState 1000184
+MultiBodyMeasure 6:Z,1000184:X
+MeasureSinglePatch 1000184 Z
+SGate 6
+LogicalPauli 6 X
+RequestMagicState 1000185
+MultiBodyMeasure 6:Z,1000185:X
+MeasureSinglePatch 1000185 Z
+SGate 6
+LogicalPauli 6 X
+RequestMagicState 1000186
+MultiBodyMeasure 6:Z,1000186:X
+MeasureSinglePatch 1000186 Z
+SGate 6
+LogicalPauli 6 X
+Init 1000187 |+>
+MultiBodyMeasure 7:Z,1000187:Z
+MultiBodyMeasure 79:X,1000187:X
+MeasureSinglePatch 1000187 Z
+HGate 7
+Init 1000188 |+>
+MultiBodyMeasure 8:Z,1000188:Z
+MultiBodyMeasure 79:X,1000188:X
+MeasureSinglePatch 1000188 Z
+HGate 8
+RequestMagicState 1000189
+MultiBodyMeasure 8:Z,1000189:X
+MeasureSinglePatch 1000189 Z
+SGate 8
+LogicalPauli 8 X
+RequestMagicState 1000190
+MultiBodyMeasure 8:Z,1000190:X
+MeasureSinglePatch 1000190 Z
+SGate 8
+LogicalPauli 8 X
+RequestMagicState 1000191
+MultiBodyMeasure 8:Z,1000191:X
+MeasureSinglePatch 1000191 Z
+SGate 8
+LogicalPauli 8 X
+RequestMagicState 1000192
+MultiBodyMeasure 8:Z,1000192:X
+MeasureSinglePatch 1000192 Z
+SGate 8
+LogicalPauli 8 X
+Init 1000193 |+>
+MultiBodyMeasure 9:Z,1000193:Z
+MultiBodyMeasure 79:X,1000193:X
+MeasureSinglePatch 1000193 Z
+HGate 9
+RequestMagicState 1000194
+MultiBodyMeasure 9:Z,1000194:X
+MeasureSinglePatch 1000194 Z
+SGate 9
+LogicalPauli 9 X
+RequestMagicState 1000195
+MultiBodyMeasure 9:Z,1000195:X
+MeasureSinglePatch 1000195 Z
+SGate 9
+LogicalPauli 9 X
+RequestMagicState 1000196
+MultiBodyMeasure 9:Z,1000196:X
+MeasureSinglePatch 1000196 Z
+SGate 9
+LogicalPauli 9 X
+RequestMagicState 1000197
+MultiBodyMeasure 9:Z,1000197:X
+MeasureSinglePatch 1000197 Z
+SGate 9
+LogicalPauli 9 X
+Init 1000198 |+>
+MultiBodyMeasure 10:Z,1000198:Z
+MultiBodyMeasure 79:X,1000198:X
+MeasureSinglePatch 1000198 Z
+HGate 10
+Init 1000199 |+>
+MultiBodyMeasure 11:Z,1000199:Z
+MultiBodyMeasure 79:X,1000199:X
+MeasureSinglePatch 1000199 Z
+HGate 11
+RequestMagicState 1000200
+MultiBodyMeasure 11:Z,1000200:X
+MeasureSinglePatch 1000200 Z
+SGate 11
+LogicalPauli 11 X
+RequestMagicState 1000201
+MultiBodyMeasure 11:Z,1000201:X
+MeasureSinglePatch 1000201 Z
+SGate 11
+LogicalPauli 11 X
+RequestMagicState 1000202
+MultiBodyMeasure 11:Z,1000202:X
+MeasureSinglePatch 1000202 Z
+SGate 11
+LogicalPauli 11 X
+RequestMagicState 1000203
+MultiBodyMeasure 11:Z,1000203:X
+MeasureSinglePatch 1000203 Z
+SGate 11
+LogicalPauli 11 X
+Init 1000204 |+>
+MultiBodyMeasure 12:Z,1000204:Z
+MultiBodyMeasure 79:X,1000204:X
+MeasureSinglePatch 1000204 Z
+HGate 12
+RequestMagicState 1000205
+MultiBodyMeasure 12:Z,1000205:X
+MeasureSinglePatch 1000205 Z
+SGate 12
+LogicalPauli 12 X
+RequestMagicState 1000206
+MultiBodyMeasure 12:Z,1000206:X
+MeasureSinglePatch 1000206 Z
+SGate 12
+LogicalPauli 12 X
+RequestMagicState 1000207
+MultiBodyMeasure 12:Z,1000207:X
+MeasureSinglePatch 1000207 Z
+SGate 12
+LogicalPauli 12 X
+RequestMagicState 1000208
+MultiBodyMeasure 12:Z,1000208:X
+MeasureSinglePatch 1000208 Z
+SGate 12
+LogicalPauli 12 X
+Init 1000209 |+>
+MultiBodyMeasure 13:Z,1000209:Z
+MultiBodyMeasure 79:X,1000209:X
+MeasureSinglePatch 1000209 Z
+HGate 13
+Init 1000210 |+>
+MultiBodyMeasure 14:Z,1000210:Z
+MultiBodyMeasure 79:X,1000210:X
+MeasureSinglePatch 1000210 Z
+HGate 14
+Init 1000211 |+>
+MultiBodyMeasure 15:Z,1000211:Z
+MultiBodyMeasure 79:X,1000211:X
+MeasureSinglePatch 1000211 Z
+HGate 15
+RequestMagicState 1000212
+MultiBodyMeasure 15:Z,1000212:X
+MeasureSinglePatch 1000212 Z
+SGate 15
+LogicalPauli 15 X
+RequestMagicState 1000213
+MultiBodyMeasure 15:Z,1000213:X
+MeasureSinglePatch 1000213 Z
+SGate 15
+LogicalPauli 15 X
+RequestMagicState 1000214
+MultiBodyMeasure 15:Z,1000214:X
+MeasureSinglePatch 1000214 Z
+SGate 15
+LogicalPauli 15 X
+RequestMagicState 1000215
+MultiBodyMeasure 15:Z,1000215:X
+MeasureSinglePatch 1000215 Z
+SGate 15
+LogicalPauli 15 X
+Init 1000216 |+>
+MultiBodyMeasure 16:Z,1000216:Z
+MultiBodyMeasure 79:X,1000216:X
+MeasureSinglePatch 1000216 Z
+HGate 16
+Init 1000217 |+>
+MultiBodyMeasure 17:Z,1000217:Z
+MultiBodyMeasure 79:X,1000217:X
+MeasureSinglePatch 1000217 Z
+HGate 17
+Init 1000218 |+>
+MultiBodyMeasure 18:Z,1000218:Z
+MultiBodyMeasure 79:X,1000218:X
+MeasureSinglePatch 1000218 Z
+HGate 18
+Init 1000219 |+>
+MultiBodyMeasure 19:Z,1000219:Z
+MultiBodyMeasure 79:X,1000219:X
+MeasureSinglePatch 1000219 Z
+HGate 19
+Init 1000220 |+>
+MultiBodyMeasure 20:Z,1000220:Z
+MultiBodyMeasure 79:X,1000220:X
+MeasureSinglePatch 1000220 Z
+HGate 20
+Init 1000221 |+>
+MultiBodyMeasure 21:Z,1000221:Z
+MultiBodyMeasure 79:X,1000221:X
+MeasureSinglePatch 1000221 Z
+HGate 21
+RequestMagicState 1000222
+MultiBodyMeasure 21:Z,1000222:X
+MeasureSinglePatch 1000222 Z
+SGate 21
+LogicalPauli 21 X
+RequestMagicState 1000223
+MultiBodyMeasure 21:Z,1000223:X
+MeasureSinglePatch 1000223 Z
+SGate 21
+LogicalPauli 21 X
+RequestMagicState 1000224
+MultiBodyMeasure 21:Z,1000224:X
+MeasureSinglePatch 1000224 Z
+SGate 21
+LogicalPauli 21 X
+RequestMagicState 1000225
+MultiBodyMeasure 21:Z,1000225:X
+MeasureSinglePatch 1000225 Z
+SGate 21
+LogicalPauli 21 X
+Init 1000226 |+>
+MultiBodyMeasure 22:Z,1000226:Z
+MultiBodyMeasure 79:X,1000226:X
+MeasureSinglePatch 1000226 Z
+HGate 22
+Init 1000227 |+>
+MultiBodyMeasure 23:Z,1000227:Z
+MultiBodyMeasure 79:X,1000227:X
+MeasureSinglePatch 1000227 Z
+HGate 23
+Init 1000228 |+>
+MultiBodyMeasure 24:Z,1000228:Z
+MultiBodyMeasure 79:X,1000228:X
+MeasureSinglePatch 1000228 Z
+HGate 24
+RequestMagicState 1000229
+MultiBodyMeasure 24:Z,1000229:X
+MeasureSinglePatch 1000229 Z
+SGate 24
+LogicalPauli 24 X
+RequestMagicState 1000230
+MultiBodyMeasure 24:Z,1000230:X
+MeasureSinglePatch 1000230 Z
+SGate 24
+LogicalPauli 24 X
+RequestMagicState 1000231
+MultiBodyMeasure 24:Z,1000231:X
+MeasureSinglePatch 1000231 Z
+SGate 24
+LogicalPauli 24 X
+RequestMagicState 1000232
+MultiBodyMeasure 24:Z,1000232:X
+MeasureSinglePatch 1000232 Z
+SGate 24
+LogicalPauli 24 X
+Init 1000233 |+>
+MultiBodyMeasure 25:Z,1000233:Z
+MultiBodyMeasure 79:X,1000233:X
+MeasureSinglePatch 1000233 Z
+HGate 25
+RequestMagicState 1000234
+MultiBodyMeasure 25:Z,1000234:X
+MeasureSinglePatch 1000234 Z
+SGate 25
+LogicalPauli 25 X
+RequestMagicState 1000235
+MultiBodyMeasure 25:Z,1000235:X
+MeasureSinglePatch 1000235 Z
+SGate 25
+LogicalPauli 25 X
+RequestMagicState 1000236
+MultiBodyMeasure 25:Z,1000236:X
+MeasureSinglePatch 1000236 Z
+SGate 25
+LogicalPauli 25 X
+RequestMagicState 1000237
+MultiBodyMeasure 25:Z,1000237:X
+MeasureSinglePatch 1000237 Z
+SGate 25
+LogicalPauli 25 X
+Init 1000238 |+>
+MultiBodyMeasure 26:Z,1000238:Z
+MultiBodyMeasure 79:X,1000238:X
+MeasureSinglePatch 1000238 Z
+HGate 26
+Init 1000239 |+>
+MultiBodyMeasure 27:Z,1000239:Z
+MultiBodyMeasure 79:X,1000239:X
+MeasureSinglePatch 1000239 Z
+HGate 27
+Init 1000240 |+>
+MultiBodyMeasure 28:Z,1000240:Z
+MultiBodyMeasure 79:X,1000240:X
+MeasureSinglePatch 1000240 Z
+HGate 28
+RequestMagicState 1000241
+MultiBodyMeasure 28:Z,1000241:X
+MeasureSinglePatch 1000241 Z
+SGate 28
+LogicalPauli 28 X
+RequestMagicState 1000242
+MultiBodyMeasure 28:Z,1000242:X
+MeasureSinglePatch 1000242 Z
+SGate 28
+LogicalPauli 28 X
+RequestMagicState 1000243
+MultiBodyMeasure 28:Z,1000243:X
+MeasureSinglePatch 1000243 Z
+SGate 28
+LogicalPauli 28 X
+RequestMagicState 1000244
+MultiBodyMeasure 28:Z,1000244:X
+MeasureSinglePatch 1000244 Z
+SGate 28
+LogicalPauli 28 X
+Init 1000245 |+>
+MultiBodyMeasure 29:Z,1000245:Z
+MultiBodyMeasure 79:X,1000245:X
+MeasureSinglePatch 1000245 Z
+HGate 29
+Init 1000246 |+>
+MultiBodyMeasure 30:Z,1000246:Z
+MultiBodyMeasure 79:X,1000246:X
+MeasureSinglePatch 1000246 Z
+HGate 30
+Init 1000247 |+>
+MultiBodyMeasure 31:Z,1000247:Z
+MultiBodyMeasure 79:X,1000247:X
+MeasureSinglePatch 1000247 Z
+HGate 31
+RequestMagicState 1000248
+MultiBodyMeasure 31:Z,1000248:X
+MeasureSinglePatch 1000248 Z
+SGate 31
+LogicalPauli 31 X
+RequestMagicState 1000249
+MultiBodyMeasure 31:Z,1000249:X
+MeasureSinglePatch 1000249 Z
+SGate 31
+LogicalPauli 31 X
+RequestMagicState 1000250
+MultiBodyMeasure 31:Z,1000250:X
+MeasureSinglePatch 1000250 Z
+SGate 31
+LogicalPauli 31 X
+RequestMagicState 1000251
+MultiBodyMeasure 31:Z,1000251:X
+MeasureSinglePatch 1000251 Z
+SGate 31
+LogicalPauli 31 X
+Init 1000252 |+>
+MultiBodyMeasure 32:Z,1000252:Z
+MultiBodyMeasure 79:X,1000252:X
+MeasureSinglePatch 1000252 Z
+HGate 32
+Init 1000253 |+>
+MultiBodyMeasure 33:Z,1000253:Z
+MultiBodyMeasure 79:X,1000253:X
+MeasureSinglePatch 1000253 Z
+HGate 33
+Init 1000254 |+>
+MultiBodyMeasure 34:Z,1000254:Z
+MultiBodyMeasure 79:X,1000254:X
+MeasureSinglePatch 1000254 Z
+HGate 34
+Init 1000255 |+>
+MultiBodyMeasure 35:Z,1000255:Z
+MultiBodyMeasure 79:X,1000255:X
+MeasureSinglePatch 1000255 Z
+HGate 35
+RequestMagicState 1000256
+MultiBodyMeasure 35:Z,1000256:X
+MeasureSinglePatch 1000256 Z
+SGate 35
+LogicalPauli 35 X
+RequestMagicState 1000257
+MultiBodyMeasure 35:Z,1000257:X
+MeasureSinglePatch 1000257 Z
+SGate 35
+LogicalPauli 35 X
+RequestMagicState 1000258
+MultiBodyMeasure 35:Z,1000258:X
+MeasureSinglePatch 1000258 Z
+SGate 35
+LogicalPauli 35 X
+RequestMagicState 1000259
+MultiBodyMeasure 35:Z,1000259:X
+MeasureSinglePatch 1000259 Z
+SGate 35
+LogicalPauli 35 X
+Init 1000260 |+>
+MultiBodyMeasure 36:Z,1000260:Z
+MultiBodyMeasure 79:X,1000260:X
+MeasureSinglePatch 1000260 Z
+HGate 36
+RequestMagicState 1000261
+MultiBodyMeasure 36:Z,1000261:X
+MeasureSinglePatch 1000261 Z
+SGate 36
+LogicalPauli 36 X
+RequestMagicState 1000262
+MultiBodyMeasure 36:Z,1000262:X
+MeasureSinglePatch 1000262 Z
+SGate 36
+LogicalPauli 36 X
+RequestMagicState 1000263
+MultiBodyMeasure 36:Z,1000263:X
+MeasureSinglePatch 1000263 Z
+SGate 36
+LogicalPauli 36 X
+RequestMagicState 1000264
+MultiBodyMeasure 36:Z,1000264:X
+MeasureSinglePatch 1000264 Z
+SGate 36
+LogicalPauli 36 X
+Init 1000265 |+>
+MultiBodyMeasure 37:Z,1000265:Z
+MultiBodyMeasure 79:X,1000265:X
+MeasureSinglePatch 1000265 Z
+HGate 37
+Init 1000266 |+>
+MultiBodyMeasure 38:Z,1000266:Z
+MultiBodyMeasure 79:X,1000266:X
+MeasureSinglePatch 1000266 Z
+HGate 38
+RequestMagicState 1000267
+MultiBodyMeasure 38:Z,1000267:X
+MeasureSinglePatch 1000267 Z
+SGate 38
+LogicalPauli 38 X
+RequestMagicState 1000268
+MultiBodyMeasure 38:Z,1000268:X
+MeasureSinglePatch 1000268 Z
+SGate 38
+LogicalPauli 38 X
+RequestMagicState 1000269
+MultiBodyMeasure 38:Z,1000269:X
+MeasureSinglePatch 1000269 Z
+SGate 38
+LogicalPauli 38 X
+RequestMagicState 1000270
+MultiBodyMeasure 38:Z,1000270:X
+MeasureSinglePatch 1000270 Z
+SGate 38
+LogicalPauli 38 X
+Init 1000271 |+>
+MultiBodyMeasure 39:Z,1000271:Z
+MultiBodyMeasure 79:X,1000271:X
+MeasureSinglePatch 1000271 Z
+HGate 39
+RequestMagicState 1000272
+MultiBodyMeasure 39:Z,1000272:X
+MeasureSinglePatch 1000272 Z
+SGate 39
+LogicalPauli 39 X
+RequestMagicState 1000273
+MultiBodyMeasure 39:Z,1000273:X
+MeasureSinglePatch 1000273 Z
+SGate 39
+LogicalPauli 39 X
+RequestMagicState 1000274
+MultiBodyMeasure 39:Z,1000274:X
+MeasureSinglePatch 1000274 Z
+SGate 39
+LogicalPauli 39 X
+RequestMagicState 1000275
+MultiBodyMeasure 39:Z,1000275:X
+MeasureSinglePatch 1000275 Z
+SGate 39
+LogicalPauli 39 X
+Init 1000276 |+>
+MultiBodyMeasure 40:Z,1000276:Z
+MultiBodyMeasure 79:X,1000276:X
+MeasureSinglePatch 1000276 Z
+HGate 40
+RequestMagicState 1000277
+MultiBodyMeasure 40:Z,1000277:X
+MeasureSinglePatch 1000277 Z
+SGate 40
+LogicalPauli 40 X
+RequestMagicState 1000278
+MultiBodyMeasure 40:Z,1000278:X
+MeasureSinglePatch 1000278 Z
+SGate 40
+LogicalPauli 40 X
+RequestMagicState 1000279
+MultiBodyMeasure 40:Z,1000279:X
+MeasureSinglePatch 1000279 Z
+SGate 40
+LogicalPauli 40 X
+RequestMagicState 1000280
+MultiBodyMeasure 40:Z,1000280:X
+MeasureSinglePatch 1000280 Z
+SGate 40
+LogicalPauli 40 X
+Init 1000281 |+>
+MultiBodyMeasure 41:Z,1000281:Z
+MultiBodyMeasure 79:X,1000281:X
+MeasureSinglePatch 1000281 Z
+HGate 41
+RequestMagicState 1000282
+MultiBodyMeasure 41:Z,1000282:X
+MeasureSinglePatch 1000282 Z
+SGate 41
+LogicalPauli 41 X
+RequestMagicState 1000283
+MultiBodyMeasure 41:Z,1000283:X
+MeasureSinglePatch 1000283 Z
+SGate 41
+LogicalPauli 41 X
+RequestMagicState 1000284
+MultiBodyMeasure 41:Z,1000284:X
+MeasureSinglePatch 1000284 Z
+SGate 41
+LogicalPauli 41 X
+RequestMagicState 1000285
+MultiBodyMeasure 41:Z,1000285:X
+MeasureSinglePatch 1000285 Z
+SGate 41
+LogicalPauli 41 X
+Init 1000286 |+>
+MultiBodyMeasure 42:Z,1000286:Z
+MultiBodyMeasure 79:X,1000286:X
+MeasureSinglePatch 1000286 Z
+HGate 42
+RequestMagicState 1000287
+MultiBodyMeasure 42:Z,1000287:X
+MeasureSinglePatch 1000287 Z
+SGate 42
+LogicalPauli 42 X
+RequestMagicState 1000288
+MultiBodyMeasure 42:Z,1000288:X
+MeasureSinglePatch 1000288 Z
+SGate 42
+LogicalPauli 42 X
+RequestMagicState 1000289
+MultiBodyMeasure 42:Z,1000289:X
+MeasureSinglePatch 1000289 Z
+SGate 42
+LogicalPauli 42 X
+RequestMagicState 1000290
+MultiBodyMeasure 42:Z,1000290:X
+MeasureSinglePatch 1000290 Z
+SGate 42
+LogicalPauli 42 X
+Init 1000291 |+>
+MultiBodyMeasure 43:Z,1000291:Z
+MultiBodyMeasure 79:X,1000291:X
+MeasureSinglePatch 1000291 Z
+HGate 43
+Init 1000292 |+>
+MultiBodyMeasure 44:Z,1000292:Z
+MultiBodyMeasure 79:X,1000292:X
+MeasureSinglePatch 1000292 Z
+HGate 44
+RequestMagicState 1000293
+MultiBodyMeasure 44:Z,1000293:X
+MeasureSinglePatch 1000293 Z
+SGate 44
+LogicalPauli 44 X
+RequestMagicState 1000294
+MultiBodyMeasure 44:Z,1000294:X
+MeasureSinglePatch 1000294 Z
+SGate 44
+LogicalPauli 44 X
+RequestMagicState 1000295
+MultiBodyMeasure 44:Z,1000295:X
+MeasureSinglePatch 1000295 Z
+SGate 44
+LogicalPauli 44 X
+RequestMagicState 1000296
+MultiBodyMeasure 44:Z,1000296:X
+MeasureSinglePatch 1000296 Z
+SGate 44
+LogicalPauli 44 X
+Init 1000297 |+>
+MultiBodyMeasure 45:Z,1000297:Z
+MultiBodyMeasure 79:X,1000297:X
+MeasureSinglePatch 1000297 Z
+HGate 45
+Init 1000298 |+>
+MultiBodyMeasure 46:Z,1000298:Z
+MultiBodyMeasure 79:X,1000298:X
+MeasureSinglePatch 1000298 Z
+HGate 46
+Init 1000299 |+>
+MultiBodyMeasure 47:Z,1000299:Z
+MultiBodyMeasure 79:X,1000299:X
+MeasureSinglePatch 1000299 Z
+HGate 47
+Init 1000300 |+>
+MultiBodyMeasure 48:Z,1000300:Z
+MultiBodyMeasure 79:X,1000300:X
+MeasureSinglePatch 1000300 Z
+HGate 48
+Init 1000301 |+>
+MultiBodyMeasure 49:Z,1000301:Z
+MultiBodyMeasure 79:X,1000301:X
+MeasureSinglePatch 1000301 Z
+HGate 49
+RequestMagicState 1000302
+MultiBodyMeasure 49:Z,1000302:X
+MeasureSinglePatch 1000302 Z
+SGate 49
+LogicalPauli 49 X
+RequestMagicState 1000303
+MultiBodyMeasure 49:Z,1000303:X
+MeasureSinglePatch 1000303 Z
+SGate 49
+LogicalPauli 49 X
+RequestMagicState 1000304
+MultiBodyMeasure 49:Z,1000304:X
+MeasureSinglePatch 1000304 Z
+SGate 49
+LogicalPauli 49 X
+RequestMagicState 1000305
+MultiBodyMeasure 49:Z,1000305:X
+MeasureSinglePatch 1000305 Z
+SGate 49
+LogicalPauli 49 X
+Init 1000306 |+>
+MultiBodyMeasure 50:Z,1000306:Z
+MultiBodyMeasure 79:X,1000306:X
+MeasureSinglePatch 1000306 Z
+HGate 50
+Init 1000307 |+>
+MultiBodyMeasure 51:Z,1000307:Z
+MultiBodyMeasure 79:X,1000307:X
+MeasureSinglePatch 1000307 Z
+HGate 51
+RequestMagicState 1000308
+MultiBodyMeasure 51:Z,1000308:X
+MeasureSinglePatch 1000308 Z
+SGate 51
+LogicalPauli 51 X
+RequestMagicState 1000309
+MultiBodyMeasure 51:Z,1000309:X
+MeasureSinglePatch 1000309 Z
+SGate 51
+LogicalPauli 51 X
+RequestMagicState 1000310
+MultiBodyMeasure 51:Z,1000310:X
+MeasureSinglePatch 1000310 Z
+SGate 51
+LogicalPauli 51 X
+RequestMagicState 1000311
+MultiBodyMeasure 51:Z,1000311:X
+MeasureSinglePatch 1000311 Z
+SGate 51
+LogicalPauli 51 X
+Init 1000312 |+>
+MultiBodyMeasure 52:Z,1000312:Z
+MultiBodyMeasure 79:X,1000312:X
+MeasureSinglePatch 1000312 Z
+HGate 52
+RequestMagicState 1000313
+MultiBodyMeasure 52:Z,1000313:X
+MeasureSinglePatch 1000313 Z
+SGate 52
+LogicalPauli 52 X
+RequestMagicState 1000314
+MultiBodyMeasure 52:Z,1000314:X
+MeasureSinglePatch 1000314 Z
+SGate 52
+LogicalPauli 52 X
+RequestMagicState 1000315
+MultiBodyMeasure 52:Z,1000315:X
+MeasureSinglePatch 1000315 Z
+SGate 52
+LogicalPauli 52 X
+RequestMagicState 1000316
+MultiBodyMeasure 52:Z,1000316:X
+MeasureSinglePatch 1000316 Z
+SGate 52
+LogicalPauli 52 X
+Init 1000317 |+>
+MultiBodyMeasure 53:Z,1000317:Z
+MultiBodyMeasure 79:X,1000317:X
+MeasureSinglePatch 1000317 Z
+HGate 53
+RequestMagicState 1000318
+MultiBodyMeasure 53:Z,1000318:X
+MeasureSinglePatch 1000318 Z
+SGate 53
+LogicalPauli 53 X
+RequestMagicState 1000319
+MultiBodyMeasure 53:Z,1000319:X
+MeasureSinglePatch 1000319 Z
+SGate 53
+LogicalPauli 53 X
+RequestMagicState 1000320
+MultiBodyMeasure 53:Z,1000320:X
+MeasureSinglePatch 1000320 Z
+SGate 53
+LogicalPauli 53 X
+RequestMagicState 1000321
+MultiBodyMeasure 53:Z,1000321:X
+MeasureSinglePatch 1000321 Z
+SGate 53
+LogicalPauli 53 X
+Init 1000322 |+>
+MultiBodyMeasure 54:Z,1000322:Z
+MultiBodyMeasure 79:X,1000322:X
+MeasureSinglePatch 1000322 Z
+HGate 54
+Init 1000323 |+>
+MultiBodyMeasure 55:Z,1000323:Z
+MultiBodyMeasure 79:X,1000323:X
+MeasureSinglePatch 1000323 Z
+HGate 55
+RequestMagicState 1000324
+MultiBodyMeasure 55:Z,1000324:X
+MeasureSinglePatch 1000324 Z
+SGate 55
+LogicalPauli 55 X
+RequestMagicState 1000325
+MultiBodyMeasure 55:Z,1000325:X
+MeasureSinglePatch 1000325 Z
+SGate 55
+LogicalPauli 55 X
+RequestMagicState 1000326
+MultiBodyMeasure 55:Z,1000326:X
+MeasureSinglePatch 1000326 Z
+SGate 55
+LogicalPauli 55 X
+RequestMagicState 1000327
+MultiBodyMeasure 55:Z,1000327:X
+MeasureSinglePatch 1000327 Z
+SGate 55
+LogicalPauli 55 X
+Init 1000328 |+>
+MultiBodyMeasure 56:Z,1000328:Z
+MultiBodyMeasure 79:X,1000328:X
+MeasureSinglePatch 1000328 Z
+HGate 56
+Init 1000329 |+>
+MultiBodyMeasure 57:Z,1000329:Z
+MultiBodyMeasure 79:X,1000329:X
+MeasureSinglePatch 1000329 Z
+HGate 57
+RequestMagicState 1000330
+MultiBodyMeasure 57:Z,1000330:X
+MeasureSinglePatch 1000330 Z
+SGate 57
+LogicalPauli 57 X
+RequestMagicState 1000331
+MultiBodyMeasure 57:Z,1000331:X
+MeasureSinglePatch 1000331 Z
+SGate 57
+LogicalPauli 57 X
+RequestMagicState 1000332
+MultiBodyMeasure 57:Z,1000332:X
+MeasureSinglePatch 1000332 Z
+SGate 57
+LogicalPauli 57 X
+RequestMagicState 1000333
+MultiBodyMeasure 57:Z,1000333:X
+MeasureSinglePatch 1000333 Z
+SGate 57
+LogicalPauli 57 X
+Init 1000334 |+>
+MultiBodyMeasure 58:Z,1000334:Z
+MultiBodyMeasure 79:X,1000334:X
+MeasureSinglePatch 1000334 Z
+HGate 58
+RequestMagicState 1000335
+MultiBodyMeasure 58:Z,1000335:X
+MeasureSinglePatch 1000335 Z
+SGate 58
+LogicalPauli 58 X
+RequestMagicState 1000336
+MultiBodyMeasure 58:Z,1000336:X
+MeasureSinglePatch 1000336 Z
+SGate 58
+LogicalPauli 58 X
+RequestMagicState 1000337
+MultiBodyMeasure 58:Z,1000337:X
+MeasureSinglePatch 1000337 Z
+SGate 58
+LogicalPauli 58 X
+RequestMagicState 1000338
+MultiBodyMeasure 58:Z,1000338:X
+MeasureSinglePatch 1000338 Z
+SGate 58
+LogicalPauli 58 X
+Init 1000339 |+>
+MultiBodyMeasure 59:Z,1000339:Z
+MultiBodyMeasure 79:X,1000339:X
+MeasureSinglePatch 1000339 Z
+HGate 59
+Init 1000340 |+>
+MultiBodyMeasure 60:Z,1000340:Z
+MultiBodyMeasure 79:X,1000340:X
+MeasureSinglePatch 1000340 Z
+HGate 60
+RequestMagicState 1000341
+MultiBodyMeasure 60:Z,1000341:X
+MeasureSinglePatch 1000341 Z
+SGate 60
+LogicalPauli 60 X
+RequestMagicState 1000342
+MultiBodyMeasure 60:Z,1000342:X
+MeasureSinglePatch 1000342 Z
+SGate 60
+LogicalPauli 60 X
+RequestMagicState 1000343
+MultiBodyMeasure 60:Z,1000343:X
+MeasureSinglePatch 1000343 Z
+SGate 60
+LogicalPauli 60 X
+RequestMagicState 1000344
+MultiBodyMeasure 60:Z,1000344:X
+MeasureSinglePatch 1000344 Z
+SGate 60
+LogicalPauli 60 X
+Init 1000345 |+>
+MultiBodyMeasure 61:Z,1000345:Z
+MultiBodyMeasure 79:X,1000345:X
+MeasureSinglePatch 1000345 Z
+HGate 61
+Init 1000346 |+>
+MultiBodyMeasure 62:Z,1000346:Z
+MultiBodyMeasure 79:X,1000346:X
+MeasureSinglePatch 1000346 Z
+HGate 62
+Init 1000347 |+>
+MultiBodyMeasure 63:Z,1000347:Z
+MultiBodyMeasure 79:X,1000347:X
+MeasureSinglePatch 1000347 Z
+HGate 63
+RequestMagicState 1000348
+MultiBodyMeasure 63:Z,1000348:X
+MeasureSinglePatch 1000348 Z
+SGate 63
+LogicalPauli 63 X
+RequestMagicState 1000349
+MultiBodyMeasure 63:Z,1000349:X
+MeasureSinglePatch 1000349 Z
+SGate 63
+LogicalPauli 63 X
+RequestMagicState 1000350
+MultiBodyMeasure 63:Z,1000350:X
+MeasureSinglePatch 1000350 Z
+SGate 63
+LogicalPauli 63 X
+RequestMagicState 1000351
+MultiBodyMeasure 63:Z,1000351:X
+MeasureSinglePatch 1000351 Z
+SGate 63
+LogicalPauli 63 X
+Init 1000352 |+>
+MultiBodyMeasure 64:Z,1000352:Z
+MultiBodyMeasure 79:X,1000352:X
+MeasureSinglePatch 1000352 Z
+HGate 64
+Init 1000353 |+>
+MultiBodyMeasure 65:Z,1000353:Z
+MultiBodyMeasure 79:X,1000353:X
+MeasureSinglePatch 1000353 Z
+HGate 65
+Init 1000354 |+>
+MultiBodyMeasure 66:Z,1000354:Z
+MultiBodyMeasure 79:X,1000354:X
+MeasureSinglePatch 1000354 Z
+HGate 66
+Init 1000355 |+>
+MultiBodyMeasure 67:Z,1000355:Z
+MultiBodyMeasure 79:X,1000355:X
+MeasureSinglePatch 1000355 Z
+HGate 67
+RequestMagicState 1000356
+MultiBodyMeasure 67:Z,1000356:X
+MeasureSinglePatch 1000356 Z
+SGate 67
+LogicalPauli 67 X
+RequestMagicState 1000357
+MultiBodyMeasure 67:Z,1000357:X
+MeasureSinglePatch 1000357 Z
+SGate 67
+LogicalPauli 67 X
+RequestMagicState 1000358
+MultiBodyMeasure 67:Z,1000358:X
+MeasureSinglePatch 1000358 Z
+SGate 67
+LogicalPauli 67 X
+RequestMagicState 1000359
+MultiBodyMeasure 67:Z,1000359:X
+MeasureSinglePatch 1000359 Z
+SGate 67
+LogicalPauli 67 X
+Init 1000360 |+>
+MultiBodyMeasure 68:Z,1000360:Z
+MultiBodyMeasure 79:X,1000360:X
+MeasureSinglePatch 1000360 Z
+HGate 68
+RequestMagicState 1000361
+MultiBodyMeasure 68:Z,1000361:X
+MeasureSinglePatch 1000361 Z
+SGate 68
+LogicalPauli 68 X
+RequestMagicState 1000362
+MultiBodyMeasure 68:Z,1000362:X
+MeasureSinglePatch 1000362 Z
+SGate 68
+LogicalPauli 68 X
+RequestMagicState 1000363
+MultiBodyMeasure 68:Z,1000363:X
+MeasureSinglePatch 1000363 Z
+SGate 68
+LogicalPauli 68 X
+RequestMagicState 1000364
+MultiBodyMeasure 68:Z,1000364:X
+MeasureSinglePatch 1000364 Z
+SGate 68
+LogicalPauli 68 X
+Init 1000365 |+>
+MultiBodyMeasure 69:Z,1000365:Z
+MultiBodyMeasure 79:X,1000365:X
+MeasureSinglePatch 1000365 Z
+HGate 69
+Init 1000366 |+>
+MultiBodyMeasure 70:Z,1000366:Z
+MultiBodyMeasure 79:X,1000366:X
+MeasureSinglePatch 1000366 Z
+HGate 70
+Init 1000367 |+>
+MultiBodyMeasure 71:Z,1000367:Z
+MultiBodyMeasure 79:X,1000367:X
+MeasureSinglePatch 1000367 Z
+HGate 71
+Init 1000368 |+>
+MultiBodyMeasure 72:Z,1000368:Z
+MultiBodyMeasure 79:X,1000368:X
+MeasureSinglePatch 1000368 Z
+HGate 72
+RequestMagicState 1000369
+MultiBodyMeasure 72:Z,1000369:X
+MeasureSinglePatch 1000369 Z
+SGate 72
+LogicalPauli 72 X
+RequestMagicState 1000370
+MultiBodyMeasure 72:Z,1000370:X
+MeasureSinglePatch 1000370 Z
+SGate 72
+LogicalPauli 72 X
+RequestMagicState 1000371
+MultiBodyMeasure 72:Z,1000371:X
+MeasureSinglePatch 1000371 Z
+SGate 72
+LogicalPauli 72 X
+RequestMagicState 1000372
+MultiBodyMeasure 72:Z,1000372:X
+MeasureSinglePatch 1000372 Z
+SGate 72
+LogicalPauli 72 X
+Init 1000373 |+>
+MultiBodyMeasure 73:Z,1000373:Z
+MultiBodyMeasure 79:X,1000373:X
+MeasureSinglePatch 1000373 Z
+HGate 73
+Init 1000374 |+>
+MultiBodyMeasure 74:Z,1000374:Z
+MultiBodyMeasure 79:X,1000374:X
+MeasureSinglePatch 1000374 Z
+HGate 74
+RequestMagicState 1000375
+MultiBodyMeasure 74:Z,1000375:X
+MeasureSinglePatch 1000375 Z
+SGate 74
+LogicalPauli 74 X
+RequestMagicState 1000376
+MultiBodyMeasure 74:Z,1000376:X
+MeasureSinglePatch 1000376 Z
+SGate 74
+LogicalPauli 74 X
+RequestMagicState 1000377
+MultiBodyMeasure 74:Z,1000377:X
+MeasureSinglePatch 1000377 Z
+SGate 74
+LogicalPauli 74 X
+RequestMagicState 1000378
+MultiBodyMeasure 74:Z,1000378:X
+MeasureSinglePatch 1000378 Z
+SGate 74
+LogicalPauli 74 X
+Init 1000379 |+>
+MultiBodyMeasure 75:Z,1000379:Z
+MultiBodyMeasure 79:X,1000379:X
+MeasureSinglePatch 1000379 Z
+HGate 75
+RequestMagicState 1000380
+MultiBodyMeasure 75:Z,1000380:X
+MeasureSinglePatch 1000380 Z
+SGate 75
+LogicalPauli 75 X
+RequestMagicState 1000381
+MultiBodyMeasure 75:Z,1000381:X
+MeasureSinglePatch 1000381 Z
+SGate 75
+LogicalPauli 75 X
+RequestMagicState 1000382
+MultiBodyMeasure 75:Z,1000382:X
+MeasureSinglePatch 1000382 Z
+SGate 75
+LogicalPauli 75 X
+RequestMagicState 1000383
+MultiBodyMeasure 75:Z,1000383:X
+MeasureSinglePatch 1000383 Z
+SGate 75
+LogicalPauli 75 X
+Init 1000384 |+>
+MultiBodyMeasure 76:Z,1000384:Z
+MultiBodyMeasure 79:X,1000384:X
+MeasureSinglePatch 1000384 Z
+HGate 76
+Init 1000385 |+>
+MultiBodyMeasure 77:Z,1000385:Z
+MultiBodyMeasure 79:X,1000385:X
+MeasureSinglePatch 1000385 Z
+HGate 77
+RequestMagicState 1000386
+MultiBodyMeasure 77:Z,1000386:X
+MeasureSinglePatch 1000386 Z
+SGate 77
+LogicalPauli 77 X
+RequestMagicState 1000387
+MultiBodyMeasure 77:Z,1000387:X
+MeasureSinglePatch 1000387 Z
+SGate 77
+LogicalPauli 77 X
+RequestMagicState 1000388
+MultiBodyMeasure 77:Z,1000388:X
+MeasureSinglePatch 1000388 Z
+SGate 77
+LogicalPauli 77 X
+RequestMagicState 1000389
+MultiBodyMeasure 77:Z,1000389:X
+MeasureSinglePatch 1000389 Z
+SGate 77
+LogicalPauli 77 X
+Init 1000390 |+>
+MultiBodyMeasure 78:Z,1000390:Z
+MultiBodyMeasure 79:X,1000390:X
+MeasureSinglePatch 1000390 Z
+HGate 78
+RequestMagicState 1000391
+MultiBodyMeasure 78:Z,1000391:X
+MeasureSinglePatch 1000391 Z
+SGate 78
+LogicalPauli 78 X
+RequestMagicState 1000392
+MultiBodyMeasure 78:Z,1000392:X
+MeasureSinglePatch 1000392 Z
+SGate 78
+LogicalPauli 78 X
+RequestMagicState 1000393
+MultiBodyMeasure 78:Z,1000393:X
+MeasureSinglePatch 1000393 Z
+SGate 78
+LogicalPauli 78 X
+RequestMagicState 1000394
+MultiBodyMeasure 78:Z,1000394:X
+MeasureSinglePatch 1000394 Z
+SGate 78
+LogicalPauli 78 X
