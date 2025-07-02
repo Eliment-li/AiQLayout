@@ -268,7 +268,7 @@ def render_chip_state():
 [-1,0,0,0,0,0,0,0,0,0],
 [0,0,-1,0,0,-1,0,0,-1,0]]
     chip = Chip(num_qubits=len(state[0]), cols=args.chip_cols, rows=args.chip_rows)
-    chip.init_by_state(state)
+    chip.set_state(state)
     CV = ChipVisualizer(chip=chip, fps=1, total_frames=1)
     CV.render()
     for i in range(1):
