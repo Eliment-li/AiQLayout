@@ -10,6 +10,7 @@ from shared_memory_dict import SharedMemoryDict
 from config import ConfigSingleton
 from core.agents import AgentsManager
 from core.chip import Chip, QubitState, QubitLayoutType
+from core.layout import ChipLayout, get_layout
 from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
@@ -54,8 +55,8 @@ class Env_5(MultiAgentEnv):
         print(f'init env_5 with {self.num_qubits} qubits')
         self.max_step = args.env_max_step *self.num_qubits
 
-
-        self.chip = Chip(rows=args.chip_rows,layout_type=QubitLayoutType.EMPTY, cols=args.chip_cols,num_qubits=self.num_qubits,q_pos=[])
+        chip_layout = ChipLayout(args.chip_rows, args.chip_cols, QubitLayoutType.EMPTY, self.num_qubits)
+        self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,layout_type=QubitLayoutType.EMPTY,chip_layout=chip_layout)
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
 
@@ -79,15 +80,17 @@ class Env_5(MultiAgentEnv):
         self.smd['min_dist'] = math.inf
 
         self.gates = get_random_gates(num_qubits=self.num_qubits, size=args.gates_size)
+
     def reset(self, *, seed=None, options=None):
         self.steps = 1
-
         #Just for computing min_sum_dist
+        layout = get_layout(name = QubitLayoutType.COMPACT_1, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
         temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
-                         layout_type=QubitLayoutType.GRID)
-        self.min_sum_dist = self.compute_dist(temp_chip, self.am.activate_agent)[0]
+                         layout_type=QubitLayoutType.GRID,chip_layout = layout)
+        self.init_dist = self.compute_dist(temp_chip, self.am.activate_agent)[0]
 
-        self.chip.reset(q_pos=[],layout_type=QubitLayoutType.EMPTY)
+        #self.chip.reset(layout_type=None)
+        #may need clean qubits?
         self.am.reset_agents()
         self.dist_rec = [[] for i in range(self.num_qubits)]
 
@@ -96,8 +99,8 @@ class Env_5(MultiAgentEnv):
         self.reward = 0
         self._max_total_r = -np.inf
         self._agent_total_r = 0
-        self.last_dist = self.min_sum_dist
-        self.init_dist = self.min_sum_dist
+        self.last_dist = self.init_dist
+        self.min_sum_dist = self.init_dist
         print(f'init_dist: {self.init_dist}')
         self.smd['init_dist'] = self.init_dist
         # self.sw =SlideWindow(50)
