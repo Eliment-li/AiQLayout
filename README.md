@@ -11,7 +11,7 @@ And check enhance_config() function to make sure the config is correct
 # Details about reproduction
 
 ## Chip Size
-We set three chip size:
+For sparse layout, there are three chip size:
 - 10x10 for 0  < qubits number <= 15
 - 12*12 for 15 < qubits number <= 25
 - 15*15 for 25 < qubits number <= 49
