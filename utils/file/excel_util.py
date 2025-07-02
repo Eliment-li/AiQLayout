@@ -52,48 +52,29 @@ class ExcelUtil:
         [7, 8, 9]
     ]
 
-
-
-# def demo():
-#     # get data
-#     sheets,dfs = ExcelUtil.read_by_sheet('d:/temp.xlsx')
-#     # pharse data
-#     for sheet in sheets:
-#         df = dfs[sheet]
-#         circuits = df['circuit']
-#         #从字符串中提取出该线路的比特数量 qnn/qnn_indep_qiskit_5.qasm-> 5
-#         labels = list(map(lambda x: ''.join(re.findall(r'\d', x)), circuits))
-#         print(labels)
-#
-#         rl = df['rl']
-#         qiskit = df['qiskit']
-#         mix= df['mix']
-
-# def row2array(sheet):
-#     data = []
-#     df = dfs[sheet]
-#     for index, row in df.iterrows():
-#         # print(f"Index: {index}")
-#         # print(f"Row:\n{row}\n")
-#         temp = []
-#         for header in ['ae_30',	'qnn_20',	'su2',	'portfvqe_15',	'pricingcall_21','qtf_20',	'pricingput_17',	]:
-#             temp.append(row[header])
-#         data.append(temp)
-#     return data
-
+# read excel data to np array
+    @staticmethod
+    def read_sheet_to_array(file_name, sheet_name='Sheet1'):
+        try:
+            # Load the Excel file
+            df = pd.read_excel(file_name, sheet_name=sheet_name,header=None)
+            # Convert DataFrame to numpy array
+            return df.to_numpy()
+        except FileNotFoundError:
+            print(f"File {file_name} not found.")
+            return None
+        except ValueError as e:
+            print(f"Error reading sheet {sheet_name}: {e}")
+            return None
 
 if __name__ == '__main__':
-    #sheets, dfs = ExcelUtil.read_by_sheet('d:/parallel.xlsx')
-    # qtailor = sheets[0]
-    # qiskit = sheets[1]
-    # q1=row2array(qtailor)
-    # q2=row2array(qiskit)
-
     # Example usage
-    data = [
-        [1, 2, 3],
-        [4, 5, 6],
-        [7, 8, 9]
-    ]
-
-    ExcelUtil.array2sheet('d:/example.xlsx', 's.a', data)
+    # data = [
+    #     [1, 2, 3],
+    #     [4, 5, 6],
+    #     [7, 8, 9]
+    # ]
+    #
+    # ExcelUtil.array2sheet('d:/example.xlsx', 's.a', data)
+    array = ExcelUtil.read_sheet_to_array('d:/layout.xlsx')
+    print(repr(array))
