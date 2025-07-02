@@ -34,7 +34,6 @@ class ChipLayout():
             self.dynamic_set_layout()
 
         self._init_magic_state()
-        self.valid_pos = []
         # self.init_broken_patch()
 
     def clean_invalud_qubits(self):
@@ -174,6 +173,23 @@ def get_layout(name,rows,cols, num_qubits):
         layout._init_magic_state()
         layout.clean_invalud_qubits()
         return layout
+
+    # def _random_init_qubits_layout(self):
+    #     # vaild value start from _position[1] , -1 only for occupy
+    #     i = 1
+    #     while i <= self.num_qubits:
+    #         x = random.randint(0, self._rows - 1)
+    #         y = random.randint(0, self._cols - 1)
+    #         if self.state[x][y] == 0 and self._broken_channel[x][y]== 0:
+    #
+    #             self.state[x][y] = i
+    #             self._qubits_channel[x][y] = i
+    #             self._position_mask[i-1][x][y] = 1
+    #
+    #             self.q_pos.append((x, y))
+    #             i += 1
+    #         else:
+    #             continue
 
 
 if __name__ == '__main__':

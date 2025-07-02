@@ -53,7 +53,7 @@ class Env_5(MultiAgentEnv):
         self.RESIZE_HEATMAP = [self.RESIZE_HEATMAP]
 
         print(f'init env_5 with {self.num_qubits} qubits')
-        self.max_step = args.env_max_step *self.num_qubits
+        self.max_step = args.env_max_step * self.num_qubits
 
         chip_layout = ChipLayout(args.chip_rows, args.chip_cols, QubitLayoutType.EMPTY, self.num_qubits)
         self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,layout_type=QubitLayoutType.EMPTY,chip_layout=chip_layout)
@@ -84,7 +84,8 @@ class Env_5(MultiAgentEnv):
     def reset(self, *, seed=None, options=None):
         self.steps = 1
         #Just for computing min_sum_dist
-        layout = get_layout(name = QubitLayoutType.COMPACT_1, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+        #layout = get_layout(name = QubitLayoutType.COMPACT_1, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+        layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = QubitLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = QubitLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
         temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
                          layout_type=QubitLayoutType.GRID,chip_layout = layout)
         self.init_dist = self.compute_dist(temp_chip, self.am.activate_agent)[0]
@@ -93,8 +94,6 @@ class Env_5(MultiAgentEnv):
         #may need clean qubits?
         self.am.reset_agents()
         self.dist_rec = [[] for i in range(self.num_qubits)]
-
-
 
         self.reward = 0
         self._max_total_r = -np.inf
@@ -153,6 +152,7 @@ class Env_5(MultiAgentEnv):
         success = self.chip.goto(player=self.am.activate_agent, new_r=row, new_c=col)
         if not success:
             print(self.chip)
+            print(self.chip.valid_positions)
             raise ValueError(f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}')
         if self.am.activate_agent == self.num_qubits:
             try:
@@ -353,7 +353,7 @@ class Env_5(MultiAgentEnv):
 if __name__ == '__main__':
     env = Env_5()
     env.reset()
-    print(env.chip)
+    print(env.chip.state)
     print(env.chip.q_pos)
     print(env.chip.valid_positions)
 
