@@ -175,7 +175,7 @@ def append_swanlab(tune_callbacks,args,config,group,name = None):
     wandb_key = args.swanlab_key
     # 设置环境变量，静默 wandb 输出
     os.environ["WANDB_SILENT"] = "true"
-    project = args.wandb_project or (
+    project = args.swanlab_project or (
             args.algo.lower() + "-" + re.sub("\\W+", "-", str(config.env).lower())
     )
     kwargs = {
