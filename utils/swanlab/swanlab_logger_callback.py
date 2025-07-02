@@ -333,11 +333,6 @@ class SwanLabLoggerCallback(LoggerCallback):
         trial_id = trial.trial_id if trial else None
         trial_name = str(trial) if trial else None
 
-        # Project name for Wandb
-        swanlab_project = self.project
-
-        swanlab_workspace = self.workspace
-
         # remove unpickleable items!
         config = _clean_log(config)
         config = {
@@ -350,8 +345,8 @@ class SwanLabLoggerCallback(LoggerCallback):
             resume=False,
             reinit=True,
             allow_val_change=True,
-            workspace=swanlab_workspace,
-            project=swanlab_project,
+            workspace=self.workspace,
+            project=self.project,
             config=config,
         )
         swanlab_init_kwargs.update(self.kwargs)
