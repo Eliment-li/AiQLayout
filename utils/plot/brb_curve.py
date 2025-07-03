@@ -1,4 +1,3 @@
-#compare reward replay(env7) and traditional RL(env6)
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -20,7 +19,7 @@ plt.rcParams['ps.fonttype'] = 42
 # print(available_fonts)
 mpl.rcParams['font.size'] = 24
 label_size = 24
-line_width = 2.0
+line_width = 1.0
 v6=[]
 v7=[]
 dpi = 500
@@ -39,41 +38,41 @@ def seconds_to_hours(x, pos):
     return f'{hours:.1f}'
 
 
+fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 
-
-
-# 创建一个2x1的子图
-fig, axs = plt.subplots(1, 2, figsize=(10, 4))
-
-#mean kl loss
 def plot1():
     ax = axs[0]
-    xv6,yv6,xv7,yv7 = get_data('mean_kl_loss',x_index = 'relative')
-    # 创建折线图
-    ax.plot(xv6, yv6,color='#1565c0',linewidth=line_width, label='PPO')
-    ax.plot(xv7, yv7,color='#df6172',linewidth=line_width, label='RR-PPO')
+    data_path = f'assets\\data\\BRB_policy_loss.csv'
+    group1,group2 = get_data(data_path)
+
+    for i  in range(len(group1)):
+        data = group1[i]
+        label='disable BRB' if i == 0 else None
+        ax.plot(data,color='#1565c0',linewidth=line_width, label=label)
+    for i  in range(len(group2)):
+        data = group2[i]
+        label = 'enable BRB' if i == 0 else None
+        ax.plot(data,color='#df6172',linewidth=line_width, label=label)
 
     # 设置y轴为对数刻度
     #ax.set_yscale('log',base=10)
 
     y_min, y_max =  ax.get_ylim()
     #循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
-    for y_coord in np.arange(y_min, y_max, 0.002):
+    for y_coord in np.arange(y_min, y_max, 0.02):
         ax.axhline(y=y_coord, color='#cfcfcf', linestyle='--', zorder=0 )
 
     #plt.title('amplitude_estimation')
-    ax.set_xlabel('Training Time(hour)',fontsize = label_size)
-    ax.set_ylabel('KL Loss',fontsize = label_size)
+    #ax.set_xlabel('Training Iteration',fontsize = label_size)
+    ax.set_ylabel('Policy Loss',fontsize = label_size)
 
     # ustom formatter
 
     #ax.xaxis.set_major_formatter(FuncFormatter(time_formatter))
 
     # 设置 x 轴的主刻度为每 1800 秒（0.5 小时）
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(1800))
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(10))
 
-    # 使用 FuncFormatter 应用自定义格式
-    ax.xaxis.set_major_formatter(ticker.FuncFormatter(seconds_to_hours))
 
     from matplotlib.ticker import ScalarFormatter
     ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
@@ -82,32 +81,47 @@ def plot1():
 
     ax.legend(loc='upper right', fontsize='small')
 
-
-
 #total loss
 def plot2():
     ax = axs[1]
-    xv6,yv6,xv7,yv7 = get_data('total_loss',x_index = 'relative')
-    # 创建折线图
-    ax.plot(xv6, yv6,color='#1565c0',linewidth=line_width, label='PPO')
-    ax.plot(xv7, yv7,color='#df6172',linewidth=line_width, label='RR-PPO')
+    data_path = f'assets\\data\\BRB_vf_loss.csv'
+    group1,group2 = get_data(data_path)
+    x = range(0, len(group1[0]))
+    for i  in range(len(group1)):
+        data = group1[i]
+        label='disable BRB' if i == 0 else None
+        ax.plot(x,data,color='#1565c0',linewidth=line_width, label=label)
+    for i  in range(len(group2)):
+        data = group2[i]
+        label = 'enable BRB' if i == 0 else None
+        ax.plot(x,data,color='#df6172',linewidth=line_width, label=label)
 
+    # 设置y轴为对数刻度
+    #ax.set_yscale('log',base=10)
 
     y_min, y_max =  ax.get_ylim()
     #循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
-    for y_coord in np.arange(y_min, y_max, 0.5):
+    for y_coord in np.arange(y_min, y_max, 0.2):
         ax.axhline(y=y_coord, color='#cfcfcf', linestyle='--', zorder=0 )
 
     #plt.title('amplitude_estimation')
-    ax.set_xlabel('Training Time(hour)',fontsize = label_size)
-    ax.set_ylabel('Total Loss',fontsize = label_size)
+    ax.set_xlabel('Training Iteration',fontsize = label_size)
+    ax.set_ylabel('Value Function Loss',fontsize = label_size)
 
     # ustom formatter
-    # 设置 x 轴的主刻度为每 1800 秒（0.5 小时）
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(1800))
+
+    #ax.xaxis.set_major_formatter(FuncFormatter(time_formatter))
+
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(10))
 
     # 使用 FuncFormatter 应用自定义格式
-    ax.xaxis.set_major_formatter(ticker.FuncFormatter(seconds_to_hours))
+    #ax.xaxis.set_major_formatter(ticker.FuncFormatter(seconds_to_hours))
+
+    from matplotlib.ticker import ScalarFormatter
+    ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+    ax.yaxis.get_major_formatter().set_scientific(True)
+    ax.yaxis.get_major_formatter().set_powerlimits((0, 0))
+
     ax.legend(loc='upper right', fontsize='small')
 
 # sample_steps
@@ -191,18 +205,48 @@ def get_data(path):
         #skip the step column
         if column == 'step':
             continue
-        print(column)
+        col_data=data[column].values
+        col_data =replace_nan_with_average(col_data)
         if i % 2 == 0:
-            group1.append(data[column].values)
+            group1.append(col_data)
         else:
-            group2.append(data[column].values)
+            group2.append(col_data)
         i+=1
-
     return group1,group2
+
+
+def replace_nan_with_average(arr):
+    #Replace NaN values in the array with the average of the previous and next values.
+
+    arr = np.array(arr, dtype=float)  # Ensure the input is a numpy array of floats
+
+    # Iterate through the array and replace NaN values
+    for i in range(len(arr)):
+        if np.isnan(arr[i]) or arr[i]=='nan':
+            prev_value = arr[i - 1] if i > 0 else None
+            next_value = arr[i + 1] if i < len(arr) - 1 else None
+
+            # Calculate the average of previous and next values
+            if prev_value is not None and next_value is not None and not np.isnan(prev_value) and not np.isnan(
+                    next_value):
+                arr[i] = (prev_value + next_value) / 2
+            elif prev_value is not None and not np.isnan(prev_value):  # Only previous value exists
+                arr[i] = prev_value
+            elif next_value is not None and not np.isnan(next_value):  # Only next value exists
+                arr[i] = next_value
+            else:  # Both are NaN or missing, leave the value as NaN
+                arr[i] = np.nan
+
+    return arr
+
 
 
 if __name__ == '__main__':
     # plot_t2()
     group1,group2 = get_data(f'assets\\data\\BRB_policy_loss.csv')
-    print(group1)
-    print(group2)
+    # print(group1)
+    # print(group2)
+    plot1()
+    plot2()
+    plt.show()
+    # print(replace_nan_with_average(group1[0]))
