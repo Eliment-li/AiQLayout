@@ -54,7 +54,7 @@ class ExcelUtil:
 
 # read excel data to np array
     @staticmethod
-    def read_sheet_to_array(file_name, sheet_name='Sheet1'):
+    def read_sheet_to_array(file_name, sheet_name='Sheet2'):
         try:
             # Load the Excel file
             df = pd.read_excel(file_name, sheet_name=sheet_name,header=None)

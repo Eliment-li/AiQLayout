@@ -17,6 +17,7 @@ class QubitLayoutType(Enum):
     GIVEN = 2
     RANDOM = 3
     COMPACT_1 = 4
+    COMPACT_2 = 5
 
 class ChipLayout():
 
@@ -150,13 +151,13 @@ class ChipLayout():
 
 
 def get_layout(name,rows,cols, num_qubits):
+    layout = ChipLayout(
+        rows=rows,
+        cols=cols,
+        layout_type=name,
+        num_qubits=num_qubits,
+    )
     if name==QubitLayoutType.COMPACT_1:
-        layout = ChipLayout(
-            rows=rows,
-            cols=cols,
-            layout_type=QubitLayoutType.COMPACT_1,
-            num_qubits=num_qubits,
-        )
         assert rows==12 and cols==12, "Compact layout is designed for 12x12 chip."
         layout.set_state( np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -170,9 +171,50 @@ def get_layout(name,rows,cols, num_qubits):
                            [0, 0, 27, 28, 0, 31, 32, 0, 35, 36, 0, 0],
                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]))
-        layout._init_magic_state()
-        layout.clean_invalud_qubits()
-        return layout
+    elif name==QubitLayoutType.COMPACT_2:
+        assert rows == 18 and cols == 18, "Compact layout is designed for 18x18 chip."
+        layout.set_state(np.array([[  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+          0,   0,   0,   0,   0],
+       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+          0,   0,   0,   0,   0],
+       [  0,   0,   1,   2,   0,   5,   6,   0,   9,  10,   0,  13,  14,
+          0,  17,  18,   0,   0],
+       [  0,   0,   3,   4,   0,   7,   8,   0,  11,  12,   0,  15,  16,
+          0,  19,  20,   0,   0],
+       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+          0,   0,   0,   0,   0],
+       [  0,   0,  21,  22,   0,  25,  26,   0,  29,  30,   0,  33,  34,
+          0,  37,  38,   0,   0],
+       [  0,   0,  23,  24,   0,  27,  28,   0,  31,  32,   0,  35,  36,
+          0,  39,  40,   0,   0],
+       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+          0,   0,   0,   0,   0],
+       [  0,   0,  41,  42,   0,  45,  46,   0,  49,  50,   0,  53,  54,
+          0,  57,  58,   0,   0],
+       [  0,   0,  43,  44,   0,  47,  48,   0,  51,  52,   0,  55,  56,
+          0,  59,  60,   0,   0],
+       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+          0,   0,   0,   0,   0],
+       [  0,   0,  61,  62,   0,  65,  66,   0,  69,  70,   0,  73,  74,
+          0,  77,  78,   0,   0],
+       [  0,   0,  63,  64,   0,  67,  68,   0,  71,  72,   0,  75,  76,
+          0,  79,  80,   0,   0],
+       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+          0,   0,   0,   0,   0],
+       [  0,   0,  81,  82,   0,  85,  86,   0,  89,  90,   0,  93,  94,
+          0,  97,  98,   0,   0],
+       [  0,   0,  83,  84,   0,  87,  88,   0,  91,  92,   0,  95,  96,
+          0,  99, 100,   0,   0],
+       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+          0,   0,   0,   0,   0],
+       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+          0,   0,   0,   0,   0]]))
+
+
+
+    layout._init_magic_state()
+    layout.clean_invalud_qubits()
+    return layout
 
     # def _random_init_qubits_layout(self):
     #     # vaild value start from _position[1] , -1 only for occupy
@@ -193,5 +235,5 @@ def get_layout(name,rows,cols, num_qubits):
 
 
 if __name__ == '__main__':
-    layout = get_layout(name = QubitLayoutType.COMPACT_1, rows=12, cols=12, num_qubits=20)
+    layout = get_layout(name = QubitLayoutType.COMPACT_2, rows=18, cols=18, num_qubits=100)
     print(layout)
