@@ -84,4 +84,3 @@ def append_data(file_path, data):
 
 
 
-
