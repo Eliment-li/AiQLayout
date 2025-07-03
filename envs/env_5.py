@@ -84,10 +84,10 @@ class Env_5(MultiAgentEnv):
     def reset(self, *, seed=None, options=None):
         self.steps = 1
         #Just for computing min_sum_dist
-        #layout = get_layout(name = QubitLayoutType.COMPACT_1, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
-        layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = QubitLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = QubitLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+        layout = get_layout(name = QubitLayoutType.COMPACT_1, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+        #layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = QubitLayoutType.C,num_qubits=self.num_qubits)#get_layout(name = QubitLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
         temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
-                         layout_type=QubitLayoutType.GRID,chip_layout = layout)
+                         layout_type=layout.layout_type,chip_layout = layout)
         self.init_dist = self.compute_dist(temp_chip, self.am.activate_agent)[0]
 
         #self.chip.reset(layout_type=None)
