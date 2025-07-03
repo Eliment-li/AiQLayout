@@ -4,6 +4,7 @@ import re
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
+from matplotlib.ticker import MaxNLocator
 
 from utils.file.excel_util import ExcelUtil
 from utils.file.file_util import get_root_dir
@@ -31,7 +32,8 @@ def get_data():
         #get 0:4 row
         df = df.iloc[0:4, :]
 
-        qubits_number = df['qubits']
+        qubits_number = df['qubits'].tolist()
+        qubits_number = np.array(qubits_number).astype(int)
         # 从字符串中提取出该线路的比特数量 qnn/qnn_indep_qiskit_5.qasm-> 5
         #print(labels)
         labels_2d.append(qubits_number)
@@ -53,13 +55,13 @@ def plot():
         'Quantum Walk',
         'Deutsch-Jozsa',
         'Quantum Neural Network',
-
-        'Portfolio Optimization with VQE',
-        'Real Amplitudes ansatz',
+        #
+        # 'Portfolio Optimization with VQE',
+        # 'Real Amplitudes ansatz',
     ]
 
     labels=['a','b','c','d']
-    labels_2d=[labels,labels,labels,labels,labels,labels]
+   # labels_2d=[labels,labels,labels,labels,labels,labels]
     # data = {
     #     'g1': ([1, 2, 3], [4, 5, 6]),
     #     'g2': ([1, 2, 3], [4, 5, 6]),
@@ -90,11 +92,11 @@ def plot():
         ax = axes[row, col]
         # 设置子图边框宽度
         for spine in ax.spines.values():
-            spine.set_linewidth(1.5)  # 将边框宽度设置为2
+            spine.set_linewidth(2.5)  # 将边框宽度设置为2
             spine.set_edgecolor('grey')  # 设置边框颜色
 
         # 绘制第一组数据的柱状图
-        ax.bar(index, group1,  bar_width,color = '#5370c4',label=f'{group_name} 1',hatch='--', edgecolor='black',zorder = 0)
+        ax.bar(index, group1,  bar_width,color = '#5370c4',label=f'{group_name} 1',hatch='', edgecolor='black',zorder = 0)
 
         # 绘制第二组数据的柱状图
         ax.bar(index + bar_width, group2, bar_width,color = '#f16569', label=f'{group_name} 2',hatch='/', edgecolor='black',zorder = 1)
@@ -105,6 +107,8 @@ def plot():
             ax.legend(['QAgent ','Grid'], loc='upper left')
 
         # 设置横轴的标签
+        # Set x-axis to show only integers
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax.set_xticks(index + bar_width / 1)
         ax.set_xticklabels(labels_2d[i])
 
@@ -123,7 +127,7 @@ def plot():
         # 设置图表的标题
         ax.set_title(title[i], fontsize = fontsize+6)
         # 显示背景网格
-        ax.grid(True, which='both', axis='y', linestyle='-', linewidth=1,zorder = 0)
+        ax.grid(True, which='both', axis='y', linestyle='-', linewidth=1.5,zorder = 0)
 
         # 调整子图之间的间距
         plt.tight_layout()
