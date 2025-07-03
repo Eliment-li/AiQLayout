@@ -19,7 +19,7 @@ sep = os.path.sep
 
 def get_data():
     # # get data
-    path = r'd:/sync/AiQLayout_data/sum_up.xlsx'
+    path = r'D:\AAAI2026\experiment/sum_up.xlsx'
     sheets, dfs = ExcelUtil.read_by_sheet(path)
     data={}
     labels_2d = [
@@ -31,37 +31,42 @@ def get_data():
         #get 0:4 row
         df = df.iloc[0:4, :]
 
-        print(df)
         qubits_number = df['qubits']
-        print(qubits_number)
         # 从字符串中提取出该线路的比特数量 qnn/qnn_indep_qiskit_5.qasm-> 5
         #print(labels)
         labels_2d.append(qubits_number)
-        rl = df['rl_distance']
-        grid = df['grid_distance']
+        rl = df['rl_distance'].tolist()
+        grid = df['grid_distance'].tolist()
         data.update({sheet:(rl,grid)})
-        print(data)
+
+    print('===data===')
+    # for i, (group_name, (group1, group2)) in enumerate(data.items()):
+    #     if i==0:
+    #         print(f'{group_name}: {group1}, {group2}')
+    return data,labels_2d
 
 def plot():
-    data = {
-        'g1':([1,2,3],[4,5,6]),
-        'g2':([1,2,3],[4,5,6]),
-        'g3':([1,2,3],[4,5,6]),
-        'g4':([1,2,3],[4,5,6])
-
-    }
+    data,labels_2d = get_data()
 
     title = [
         'Quantum Fourier Transformation',
-        'Amplitude Estimation',
+        'Quantum Walk',
+        'Deutsch-Jozsa',
         'Quantum Neural Network',
-        'Efficient SU2 ansatz',
+
         'Portfolio Optimization with VQE',
         'Real Amplitudes ansatz',
     ]
 
-    labels=['a','b','c']
+    labels=['a','b','c','d']
     labels_2d=[labels,labels,labels,labels,labels,labels]
+    # data = {
+    #     'g1': ([1, 2, 3], [4, 5, 6]),
+    #     'g2': ([1, 2, 3], [4, 5, 6]),
+    #     'g3': ([1, 2, 3], [4, 5, 6]),
+    #     'g4': ([1, 2, 3], [4, 5, 6])
+    #
+    # }
 
     # 设置每个柱子的宽度
     bar_width = 0.04
@@ -70,7 +75,7 @@ def plot():
     index = np.arange(len(labels))*0.12
 
     # 创建3x2的子图布局
-    fig, axes = plt.subplots(2, 2, figsize=(14, 14))  # figsize可以根据需要调整
+    fig, axes = plt.subplots(2, 2, figsize=(20, 12))  # figsize可以根据需要调整
 
     plt.subplots_adjust(hspace=0.4,wspace = 0.4)
     # 遍历数据和子图网格，绘制柱状图
@@ -80,16 +85,6 @@ def plot():
         # 计算子图的行和列索引
         row = i // 2
         col = i % 2
-
-        g1= np.array(group1)#.values
-        g2 = np.array(group2)#.values
-        res = 1-(g1/g2)
-        for v in res:
-            all+=1
-            if v> 0.2:
-                cnt+=1
-            print(v)
-        #print(1-(g1/g2))
 
         # 获取当前子图的axes对象
         ax = axes[row, col]
@@ -112,6 +107,15 @@ def plot():
         # 设置横轴的标签
         ax.set_xticks(index + bar_width / 1)
         ax.set_xticklabels(labels_2d[i])
+
+        # 设置科学计数法格式
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
+
+        # 将科学计数法标志放在左侧靠上
+        ax.yaxis.get_offset_text().set_position((-0.05, 0.9))  # 调整位置
+        ax.yaxis.get_offset_text().set_fontsize(fontsize)  # 设置字体大小
+
+
         # if i % 2 ==0:
         #     ax.set_ylabel('Depth', fontsize = fontsize)
         if i in range(6,9):
@@ -120,7 +124,7 @@ def plot():
         ax.set_title(title[i], fontsize = fontsize+6)
         # 显示背景网格
         ax.grid(True, which='both', axis='y', linestyle='-', linewidth=1,zorder = 0)
-    # print(cnt/all)
+
         # 调整子图之间的间距
         plt.tight_layout()
 
@@ -130,4 +134,4 @@ def plot():
     plt.show()
 
 if __name__ == '__main__':
-    get_data()
+    plot()
