@@ -1,10 +1,27 @@
-import csv
-import os
 from pathlib import Path
 
-from utils.file.file_util import get_root_dir, get_encoding
-
+from utils.file.file_util import get_root_dir
 rootdir = Path(get_root_dir())
+
+import csv
+import datetime
+import os
+
+sep = os.path.sep
+rootdir = get_root_dir()
+
+
+def to_dataframe(abs_path=None, relative_path=None):
+    import pandas as pd
+    if abs_path:
+        path = abs_path
+    else:
+        path = rootdir + sep + relative_path
+
+    df = pd.read_csv(path)
+    # Display the dataframe
+    return df
+
 
 
 def read_numeric_csv(file_path):
@@ -31,7 +48,6 @@ def read_numeric_csv(file_path):
 def read(file_path,is_numeric=False):
     if is_numeric:
         return read_numeric_csv(file_path)
-
     data = []
     # 读取数据
     with open(file_path, 'r') as file:
@@ -39,18 +55,6 @@ def read(file_path,is_numeric=False):
         for row in reader:
             data.append(row)
     return data
-
-
-def read_df(abs_path=None, relative_path=None):
-    import pandas as pd
-    if abs_path:
-        path = abs_path
-    else:
-        path = rootdir / relative_path
-
-    df = pd.read_csv(path,encoding=get_encoding(path))
-    # Display the dataframe
-    return df
 
 def is_2d(array):
     if not isinstance(array, (list, tuple)):
@@ -67,8 +71,6 @@ def write_data(file_path, data):
         writer.writerows(data)
 
 def append_data(file_path, data):
-    #make sure data is 2-d array
-    #assert is_2d(data), "Data must be a 2D array (list of lists or tuples)"
      # 确保文件夹存在
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     # 追加数据
@@ -81,22 +83,5 @@ def append_data(file_path, data):
         writer.writerows(data)
 
 
-def test():
-    # 写入数据
-    data = [['Name', 'Age'], ['Alice', 25], ['Bob', 30]]
-    write_data('d:/data.csv', data)
 
-    # 追加数据
-    new_data = [['Charlie', 35]]
-    append_data('d:/data.csv', new_data)
 
-    # 读取数据
-    data = read('d:/data.csv')
-    for row in data:
-        print(row)
-
-if __name__ == '__main__':
-
-   # data =  read(is_numeric=True,file_path=r'D:\project\AiQLayout/results/evaluate/2025_05_09_10_32/2025_05_09_10_32.csv')
-   # print(data)
-   test()
