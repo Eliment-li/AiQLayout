@@ -1,10 +1,15 @@
 import os
+import random
 from collections import defaultdict
+from pathlib import Path
 
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
 from sympy import pprint
+
+from utils.file.file_util import write_to_file, get_root_dir
+
 
 def plot_heatmap_data(heatmap_data):
     x_vals = [i+1 for i in range(len(heatmap_data))]
@@ -37,33 +42,55 @@ def plot_heatmap_data(heatmap_data):
     plt.show()
 
 
-def  get_random_gates(num_qubits:int,size:int,format=None ):
-    # 设置正态分布的均值和标准差
-    mean = 10  # 均值
-    std_dev = 5  # 标准差
-    from scipy.stats import truncnorm
 
-    a = (1 - mean) / std_dev  # 下限标准化
-    b = (num_qubits - mean) / std_dev  # 上限标准化
-    trunc_data = truncnorm.rvs(a, b, loc=mean, scale=std_dev, size=size)
-    trunc_data = np.round(trunc_data)
-    # 生成正态分布的随机数
-    qubits =trunc_data
-    i = 0
-    gates = []
-    #instruction: MultiBodyMeasure 0:Z,1000002:X
-    while i < len(qubits):
-        #we let qubits[0] always < qubits[1]
-        if qubits[i] < qubits[i + 1]:
-            gates.append((qubits[i], qubits[i + 1]))
-        else:
-            gates.append((qubits[i +1], qubits[i]))
-        i += 2
-    # if format == 'heatmap':
-    #     return  convert_gates_to_heat_map()
-    return gates
+def generate_node_relations(n,count=100, mean=0.2, std_dev=0.3, min_relations=10):
+    """
+    生成节点关系对
 
-def gates_to_LSI(gates):
+    参数:
+    n -- 正节点数量(1到n)
+    mean -- 正态分布均值(控制关系密度)
+    std_dev -- 正态分布标准差
+    min_relations -- 每个节点至少拥有的关系数
+
+    返回:
+    包含节点对的列表
+    """
+    nodes = list(range(1, n + 1)) + [-1]  # 所有节点包括-1
+    relations = []
+
+    # # 确保每个节点至少有min_relations个连接
+    # for node in nodes:
+    #     # 随机选择min_relations个其他节点连接
+    #     other_nodes = [n for n in nodes if n != node]
+    #     for _ in range(min_relations):
+    #         if not other_nodes:
+    #             break
+    #         partner = random.choice(other_nodes)
+    #         relations.append((min(node, partner), max(node, partner)))
+    #         other_nodes.remove(partner)
+    #
+    # # 去重
+    # relations = list(set(relations))
+
+    # 基于正态分布添加额外关系
+    for k in range(count):
+        for i in range(len(nodes)):
+            for j in range(i + 1, len(nodes)):
+                node1 = nodes[i]
+                node2 = nodes[j]
+                # 使用正态分布概率决定是否添加关系
+                prob = np.random.normal(mean, std_dev)
+                prob = max(0, min(1, prob))  # 限制在0-1范围内
+                if random.random() < prob:
+                    relations.append((min(node1, node2), max(node1, node2)))
+
+    # 再次去重
+    #relations = list(set(relations))
+    random.shuffle(relations)  # 打乱顺序
+    return relations
+
+def gates_to_LSI(gates,num_qubits:int):
     lsi = []
     m_i = 10000
     for i in range(len(gates)):
@@ -75,37 +102,42 @@ def gates_to_LSI(gates):
             lsi.append(
                 f'MultiBodyMeasure {q0}:Z,{q1}:X'
             )
+
+    content=''
+    for instruction in lsi:
+        content += instruction + '\n'
+    path =  Path(get_root_dir()) / 'assets' / 'circuits'/'random'/f'LSI_random_gates_{num_qubits}.lsi'
+    write_to_file(path,content)
     #write to file
 
+def plot_gate_heatmap(nodes, relations,savepath=None):
+    size = len(nodes)
+    node_index = {node: idx for idx, node in enumerate(nodes)}
+    matrix = np.zeros((size, size))
+    for a, b in relations:
+        i, j = node_index[a], node_index[b]
+        matrix[i, j] += 1
+        #matrix[j, i] += 1  # 无向
+    plt.figure(figsize=(8, 8))
+    im =plt.imshow(matrix, cmap='Greens',  interpolation='nearest',origin='lower')
 
+    cbar = plt.colorbar(im,shrink=0.7, aspect=20)
+    cbar.set_label('cnt', rotation=270, labelpad=10)
+    # 设置坐标轴标签
+    labels = [str(node) for node in nodes]
+    plt.xticks(range(len(nodes)), labels)
+    plt.yticks(range(len(nodes)), labels)
 
-
-def convert_gates_to_heat_map(x,y,gates):
-    # 统计标准化坐标的频率
-    coord_counts = defaultdict(int)
-    for coord in gates:
-        coord_counts[tuple(coord)] += 1
-
-    # 获取所有 x 和 y 值（x ≤ y）
-    x_vals =[i for i in range(1,x+1)] #sorted({x for x, y in coord_counts.keys()})
-    y_vals =[i for i in range(1,y+1)]  #sorted({y for x, y in coord_counts.keys()})
-
-    # 创建热力图数据矩阵（只包含 x ≤ y 的部分）
-    heatmap_data = np.zeros((len(y_vals), len(x_vals)))
-
-    # 填充数据
-    for (x, y), count in coord_counts.items():
-        x_idx = x_vals.index(x)
-        y_idx = y_vals.index(y)
-        heatmap_data[y_idx, x_idx] = count
-
-    #normalize the heatmap_data
-    heatmap_data = heatmap_data / np.max(heatmap_data) if np.max(heatmap_data) != 0 else heatmap_data
-
-    return heatmap_data
+    plt.xlabel("node")
+    plt.ylabel("node")
+    plt.title("heatmap")
+    #plt.colorbar(label="relation")
+    plt.tight_layout()
+    if savepath:
+        plt.savefig(savepath, dpi=300)
+    #plt.show()
 
 from PIL import Image
-from scipy.ndimage import zoom
 import numpy as np
 from scipy.ndimage import zoom
 
@@ -168,17 +200,16 @@ def resize_2d_matrix(matrix, r,c):
         resized_matrix = resized_matrix.astype(np.float32) / 255.0
 
     return resized_matrix
-if __name__ == "__main__":
-    qubits_number=10
-    size=1000
-    gates  = get_random_gates(qubits_number,size)
-    heatmap = convert_gates_to_heat_map(10, 10, gates)
-    plot_heatmap_data(heatmap)
-    #pprint(heatmap)
-    # plot_heatmap_data(heatmap)
-    # plot_heatmap_data(resize_2d_matrix(heatmap,(7,7)))
 
-    cleaned = [tuple(float(x) for x in pair) for pair in gates]
-    print(cleaned)
-    # resize = resize_2d_matrix(heatmap,(7,7))
-    print(repr(heatmap))
+def generates_random_lsi(qubits_num):
+    gates = generate_node_relations(qubits_num, 100)
+    gates_to_LSI(gates, qubits_num)
+    nodes = [-1] + list(range(1, qubits_num + 1))  # -1在前
+
+    savepath = Path(get_root_dir()) / 'assets' / 'circuits' /'random'/ f'gates_heatmap_{qubits_num}.png'
+    plot_gate_heatmap(nodes, gates,savepath)
+    # plot_heatmap_data(resize_2d_matrix(heatmap,(7,7)))
+if __name__ == "__main__":
+    for i in range(1,10):
+        generates_random_lsi(5*i)
+
