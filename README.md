@@ -18,7 +18,9 @@ For sparse layout, there are three chip size:
 
 If there are corrupted qubits in the chip, the qubits number above is also reduced
 
+### Large-Scale training
+We suggest to use high performance memory management system like **Redis** to store temp data.
+A simple official installation tutorial is available at https://redis.io/docs/latest/operate/oss_and_stack/install/
 
 ## Qasm
-
 the qreg will in qasm file wil be merge into one qreg, and the qasm file will be modified to use the merged qreg
