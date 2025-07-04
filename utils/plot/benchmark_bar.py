@@ -53,7 +53,7 @@ def plot():
     title = [
         'Quantum Fourier Transformation',
         'Quantum Walk',
-        'Deutsch-Jozsa',
+        'Deutsch-Jozsa Algorithm',
         'Quantum Neural Network',
         #
         # 'Portfolio Optimization with VQE',
