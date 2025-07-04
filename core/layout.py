@@ -1,27 +1,33 @@
 from copy import deepcopy
 from enum import Enum
+from pathlib import Path
 
 import numpy as np
 
 from config import ConfigSingleton
+from utils.file.csv_util import rootdir
+from utils.file.excel_util import ExcelUtil
+from utils.file.file_util import get_root_dir
 
+rootdir = Path(get_root_dir())
 
 class QubitState(Enum):
     ANCILLA = 0  # free to use
     MAGIC = -1 # magic state
     BROKEN = -2 #broken, unavailable
 
-class QubitLayoutType(Enum):
-    EMPTY = 0 #do nothing,do not put any extra qubit on the chip,
-    GRID = 1
-    GIVEN = 2
-    RANDOM = 3
-    COMPACT_1 = 4
-    COMPACT_2 = 5
+class ChipLayoutType(Enum):
+    EMPTY = 'EMPTY' #do nothing,do not put any extra qubit on the chip,
+    GRID = 'GRID'
+    GIVEN = 'GIVEN'
+    RANDOM = 'RANDOM'
+    COMPACT_1 = 'COMPACT_1'
+    COMPACT_2 = 'COMPACT_2'
+    LINER_1 = "LINER_1"
 
 class ChipLayout():
 
-    def __init__(self,rows:int,cols:int,layout_type:QubitLayoutType,num_qubits:int):
+    def __init__(self,rows:int,cols:int,layout_type:ChipLayoutType,num_qubits:int):
         self.rows = rows
         self.cols = cols
         self.num_qubits=num_qubits
@@ -31,7 +37,7 @@ class ChipLayout():
         self.state = np.zeros((self.rows, self.cols), dtype=int)
 
         self.layout_type = layout_type
-        if layout_type is not None and layout_type == QubitLayoutType.GRID:
+        if layout_type is not None and layout_type == ChipLayoutType.GRID:
             self.dynamic_set_layout()
 
         self._init_magic_state()
@@ -61,7 +67,7 @@ class ChipLayout():
     #     return available_qubits
 
     def dynamic_set_layout(self):
-        assert self.layout_type == QubitLayoutType.GRID, "Dynamic layout is designed only be set for GRID layout type."
+        assert self.layout_type == ChipLayoutType.GRID, "Dynamic layout is designed only be set for GRID layout type."
         qubit = 1
         i = 1
         while i < self.rows - 1:
@@ -149,91 +155,44 @@ class ChipLayout():
         return "\n".join(result)  # 将所有行拼接成一个字符串，用换行符分隔
 
 
+def read_layout_from_xlsx(layout_type:ChipLayoutType):
+    file_path = rootdir/"assets"/"chip_layout.xlsx"
+    # switch(layout_type):
+    #     case ChipLayoutType.EMPTY:
+    #         pass
+    state = None
+    match layout_type:
+        case ChipLayoutType.COMPACT_1:
+            state = ExcelUtil.read_sheet_to_array(file_path,"COMPACT_1")
+        case ChipLayoutType.COMPACT_2:
+            state = ExcelUtil.read_sheet_to_array(file_path,"COMPACT_2")
+        case ChipLayoutType.LINER_1:
+            state = ExcelUtil.read_sheet_to_array(file_path,"LINER_1")
+    return state
 
-def get_layout(name,rows,cols, num_qubits):
+
+
+def get_layout(layout_type,rows,cols, num_qubits):
+    state = read_layout_from_xlsx(layout_type)
     layout = ChipLayout(
         rows=rows,
         cols=cols,
-        layout_type=name,
+        layout_type=layout_type,
         num_qubits=num_qubits,
     )
-    if name==QubitLayoutType.COMPACT_1:
+    if layout_type==ChipLayoutType.COMPACT_1:
         assert rows==12 and cols==12, "Compact layout is designed for 12x12 chip."
-        layout.set_state( np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 1, 2, 0, 5, 6, 0, 9, 10, 0, 0],
-                           [0, 0, 3, 4, 0, 7, 8, 0, 11, 12, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 13, 14, 0, 17, 18, 0, 21, 22, 0, 0],
-                           [0, 0, 15, 16, 0, 19, 20, 0, 23, 24, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 25, 26, 0, 29, 30, 0, 33, 34, 0, 0],
-                           [0, 0, 27, 28, 0, 31, 32, 0, 35, 36, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]))
-    elif name==QubitLayoutType.COMPACT_2:
+    elif layout_type==ChipLayoutType.COMPACT_2:
         assert rows == 18 and cols == 18, "Compact layout is designed for 18x18 chip."
-        layout.set_state(np.array([[  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-          0,   0,   0,   0,   0],
-       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-          0,   0,   0,   0,   0],
-       [  0,   0,   1,   2,   0,   5,   6,   0,   9,  10,   0,  13,  14,
-          0,  17,  18,   0,   0],
-       [  0,   0,   3,   4,   0,   7,   8,   0,  11,  12,   0,  15,  16,
-          0,  19,  20,   0,   0],
-       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-          0,   0,   0,   0,   0],
-       [  0,   0,  21,  22,   0,  25,  26,   0,  29,  30,   0,  33,  34,
-          0,  37,  38,   0,   0],
-       [  0,   0,  23,  24,   0,  27,  28,   0,  31,  32,   0,  35,  36,
-          0,  39,  40,   0,   0],
-       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-          0,   0,   0,   0,   0],
-       [  0,   0,  41,  42,   0,  45,  46,   0,  49,  50,   0,  53,  54,
-          0,  57,  58,   0,   0],
-       [  0,   0,  43,  44,   0,  47,  48,   0,  51,  52,   0,  55,  56,
-          0,  59,  60,   0,   0],
-       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-          0,   0,   0,   0,   0],
-       [  0,   0,  61,  62,   0,  65,  66,   0,  69,  70,   0,  73,  74,
-          0,  77,  78,   0,   0],
-       [  0,   0,  63,  64,   0,  67,  68,   0,  71,  72,   0,  75,  76,
-          0,  79,  80,   0,   0],
-       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-          0,   0,   0,   0,   0],
-       [  0,   0,  81,  82,   0,  85,  86,   0,  89,  90,   0,  93,  94,
-          0,  97,  98,   0,   0],
-       [  0,   0,  83,  84,   0,  87,  88,   0,  91,  92,   0,  95,  96,
-          0,  99, 100,   0,   0],
-       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-          0,   0,   0,   0,   0],
-       [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-          0,   0,   0,   0,   0]]))
+    elif layout_type==ChipLayoutType.LINER_1:
+        assert rows == 17 and cols == 17, "LINER_1 layout is designed for 17x17 chip."
 
-
-
+    layout.set_state(state)
     layout._init_magic_state()
     layout.clean_invalud_qubits()
     return layout
 
-    # def _random_init_qubits_layout(self):
-    #     # vaild value start from _position[1] , -1 only for occupy
-    #     i = 1
-    #     while i <= self.num_qubits:
-    #         x = random.randint(0, self._rows - 1)
-    #         y = random.randint(0, self._cols - 1)
-    #         if self.state[x][y] == 0 and self._broken_channel[x][y]== 0:
-    #
-    #             self.state[x][y] = i
-    #             self._qubits_channel[x][y] = i
-    #             self._position_mask[i-1][x][y] = 1
-    #
-    #             self.q_pos.append((x, y))
-    #             i += 1
-    #         else:
-    #             continue
-
 
 if __name__ == '__main__':
-    layout = get_layout(name = QubitLayoutType.COMPACT_2, rows=18, cols=18, num_qubits=100)
+    layout = get_layout(layout_type = ChipLayoutType.LINER_1, rows=17, cols=17, num_qubits=100)
     print(layout)
