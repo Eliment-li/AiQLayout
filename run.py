@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import redis
 from ray import tune
 from ray.air.constants import TRAINING_ITERATION
 from ray.rllib.algorithms import PPOConfig
@@ -23,7 +24,7 @@ torch, _ = try_import_torch()
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
 from run_helper import train
 from utils.evaluate import evaluate_v2
-
+import os
 '''
 Gaming the Quantum bit Placement with AI
 '''
@@ -50,7 +51,7 @@ def get_rl_module_specs():
             [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
             [64, 3, 2],  # 过滤器数量，卷积核大小 步幅
             [128, 3, 2],  # 过滤器数量，卷积核大小 步幅
-            [256, 3, 2],  # 过滤器数量，卷积核大小 步幅
+            #[256, 3, 2],  # 过滤器数量，卷积核大小 步幅
         ]
     else:
         conv_filters = None
@@ -95,7 +96,16 @@ def save_state():
         append_data(file_path=path, data=[[state]])
     else:
         print('no best state found in shared memory dict')
+
+def flush_redis():
+    r = redis.Redis(host='127.0.0.1', port=6379)
+    r.flushall()
+
 if __name__ == "__main__":
+    #enable redis on linux
+    if not is_windows():
+        os.environ['RAY_REDIS_ADDRESS'] = '127.0.0.1:6379'
+        flush_redis()
 
     SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
     SharedMemoryDict(name='env', size=10240).cleanup()
