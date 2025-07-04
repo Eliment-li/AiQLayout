@@ -51,15 +51,32 @@ def  get_random_gates(num_qubits:int,size:int,format=None ):
     qubits =trunc_data
     i = 0
     gates = []
+    #instruction: MultiBodyMeasure 0:Z,1000002:X
     while i < len(qubits):
+        #we let qubits[0] always < qubits[1]
         if qubits[i] < qubits[i + 1]:
             gates.append((qubits[i], qubits[i + 1]))
-        elif qubits[i] > qubits[i + 1]:
+        else:
             gates.append((qubits[i +1], qubits[i]))
         i += 2
-    if format == 'heatmap':
-        return  convert_gates_to_heat_map()
+    # if format == 'heatmap':
+    #     return  convert_gates_to_heat_map()
     return gates
+
+def gates_to_LSI(gates):
+    lsi = []
+    m_i = 10000
+    for i in range(len(gates)):
+        (q0,q1) = gates[i]
+        if q0 ==-1:
+            lsi.append(f'RequestMagicState {m_i}')
+            m_i += 1
+        else:
+            lsi.append(
+                f'MultiBodyMeasure {q0}:Z,{q1}:X'
+            )
+    #write to file
+
 
 
 
@@ -87,7 +104,6 @@ def convert_gates_to_heat_map(x,y,gates):
 
     return heatmap_data
 
-import numpy as np
 from PIL import Image
 from scipy.ndimage import zoom
 import numpy as np
