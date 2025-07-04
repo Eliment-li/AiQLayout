@@ -6,6 +6,9 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Operator
 from qiskit.visualization import array_to_latex
 
+from core.layout import ChipLayoutType, ChipLayout, QubitState, get_layout
+
+
 def demo():
     # 定义标准 T† 门的矩阵
     t_dagger = np.array([[1, 0], [0, np.exp(-1j * np.pi / 4)]], dtype=complex)
@@ -56,6 +59,9 @@ def reshape_to_2d(arr, n):
 
     return [arr[i:i + n] for i in range(0, len(arr), n)]
 if __name__ == '__main__':
-    import redis
-    r = redis.Redis(host='127.0.0.1', port=6379)
-    r.flushall()
+    # import redis
+    # r = redis.Redis(host='127.0.0.1', port=6379)
+    # r.flushall()
+    print(ChipLayoutType.COMPACT_2.value=='COMPACT_2')
+    layout  = ChipLayoutType('COMPACT_2')
+    print(layout==ChipLayoutType.COMPACT_2)
