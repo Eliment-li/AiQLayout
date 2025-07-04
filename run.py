@@ -102,10 +102,7 @@ def flush_redis():
     r.flushall()
 
 if __name__ == "__main__":
-    #enable redis on linux
-    if not is_windows():
-        os.environ['RAY_REDIS_ADDRESS'] = '127.0.0.1:6379'
-        flush_redis()
+
 
     SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
     SharedMemoryDict(name='env', size=10240).cleanup()
@@ -126,6 +123,11 @@ if __name__ == "__main__":
         print('run on windows')
         cmd_args.swanlab = False
         args.enable_cnn = False
+
+    #enable redis on linux
+    if not is_windows() and args.enable_redis:
+        os.environ['RAY_REDIS_ADDRESS'] = '127.0.0.1:6379'
+        flush_redis()
     stop = {
             # f"{ENV_RUNNER_RESULTS}/{NUM_ENV_STEPS_SAMPLED_LIFETIME}": (
             #     args.stop_timesteps
