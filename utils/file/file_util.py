@@ -35,13 +35,13 @@ def get_root_dir():
     root_dir = root_dir[:-11]
     return root_dir
 
-def write(file,content):
+def write_to_file(file,content):
     try:
         directory = os.path.dirname(file)
         if not os.path.exists(directory):
             os.makedirs(directory)
         # Open file in write mode; if file doesn't exist, it will be created
-        file = open(file, "w", encoding="utf-8")
+        file = open(file, "a", encoding="utf-8")
         file.write(content)
         file.close()
         print(f"Successfully written to '{file}'.")
