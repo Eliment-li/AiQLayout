@@ -85,7 +85,7 @@ class Env_5(MultiAgentEnv):
         self.steps = 1
         #Just for computing min_sum_dist
         layout = get_layout(name = QubitLayoutType.COMPACT_2, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
-        #layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = QubitLayoutType.C,num_qubits=self.num_qubits)#get_layout(name = QubitLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+        #layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = QubitLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = QubitLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
         temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
                          layout_type=layout.layout_type,chip_layout = layout)
         self.init_dist = self.compute_dist(temp_chip, self.am.activate_agent)[0]
@@ -153,7 +153,8 @@ class Env_5(MultiAgentEnv):
         if not success:
             print(self.chip)
             print(self.chip.valid_positions)
-            raise ValueError(f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}')
+            #raise ValueError(f'agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}')
+            print(f'Warning! agent {self.am.activate_agent} move to ({row},{col}) failed at step {self.steps}, action: {act}, valid positions: {self.chip.valid_positions}')
         if self.am.activate_agent == self.num_qubits:
             try:
                 dist, other_dist, self_dist = self.compute_dist(self.chip,self.am.activate_agent)
