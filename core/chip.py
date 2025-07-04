@@ -10,7 +10,7 @@ from openpyxl.compat import deprecated
 from torch import layout
 
 from config import ConfigSingleton
-from core.layout import QubitLayoutType, ChipLayout, QubitState, get_layout
+from core.layout import ChipLayoutType, ChipLayout, QubitState, get_layout
 
 from core.routing import bfs_find_target
 from utils.position import positionalencoding2d
@@ -54,7 +54,7 @@ class Chip():
         self.reset(self.layout_type)
 
 
-    def reset(self,layout_type:QubitLayoutType=None):
+    def reset(self,layout_type:ChipLayoutType=None):
 
         self._init_qubits_layout(layout_type)
         # return the  flatten view of the state
@@ -250,8 +250,8 @@ class Chip():
 
 #test code
 if __name__ == '__main__':
-    layout = get_layout(name=QubitLayoutType.COMPACT_1, rows=12, cols=12, num_qubits=20)
-    chip = Chip(12,12,layout_type = QubitLayoutType.GRID,num_qubits=20,chip_layout=layout)
+    layout = get_layout(name=ChipLayoutType.COMPACT_1, rows=12, cols=12, num_qubits=20)
+    chip = Chip(12,12,layout_type = ChipLayoutType.GRID,num_qubits=20,chip_layout=layout)
     chip.print_state()
     print(chip.q_pos)
 

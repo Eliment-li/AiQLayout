@@ -9,13 +9,13 @@ from shared_memory_dict import SharedMemoryDict
 
 from config import ConfigSingleton
 from core.agents import AgentsManager
-from core.chip import Chip, QubitState, QubitLayoutType
+from core.chip import Chip, QubitState, ChipLayoutType
 from core.layout import ChipLayout, get_layout
 from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from core.routing import a_star_path
 from utils.calc_util import SlideWindow, normalize_MinMaxScaler
-from utils.circuit_util import resize_2d_matrix, resize_3d_array, get_random_gates
+from utils.circuit_util import resize_2d_matrix, resize_3d_array
 from utils.file.file_util import get_root_dir
 from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
@@ -55,8 +55,8 @@ class Env_5(MultiAgentEnv):
         print(f'init env_5 with {self.num_qubits} qubits')
         self.max_step = args.env_max_step * self.num_qubits
 
-        chip_layout = ChipLayout(args.chip_rows, args.chip_cols, QubitLayoutType.EMPTY, self.num_qubits)
-        self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,layout_type=QubitLayoutType.EMPTY,chip_layout=chip_layout)
+        chip_layout = ChipLayout(args.chip_rows, args.chip_cols, ChipLayoutType.EMPTY, self.num_qubits)
+        self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,layout_type=ChipLayoutType.EMPTY,chip_layout=chip_layout)
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
 
@@ -79,13 +79,16 @@ class Env_5(MultiAgentEnv):
         self.smd = SharedMemoryDict(name='env', size=10240)
         self.smd['min_dist'] = math.inf
 
-        self.gates = get_random_gates(num_qubits=self.num_qubits, size=args.gates_size)
+        #self.gates = get_random_gates(num_qubits=self.num_qubits, size=args.gates_size)
+        self.gates = []
 
     def reset(self, *, seed=None, options=None):
         self.steps = 1
         #Just for computing min_sum_dist
-        layout = get_layout(name = QubitLayoutType.COMPACT_2, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
-        #layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = QubitLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = QubitLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+        layout_type = ChipLayoutType(args.layout_type)
+
+        layout = get_layout(layout_type =layout_type, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+        #layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = ChipLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = ChipLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
         temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
                          layout_type=layout.layout_type,chip_layout = layout)
         self.init_dist = self.compute_dist(temp_chip, self.am.activate_agent)[0]
