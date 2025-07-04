@@ -28,7 +28,7 @@ num_cpus_per_env_runner: null
 #Number of GPUs to allocate per EnvRunner. This can
 #be fractional. This is usually needed only if your env itself requires a
 #GPU (i.e., it is a GPU-intensive video game), or model inference is unusually expensive.
-num_gpus_per_env_runner: 0
+#num_gpus_per_env_runner: 0
 
 # Evaluation Options
 evaluation_num_env_runners: 0
@@ -72,7 +72,7 @@ num_cpus_per_learner: null
 num_gpus_per_learner: null
 
 # Ray Init Options
-num_cpus: null
+num_cpus: 32
 local_mode: false
 
 # Old API Stack Config
