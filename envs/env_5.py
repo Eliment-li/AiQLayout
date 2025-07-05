@@ -255,8 +255,11 @@ class Env_5(MultiAgentEnv):
         sum_dist= 0
         for i in range(self.num_qubits):
             j=0
-            while j<=i:
+            while j<i:
                 cnt = self.heat_map[i][j]
+                if cnt <= 0.000001:
+                    j += 1
+                    continue
                 start = i + 1
                 goal = j + 1
                 sr, sc = chip.q_coor(start)
