@@ -62,6 +62,8 @@ if __name__ == '__main__':
     # import redis
     # r = redis.Redis(host='127.0.0.1', port=6379)
     # r.flushall()
-    print(ChipLayoutType.COMPACT_2.value=='COMPACT_2')
-    layout  = ChipLayoutType('COMPACT_2')
-    print(layout==ChipLayoutType.COMPACT_2)
+    # print(ChipLayoutType.COMPACT_2.value=='COMPACT_2')
+    # layout  = ChipLayoutType('COMPACT_2')
+    # print(layout==ChipLayoutType.COMPACT_2)
+    str = r'learners/policy_48/weights_seq_no'
+    print('weights_seq_no' in str)

@@ -192,8 +192,9 @@ class _SandbLabLoggingActor:
         config_update = result.get("config", {}).copy()
         log = {}
         flat_result = flatten_dict(result, delimiter="/")
+
         for k, v in flat_result.items():
-            if any(k.startswith(item + "/") or k == item for item in self._exclude):
+            if any(k.startswith(item + "/") or k in item for item in self._exclude ):
                 continue
             elif any(k.startswith(item + "/") or k == item for item in self._to_config):
                 config_update[k] = v
@@ -263,7 +264,24 @@ class SwanLabLoggerCallback(LoggerCallback):
     """  #
 
     # Do not log these result keys
-    _exclude_results = ["done", "should_checkpoint"]
+    _exclude_results = ["done",
+                        "should_checkpoint",
+                        "gradients_default_optimizer_global_norm",
+                        "module_train_batch_size_mean",
+                        "num_module_steps_trained_lifetime",
+                        "module_train_batch_size_mean",
+                        "total_loss",
+                        "default_optimizer_learning_rate",
+                        "vf_loss_unclipped",
+                        "curr_entropy_coeff",
+                        "agent_to_module_mapping",
+                        "diff_num_grad_updates_vs_sampler_policy",
+                         "weights_seq_no",
+
+                        r"env_runners/agent_steps",
+                        "connector_pipeline_timer",
+
+                        ]
 
     AUTO_CONFIG_KEYS = [
         "trial_id",
@@ -366,7 +384,7 @@ class SwanLabLoggerCallback(LoggerCallback):
                 env_vars = {}
                 #TODO  check api key
                 self._remote_logger_class = ray.remote(
-                    num_cpus=0,
+                    #num_cpus=0,
                     **_force_on_current_node(),
                     runtime_env={"env_vars": env_vars},
                     max_restarts=-1,
