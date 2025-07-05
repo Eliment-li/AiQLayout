@@ -1,4 +1,5 @@
 import math
+import traceback
 from copy import deepcopy
 from pathlib import Path
 
@@ -28,19 +29,36 @@ use agent manager to manage agents
 actor act one by one
 we compute the reward each round 
 '''
+
+
+def min_max_normalize(observation, min_value, max_value):
+    """
+    对 observation 进行 min-max 归一化。
+
+    参数:
+    - observation: numpy 数组，任意形状
+    - min_value: 标量或与 observation 同形状的数组，全局最小值
+    - max_value: 标量或与 observation 同形状的数组，全局最大值
+
+    返回:
+    - 归一化后的 observation，值在 [0, 1] 之间
+    """
+    # 防止分母为0
+    denom = max_value - min_value
+    denom = np.where(denom == 0, 1e-8, denom)
+    normalized = (observation - min_value) / denom
+    return normalized
+
+
 rootdir = Path(get_root_dir())
 class Env_5(MultiAgentEnv):
 
     def __init__(self, config=None):
         super().__init__()
         self.num_qubits = args.num_qubits
-        self.OBS_ROW = max(args.chip_rows, self.num_qubits)
-        self.OBS_COL = max(args.chip_cols, self.num_qubits)
+        self.OBS_ROW = args.chip_rows
+        self.OBS_COL = args.chip_cols
 
-        if self.OBS_ROW >=20:
-            self.OBS_ROW = 20
-        if self.OBS_COL >=20:
-            self.OBS_COL = 20
 
         print(f'OBS_ROW: {self.OBS_ROW}, OBS_COL: {self.OBS_COL}')
 
@@ -81,18 +99,21 @@ class Env_5(MultiAgentEnv):
 
         #self.gates = get_random_gates(num_qubits=self.num_qubits, size=args.gates_size)
         self.gates = []
+        self.init_dist = self.get_init_dist()
+        self.smd['init_dist'] = self.init_dist
+        print(f'init_dist: {self.init_dist}')
+
+    def get_init_dist(self):
+        layout_type = ChipLayoutType(args.layout_type)
+        layout = get_layout(layout_type=layout_type, rows=args.chip_rows, cols=args.chip_cols,
+                            num_qubits=self.num_qubits)
+        # layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = ChipLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = ChipLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+        temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
+                         layout_type=layout.layout_type, chip_layout=layout)
+        return self.compute_dist(temp_chip, self.am.activate_agent)[0]
 
     def reset(self, *, seed=None, options=None):
         self.steps = 1
-        #Just for computing min_sum_dist
-        layout_type = ChipLayoutType(args.layout_type)
-
-        layout = get_layout(layout_type =layout_type, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
-        #layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = ChipLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = ChipLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
-        temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
-                         layout_type=layout.layout_type,chip_layout = layout)
-        self.init_dist = self.compute_dist(temp_chip, self.am.activate_agent)[0]
-
         #self.chip.reset(layout_type=None)
         #may need clean qubits?
         self.am.reset_agents()
@@ -103,8 +124,7 @@ class Env_5(MultiAgentEnv):
         self._agent_total_r = 0
         self.last_dist = self.init_dist
         self.min_sum_dist = self.init_dist
-        print(f'init_dist: {self.init_dist}')
-        self.smd['init_dist'] = self.init_dist
+
         # self.sw =SlideWindow(50)
 
         infos = {f'agent_{i + 1}':  'default' for i in range(self.num_qubits)}
@@ -113,6 +133,7 @@ class Env_5(MultiAgentEnv):
 
     def _get_obs(self):
         chip_state = deepcopy(self.chip.state)
+        chip_state = min_max_normalize(chip_state,min_value=-5,max_value=self.num_qubits + 1)
         repeat_state = np.repeat(chip_state[np.newaxis, :, :], 4, axis=0)
         obs = repeat_state + self.pe
         pm =np.expand_dims(self.chip.position_mask(self.am.activate_agent), axis=0)
@@ -123,7 +144,7 @@ class Env_5(MultiAgentEnv):
 
         zoom_factor = (self.OBS_ROW/self.chip.rows, self.OBS_COL/self.chip.cols)
         #resize
-        obs  = resize_3d_array(obs,zoom_factor)
+        #obs  = resize_3d_array(obs,zoom_factor)
 
         obs = np.concatenate((obs, self.RESIZE_HEATMAP), axis=0)  # (6, rows, cols) -> (4+1+1+1, rows, cols)
         # return {
@@ -175,6 +196,8 @@ class Env_5(MultiAgentEnv):
                 #     self.chip.clean_qubits()
             except Exception as e:
                 print(f'compute dist error: {e} at step {self.steps}')
+                traceback.print_exc()
+
                 self.chip.print_state()
 
 
@@ -356,7 +379,8 @@ class Env_5(MultiAgentEnv):
 
 if __name__ == '__main__':
     env = Env_5()
-    env.reset()
+    state = env.reset()
+    print(state)
     print(env.chip.state)
     print(env.chip.q_pos)
     print(env.chip.valid_positions)
