@@ -3,6 +3,7 @@ import math
 import random
 from copy import deepcopy
 from enum import Enum
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -12,7 +13,9 @@ from torch import layout
 from config import ConfigSingleton
 from core.layout import ChipLayoutType, ChipLayout, QubitState, get_layout
 
-from core.routing import bfs_find_target
+from core.routing import bfs_find_target, a_star_path
+from utils.file.file_util import get_root_dir
+from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
 
@@ -248,22 +251,87 @@ class Chip():
     def plot(self):
         pass
 
+# def test():
+#     layout = get_layout(name=ChipLayoutType.COMPACT_1, rows=12, cols=12, num_qubits=20)
+#     chip = Chip(12,12,layout_type = ChipLayoutType.GRID,num_qubits=20,chip_layout=layout)
+#     chip.print_state()
+#     print(chip.q_pos)
+#
+#
+#     for i in range(10000):
+#         player = random.randint(1,20)
+#         x = random.randint(0,9)
+#         y = random.randint(0,9)
+#         chip.goto(player,x,y)
+#
+#     chip.print_state()
+#     print(chip.valid_positions)
+
+def compute_dist_v2(num_qubits, heat_map,chip:Chip):
+    sum_dist = 0
+    for i in range(num_qubits):
+        j = 0
+        while j < i:
+            cnt = heat_map[i][j]
+            if cnt <=0.000001:
+                j += 1
+                continue
+            start = i + 1
+            goal = j + 1
+            sr, sc = chip.q_coor(start)
+            gr, gc = chip.q_coor(goal)
+            if j == QubitState.MAGIC.value:
+                path, dist, target_m = bfs_route(chip.state, start_row=sr, start_col=sc,
+                                                 target_values={QubitState.MAGIC.value})
+            else:
+                path = a_star_path((sr, sc), (gr, gc), chip.state, goal)
+                dist = len(path)
+                if dist == 0:
+                    return None, None, None
+            j += 1
+            sum_dist += (cnt * dist)
+
+    return sum_dist
+
+
+
+def benchmark_layouts(layout_type: ChipLayoutType = None,num_qubits: int = 0, size: int=0,heat_map=None):
+    layout_type = ChipLayoutType(layout_type)
+    layout = get_layout(layout_type=layout_type, rows=size, cols=size,
+                        num_qubits=num_qubits)
+    # layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = ChipLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = ChipLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+    temp_chip = Chip(rows=size, cols=size, num_qubits=num_qubits,
+                     layout_type=layout.layout_type, chip_layout=layout)
+    dist  = compute_dist_v2(num_qubits, heat_map, temp_chip)
+    return dist
+
+#
+
 #test code
 if __name__ == '__main__':
-    layout = get_layout(name=ChipLayoutType.COMPACT_1, rows=12, cols=12, num_qubits=20)
-    chip = Chip(12,12,layout_type = ChipLayoutType.GRID,num_qubits=20,chip_layout=layout)
-    chip.print_state()
-    print(chip.q_pos)
+    rootdir = get_root_dir()
+    lsi_size = [15,20,25,30]
 
+    chip_layout = [
+        ChipLayoutType.LINER_1,
+        ChipLayoutType.COMPACT_1,
+        ChipLayoutType.COMPACT_2
+    ]
+    chip_size = [
+        17,12,18
+    ]
 
-    for i in range(10000):
-        player = random.randint(1,20)
-        x = random.randint(0,9)
-        y = random.randint(0,9)
-        chip.goto(player,x,y)
-
-    chip.print_state()
-    print(chip.valid_positions)
+    for j in range(len(chip_size)):
+        layout = chip_layout[j]
+        size = chip_size[j]
+        print(layout)
+        for i in range(4):
+            num_qubits = lsi_size[i]
+            file = Path(f'assets/circuits/dj/LSI_dj_indep_qiskit_{num_qubits}.lsi')
+            heat_map = get_heat_map(file_path=rootdir / file)
+            dist = benchmark_layouts(layout_type=ChipLayoutType(layout), num_qubits=num_qubits, size=size,
+                                     heat_map=heat_map)
+            print(dist)
 
 
 
