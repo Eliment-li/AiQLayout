@@ -40,7 +40,7 @@ class ChipLayout():
         if layout_type is not None and layout_type == ChipLayoutType.GRID:
             self.dynamic_set_layout()
 
-        self._init_magic_state()
+        #self._init_magic_state()
         # self.init_broken_patch()
 
     def clean_invalud_qubits(self):
@@ -173,7 +173,22 @@ def read_layout_from_xlsx(layout_type:ChipLayoutType):
 
 
 def get_layout(layout_type,rows,cols, num_qubits):
-    state = read_layout_from_xlsx(layout_type)
+    if layout_type == ChipLayoutType.GRID:
+        state = np.zeros((rows, cols), dtype=int)
+        qubit = 1
+        i = 1
+        while i < rows - 1:
+            j = 1
+            while j < cols - 1:
+                if qubit > num_qubits:
+                    break
+                if state[i][j] == 0:
+                    state[i][j] = qubit
+                    qubit += 1
+                j += 2
+            i += 2
+    else:
+        state = read_layout_from_xlsx(layout_type)
     layout = ChipLayout(
         rows=rows,
         cols=cols,
@@ -194,5 +209,5 @@ def get_layout(layout_type,rows,cols, num_qubits):
 
 
 if __name__ == '__main__':
-    layout = get_layout(layout_type = ChipLayoutType.LINER_1, rows=17, cols=17, num_qubits=100)
+    layout = get_layout(layout_type = ChipLayoutType.GRID, rows=25, cols=25, num_qubits=100)
     print(layout)
