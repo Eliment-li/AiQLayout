@@ -105,9 +105,7 @@ class Env_5(MultiAgentEnv):
 
     def get_init_dist(self):
         layout_type = ChipLayoutType(args.layout_type)
-        layout = get_layout(layout_type=layout_type, rows=args.chip_rows, cols=args.chip_cols,
-                            num_qubits=self.num_qubits)
-        # layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = ChipLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = ChipLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
+        layout = get_layout(layout_type=layout_type, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
         temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
                          layout_type=layout.layout_type, chip_layout=layout)
         return self.compute_dist(temp_chip, self.am.activate_agent)[0]
