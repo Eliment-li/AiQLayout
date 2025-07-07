@@ -12,7 +12,7 @@ from glob import glob
 from utils.file.file_util import get_root_dir
 import torch
 
-
+#
 def enhance_base_config(config,args):
     # Disable the new API stack
     # @see https://docs.ray.io/en/latest/rllib/package_ref/doc/ray.rllib.algorithms.algorithm_config.AlgorithmConfig.api_stack.html#ray-rllib-algorithms-algorithm-config-algorithmconfig-api-stack
@@ -75,40 +75,6 @@ def enhance_base_config(config,args):
         config.offline_data(output=args.output)
 
 
-def dynamic_conf(exist_conf):
-    # 0.8 * logical_cpu_cores
-    # cfg['num_cpus'] = int(os.cpu_count() * 0.7)
-    cfg={}
-    # default number_learner is 1, thus  set num_gpus_per_learner to 1 is fine
-    cfg['num_gpus_per_learner'] = 1 if torch.cuda.is_available() else 0
-    cfg['device'] = "cuda" if torch.cuda.is_available() else "cpu"
-    cfg['time_id'] = datetime.now().strftime('%m%d_%H%M')
-    cfg['output'] = None
-    #cfg['tensorboard_path'] = p / 'results' / 'tensorboard'
-    path = Path(get_root_dir()) / 'results' / 'evaluate' / cfg['time_id']
-    cfg['results_evaluate_path'] = str(path)
-    os.makedirs(path, exist_ok=True)
-    match = re.search(r"LSI.*", exist_conf['lsi_file_path'])
-    circuit = match.group()
-    cfg['wandb_run_name'] = cfg['time_id'] + '_' + circuit
-    return cfg
-
-#update dynamic config before start a new experiment
-def update_for_new_exp():
-    conf = get_args()
-
-    time_id = datetime.now().strftime('%m%d_%H%M')
-    path = Path(get_root_dir()) / 'results' / 'evaluate' / time_id
-    results_evaluate_path = str(path)
-    os.makedirs(path, exist_ok=True)
-    match = re.search(r"LSI.*", conf.lsi_file_path)
-    circuit = match.group()
-
-    conf.update('time_id', time_id)
-    conf.update('results_evaluate_path', results_evaluate_path)
-    conf.update('wandb_run_name', time_id + '_' + circuit)
-
-
 def merge_dict(a, b):
     """
     递归合并b到a, b的值覆盖a的值
@@ -119,112 +85,125 @@ def merge_dict(a, b):
         else:
             a[k] = v
 
-class ConfigNode:
-    def __init__(self, data):
-        for k, v in data.items():
+import os
+import time
+import yaml
+import redis
+from glob import glob
+from collections.abc import MutableMapping
+
+class RedisConfig(MutableMapping):
+    def __init__(self, redis_url='redis://localhost:6379/0', redis_key='app_config', init_flag_key='app_config_init'):
+        self.redis = redis.StrictRedis.from_url(redis_url, decode_responses=True)
+        self.redis_key = redis_key
+        self.init_flag_key = init_flag_key
+        self._cache = None
+
+    def flush(self):
+        print('Flushing Redis database...')
+        # clean db 0
+        self.redis.flushdb()
+    def load_and_merge_yaml(self, config_dir):
+        merged = {}
+        for file_path in glob(os.path.join(config_dir, '*.yml')) + glob(os.path.join(config_dir, '*.yaml')):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = yaml.safe_load(f) or {}
+                self.deep_update(merged, data)
+        return merged
+
+    @staticmethod
+    def deep_update(d, u):
+        for k, v in u.items():
             if isinstance(v, dict):
-                v = ConfigNode(v)
-            setattr(self, k, v)
-        self._data = data
+                d[k] = RedisConfig.deep_update(d.get(k, {}), v)
+            else:
+                d[k] = v
+        return d
+
+    def initialize(self, config_dir):
+        # 1. 加载并合并配置
+        config = self.load_and_merge_yaml(config_dir)
+        # 2. 写入 redis
+        self.redis.set(self.redis_key, yaml.dump(config))
+        # 3. 写入初始化标志
+        self.redis.set(self.init_flag_key, '1')
+        print('Configuration initialized and written to Redis.')
+
+    def wait_until_initialized(self, timeout=10):
+        start = time.time()
+        while not self.redis.get(self.init_flag_key):
+            if time.time() - start > timeout:
+                raise TimeoutError('Initialization flag not set in Redis')
+            time.sleep(0.5)
+        self._load_from_redis()
+
+    def _load_from_redis(self):
+        config_str = self.redis.get(self.redis_key)
+        if not config_str:
+            raise ValueError('No config found in Redis')
+        self._cache = yaml.safe_load(config_str)
 
     def __getitem__(self, key):
-        return getattr(self, key)
+        if self._cache is None:
+            self._load_from_redis()
+        return self._cache[key]
 
-    def __setattr__(self, key, value):
-        if key != '_data' and hasattr(self, '_data'):
-            self._data[key] = value
-        object.__setattr__(self, key, value)
+    def __setitem__(self, key, value):
+        if self._cache is None:
+            self._load_from_redis()
+        self._cache[key] = value
+        self.redis.set(self.redis_key, yaml.dump(self._cache))
 
-    def to_dict(self):
-        result = {}
-        for k, v in self._data.items():
-            if isinstance(v, ConfigNode):
-                result[k] = v.to_dict()
-            else:
-                result[k] = v
-        return result
+    def __delitem__(self, key):
+        if self._cache is None:
+            self._load_from_redis()
+        del self._cache[key]
+        self.redis.set(self.redis_key, yaml.dump(self._cache))
 
-class GlobalConfig:
-    _instance = None
-    _lock = threading.Lock()
+    def __iter__(self):
+        if self._cache is None:
+            self._load_from_redis()
+        return iter(self._cache)
 
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            with cls._lock:
-                if not cls._instance:
-                    cls._instance = super().__new__(cls)
-        return cls._instance
+    def __len__(self):
+        if self._cache is None:
+            self._load_from_redis()
+        return len(self._cache)
 
-    def __init__(self, redis_url='redis://localhost:6379/0', config_dir=None, redis_key='global_config'):
-        self.redis_url = redis_url
-        self.redis_key = redis_key
-        self.config_dir = config_dir
-        self._redis = redis.Redis.from_url(self.redis_url, decode_responses=True)
-        self._redis.delete(self.redis_key)
-        self._load_config()
+    def __getattr__(self, name):
+        if self._cache is None:
+            self._load_from_redis()
+        try:
+            return self._cache[name]
+        except KeyError:
+            raise AttributeError(f"No such key: {name}")
 
-    def _load_config(self):
-        # 如果redis中无配置，则从本地所有yaml加载并写入redis
-        if not self._redis.exists(self.redis_key):
-            config = {}
-            files = sorted(glob(os.path.join(self.config_dir, '*.yml')) + glob(os.path.join(self.config_dir, '*.yaml')))
-            if not files:
-                raise FileNotFoundError("No yaml config files found in directory")
-            for file in files:
-                print(f"Loading config from {file}")
-                with open(file, 'r', encoding='utf-8') as f:
-                    data = yaml.safe_load(f) or {}
-                merge_dict(config, data)
+    def update_redis(self, key, value=None):
+        for k, v in key.items():
+            self[k] = v
 
-            merge_dict(config,dynamic_conf(config))
-            #enhance config
-            
-            self._redis.set(self.redis_key, yaml.dump(config))
-        # 从redis获取配置
-        config_str = self._redis.get(self.redis_key)
-        self._data = yaml.safe_load(config_str)
-        self._node = ConfigNode(self._data)
 
-    def __getattr__(self, key):
-        return getattr(self._node, key)
+    def clear_redis(self):
+        self.redis.delete(self.redis_key)
+        self.redis.delete(self.init_flag_key)
+        self._cache = None
 
-    def update(self, key, value):
-        # 支持 'a.b.c' 形式的key
-        keys = key.split('.')
-        d = self._data
-        for k in keys[:-1]:
-            d = d.setdefault(k, {})
-        d[keys[-1]] = value
-        # 更新redis
-        self._redis.set(self.redis_key, yaml.dump(self._data))
-        # 更新本地node
-        self._node = ConfigNode(self._data)
-
-    def reload(self):
-        """ 从redis重新加载配置 """
-        self._load_config()
-
-    def to_dict(self):
-        return self._node.to_dict()
-
-# 全局单例
-_config_instance = None
-
-def get_args():
-    config_path = Path(get_root_dir(), 'conf')
-    print(config_path)
-    global _config_instance
-    if _config_instance is None:
-        _config_instance = GlobalConfig(redis_url='redis://localhost:6379/0', config_dir=config_path, redis_key='global_config')
-    else:
-        _config_instance.reload()
-    return _config_instance
 
 if __name__ == '__main__':
-    #from global_config import get_args
+    path = Path(get_root_dir()) / 'conf'
+    redis_config = RedisConfig()
+    redis_config.flush()  # 清空 Redis 数据库
+    # 初始化（只做一次）
+    redis_config.initialize(path)
 
-    conf = get_args()
-    print(conf.lsi_file_path)
-    conf.update('wandb_run_name','temp')
-    print(conf.wandb_run_name)
-    #print(conf.to_dict())
+    # 其他进程/线程中加载并等待初始化
+    rc = RedisConfig()
+    rc.wait_until_initialized()
+    print(rc['gamma'])
+    print(rc.gamma)
+
+    # 更新
+    rc.update_redis('gamma', 'new_value')
+    print(rc.gamma)
+    # 清理
+    rc.clear_redis()

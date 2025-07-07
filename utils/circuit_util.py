@@ -96,7 +96,14 @@ def gates_to_LSI(gates,num_qubits:int):
     for i in range(len(gates)):
         (q0,q1) = gates[i]
         if q0 ==-1:
+            '''
+            RequestMagicState 1000001
+            MultiBodyMeasure 0:Z,1000001:X
+            MeasureSinglePatch 1000001 Z
+            '''
             lsi.append(f'RequestMagicState {m_i}')
+            lsi.append(f'MultiBodyMeasure {q1}:Z,{m_i}:X')
+            lsi.append(f'MeasureSinglePatch {m_i} Z')
             m_i += 1
         else:
             lsi.append(
@@ -210,6 +217,6 @@ def generates_random_lsi(qubits_num):
     plot_gate_heatmap(nodes, gates,savepath)
     # plot_heatmap_data(resize_2d_matrix(heatmap,(7,7)))
 if __name__ == "__main__":
-    for i in range(1,10):
-        generates_random_lsi(5*i)
+    for i in range(1,11):
+        generates_random_lsi(2*i)
 

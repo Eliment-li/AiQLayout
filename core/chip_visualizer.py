@@ -13,7 +13,7 @@ import sys
 from core.chip import Chip, ChipAction
 from utils.file.file_util import get_root_dir
 import config
-args = config.get_args()
+args = config.RedisConfig()
 
 # The Warehouse is divided into a grid. Use these 'tiles' to represent the objects on the grid.
 class GridTile(Enum):

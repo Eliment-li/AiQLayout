@@ -19,7 +19,7 @@ from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
 
-args = config.get_args()
+# args = config.get_args()
 
 INVALID_POS= 0
 VALID_POS= 1
