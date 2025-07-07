@@ -9,14 +9,15 @@ from gymnasium import register
 from numpy import dtype
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 
-from config import ConfigSingleton
+
 from core.chip import Chip, ChipAction
 from core.reward_function import RewardFunction
 from core.reward_scaling import RewardScaling
 from utils.calc_util import SlideWindow
 from utils.position import positionalencoding2d
 
-args = ConfigSingleton().get_args()
+import config
+args = config.get_args()
 rfunctions = RewardFunction()
 '''
 new feat:

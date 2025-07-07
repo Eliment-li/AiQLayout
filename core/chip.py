@@ -10,7 +10,7 @@ import torch
 from openpyxl.compat import deprecated
 from torch import layout
 
-from config import ConfigSingleton
+import config
 from core.layout import ChipLayoutType, ChipLayout, QubitState, get_layout
 
 from core.routing import bfs_find_target, a_star_path
@@ -19,7 +19,7 @@ from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
 
-args = ConfigSingleton().get_args()
+args = config.get_args()
 
 INVALID_POS= 0
 VALID_POS= 1
@@ -310,7 +310,7 @@ def benchmark_layouts(layout_type: ChipLayoutType = None,num_qubits: int = 0, si
 #test code
 if __name__ == '__main__':
     rootdir = get_root_dir()
-    lsi_size = [15,20,25,30]
+    lsi_size = [10,15,20,25]
 
     chip_layout = [
         ChipLayoutType.LINER_1,
@@ -327,7 +327,7 @@ if __name__ == '__main__':
         print(layout)
         for i in range(4):
             num_qubits = lsi_size[i]
-            file = Path(f'assets/circuits/dj/LSI_dj_indep_qiskit_{num_qubits}.lsi')
+            file = Path(f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_{num_qubits}.lsi')
             heat_map = get_heat_map(file_path=rootdir / file)
             dist = benchmark_layouts(layout_type=ChipLayoutType(layout), num_qubits=num_qubits, size=size,
                                      heat_map=heat_map)

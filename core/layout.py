@@ -4,7 +4,6 @@ from pathlib import Path
 
 import numpy as np
 
-from config import ConfigSingleton
 from utils.file.csv_util import rootdir
 from utils.file.excel_util import ExcelUtil
 from utils.file.file_util import get_root_dir

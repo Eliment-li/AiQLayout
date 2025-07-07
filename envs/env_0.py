@@ -6,10 +6,10 @@ import numpy as np
 from gymnasium import register
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 
-from config import ConfigSingleton
 from core.chip import Chip
 from core.reward_function import RewardFunction
-args = ConfigSingleton().get_args()
+import config
+args = config.get_args()
 rfunctions = RewardFunction()
 '''
 This env is to test our code,

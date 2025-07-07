@@ -20,8 +20,8 @@ from ray.tune.experiment import Trial
 from ray.tune.logger import LoggerCallback
 from ray.tune.utils import flatten_dict
 from ray.util.queue import Queue
-
-from config import ConfigSingleton
+import config
+args = config.get_args()
 
 '''
 migrate from the WandbLoggerCallback

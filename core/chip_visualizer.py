@@ -9,10 +9,11 @@ from pathlib import Path
 import pygame
 import sys
 
-from config import ConfigSingleton
+
 from core.chip import Chip, ChipAction
 from utils.file.file_util import get_root_dir
-args = ConfigSingleton().get_args()
+import config
+args = config.get_args()
 
 # The Warehouse is divided into a grid. Use these 'tiles' to represent the objects on the grid.
 class GridTile(Enum):

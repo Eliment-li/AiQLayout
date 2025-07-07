@@ -1,4 +1,3 @@
-from config import ConfigSingleton
 
 # if os.environ.get('DISPLAY', '') == '':
 #     print('No display found. Switching to Agg backend.')
@@ -9,7 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator  # 用于设置整数刻度
 
-args = ConfigSingleton().get_args()
+import config
+args = config.get_args()
 
 
 def plot_reward(data, save=True):

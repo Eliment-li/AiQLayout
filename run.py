@@ -10,7 +10,7 @@ from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 from shared_memory_dict import SharedMemoryDict
 from swankit.env import is_windows
 
-from config import ConfigSingleton
+
 from ray.rllib.utils.framework import try_import_torch
 from ray.rllib.core.rl_module.multi_rl_module import MultiRLModuleSpec
 
@@ -117,7 +117,9 @@ if __name__ == "__main__":
     parser.add_argument("--run_name", '-name',type=str, help="wandb project run name",default=None)
 
     cmd_args = parser.parse_args()
-    args = ConfigSingleton().get_args()
+    import config
+
+    args = config.get_args()
 
     if is_windows():
         print('run on windows')

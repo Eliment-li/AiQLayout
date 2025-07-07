@@ -8,7 +8,7 @@ from gymnasium.spaces import  Discrete, Box
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 from shared_memory_dict import SharedMemoryDict
 
-from config import ConfigSingleton
+
 from core.agents import AgentsManager
 from core.chip import Chip, QubitState, ChipLayoutType
 from core.layout import ChipLayout, get_layout
@@ -21,8 +21,9 @@ from utils.file.file_util import get_root_dir
 from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
+import config
+args = config.get_args()
 
-args = ConfigSingleton().get_args()
 rfunctions = RewardFunction()
 '''
 use agent manager to manage agents

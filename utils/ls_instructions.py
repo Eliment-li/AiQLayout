@@ -1,7 +1,6 @@
 import numpy as np
 import os
 
-from config import ConfigSingleton
 from utils.calc_util import normalize_MinMaxScaler
 
 
@@ -10,7 +9,8 @@ def print_ins(instructions):
         if len(ins)>0:
             print(ins)
 
-args = ConfigSingleton().get_args()
+import config
+args = config.get_args()
 
 def convert_plus_and_measure(instructions,i):
     line = instructions[i]
