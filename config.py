@@ -1,115 +1,19 @@
+import os
 import re
 from datetime import datetime
 from pathlib import Path
 
 import ray
-import torch
-from hydra import initialize, compose
-from threading import Lock
-from omegaconf import OmegaConf
+import yaml
+import redis
+import threading
+from glob import glob
 
 from utils.file.file_util import get_root_dir
-from shared_memory_dict import SharedMemoryDict
-
-class ConfigSingleton:
-    _instance = None
-    _lock = Lock()
-    smd = SharedMemoryDict(name='ConfigSingleton', size=10240)
-
-    def __new__(cls, config_path="conf", job_name="config",version_base="1.2"):
-        # 使用线程锁确保线程安全
-        with cls._lock:
-            if cls._instance is None:
-                cls._instance = super().__new__(cls)
-                cls._instance._initialize(config_path,job_name,version_base)
-            return cls._instance
-
-    def _initialize(self, config_path, job_name, version_base):
-        # 初始化 hydra 配置
-        with initialize(config_path=config_path,job_name=job_name,version_base=version_base):
-            # 如果有 overrides，可以在这里传递覆盖参数
-            self.config = compose(config_name=job_name, overrides= [])
-            self.args = OmegaConf.create({})
-            for key in self.config.keys():
-                self.args = OmegaConf.merge(self.args, self.config[key])
-            for key, value in self.args.items():
-                if str(value).lower() == 'none':
-                    # 如果值是字符串 'none'（忽略大小写），则替换为 None
-                    self.args[key] = None
-            # 处理其他配置项
-        self.enhance_configure()
-
-    def enhance_configure(self):
-        p = Path(get_root_dir())
-        #0.8 * logical_cpu_cores
-        # self.args['num_cpus'] = int(os.cpu_count() * 0.7)
-
-        # default number_learner is 1, thus  set num_gpus_per_learner to 1 is fine
-        self.args['num_gpus_per_learner'] = 1 if torch.cuda.is_available() else 0
-        self.args['device'] = "cuda" if torch.cuda.is_available() else "cpu"
-        self.args['time_id'] = datetime.now().strftime('%m%d_%H%M')
-        self.args['output'] = None
-        self.args['tensorboard_path'] = p / 'results' / 'tensorboard'
-
-        if 'results_evaluate_path' in self.smd:
-            self.args['results_evaluate_path'] = self.smd['results_evaluate_path']
-        else:
-            path = Path(get_root_dir()) / 'results' / 'evaluate' / self.args.time_id
-            self.args['results_evaluate_path'] = path
-            self.smd['results_evaluate_path'] = path
-            os.makedirs(path, exist_ok=True)
-
-        if 'wandb_run_name' in self.smd:
-            self.args['wandb_run_name'] = self.smd['wandb_run_name']
-        else:
-
-            match = re.search(r"LSI.*", self.args.lsi_file_path)
-            circuit = match.group()
-            self.args['wandb_run_name'] = self.args.time_id + '_'+circuit
-            self.smd['wandb_run_name'] = self.args.time_id + '_'+circuit
+import torch
 
 
-    def get_args(self):
-        return self.args
-
-    def to_string(self):
-        """
-        返回配置的字符串表示
-        """
-        return OmegaConf.to_yaml(self.args)
-    @staticmethod
-    def update(self, key, value):
-        """
-        动态添加键值对到配置中
-        """
-        keys = key.split(".")
-        current = self.args
-        for k in keys[:-1]:
-            if k not in current:
-                current[k] = {}  # 创建嵌套字典
-            current = current[k]
-        current[keys[-1]] = value
-
-
-import os
-import multiprocessing
-
-def get_logical_cores():
-    try:
-        # 优先使用 multiprocessing.cpu_count()
-        return multiprocessing.cpu_count()
-    except (ImportError, NotImplementedError):
-        try:
-            # 回退到 os.cpu_count()
-            return os.cpu_count()
-        except (AttributeError, NotImplementedError):
-            # 如果都无法获取，返回默认值（通常为1）
-            return 1
-
-
-# config:
 def enhance_base_config(config,args):
-
     # Disable the new API stack
     # @see https://docs.ray.io/en/latest/rllib/package_ref/doc/ray.rllib.algorithms.algorithm_config.AlgorithmConfig.api_stack.html#ray-rllib-algorithms-algorithm-config-algorithmconfig-api-stack
 
@@ -171,10 +75,160 @@ def enhance_base_config(config,args):
         config.offline_data(output=args.output)
 
 
-# test code
-if __name__ == "__main__":
-    # 第一次初始化
-    global_config = ConfigSingleton()
-    args = global_config.get_args()
-    print(args.wandb_run_name)
+def dynamic_conf(exist_conf):
+    # 0.8 * logical_cpu_cores
+    # cfg['num_cpus'] = int(os.cpu_count() * 0.7)
+    cfg={}
+    # default number_learner is 1, thus  set num_gpus_per_learner to 1 is fine
+    cfg['num_gpus_per_learner'] = 1 if torch.cuda.is_available() else 0
+    cfg['device'] = "cuda" if torch.cuda.is_available() else "cpu"
+    cfg['time_id'] = datetime.now().strftime('%m%d_%H%M')
+    cfg['output'] = None
+    #cfg['tensorboard_path'] = p / 'results' / 'tensorboard'
+    path = Path(get_root_dir()) / 'results' / 'evaluate' / cfg['time_id']
+    cfg['results_evaluate_path'] = str(path)
+    os.makedirs(path, exist_ok=True)
+    match = re.search(r"LSI.*", exist_conf['lsi_file_path'])
+    circuit = match.group()
+    cfg['wandb_run_name'] = cfg['time_id'] + '_' + circuit
+    return cfg
 
+#update dynamic config before start a new experiment
+def update_for_new_exp():
+    conf = get_args()
+
+    time_id = datetime.now().strftime('%m%d_%H%M')
+    path = Path(get_root_dir()) / 'results' / 'evaluate' / time_id
+    results_evaluate_path = str(path)
+    os.makedirs(path, exist_ok=True)
+    match = re.search(r"LSI.*", conf.lsi_file_path)
+    circuit = match.group()
+
+    conf.update('time_id', time_id)
+    conf.update('results_evaluate_path', results_evaluate_path)
+    conf.update('wandb_run_name', time_id + '_' + circuit)
+
+def change_circuit():
+    #todo change circuit,and run name and qubits
+    #update time_id
+    pass
+
+def merge_dict(a, b):
+    """
+    递归合并b到a, b的值覆盖a的值
+    """
+    for k, v in b.items():
+        if k in a and isinstance(a[k], dict) and isinstance(v, dict):
+            merge_dict(a[k], v)
+        else:
+            a[k] = v
+
+class ConfigNode:
+    def __init__(self, data):
+        for k, v in data.items():
+            if isinstance(v, dict):
+                v = ConfigNode(v)
+            setattr(self, k, v)
+        self._data = data
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setattr__(self, key, value):
+        if key != '_data' and hasattr(self, '_data'):
+            self._data[key] = value
+        object.__setattr__(self, key, value)
+
+    def to_dict(self):
+        result = {}
+        for k, v in self._data.items():
+            if isinstance(v, ConfigNode):
+                result[k] = v.to_dict()
+            else:
+                result[k] = v
+        return result
+
+class GlobalConfig:
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self, redis_url='redis://localhost:6379/0', config_dir=None, redis_key='global_config'):
+        self.redis_url = redis_url
+        self.redis_key = redis_key
+        self.config_dir = config_dir
+        self._redis = redis.Redis.from_url(self.redis_url, decode_responses=True)
+        self._redis.delete(self.redis_key)
+        self._load_config()
+
+    def _load_config(self):
+        # 如果redis中无配置，则从本地所有yaml加载并写入redis
+        if not self._redis.exists(self.redis_key):
+            config = {}
+            files = sorted(glob(os.path.join(self.config_dir, '*.yml')) + glob(os.path.join(self.config_dir, '*.yaml')))
+            if not files:
+                raise FileNotFoundError("No yaml config files found in directory")
+            for file in files:
+                print(f"Loading config from {file}")
+                with open(file, 'r', encoding='utf-8') as f:
+                    data = yaml.safe_load(f) or {}
+                merge_dict(config, data)
+
+            merge_dict(config,dynamic_conf(config))
+            #enhance config
+            
+            self._redis.set(self.redis_key, yaml.dump(config))
+        # 从redis获取配置
+        config_str = self._redis.get(self.redis_key)
+        self._data = yaml.safe_load(config_str)
+        self._node = ConfigNode(self._data)
+
+    def __getattr__(self, key):
+        return getattr(self._node, key)
+
+    def update(self, key, value):
+        # 支持 'a.b.c' 形式的key
+        keys = key.split('.')
+        d = self._data
+        for k in keys[:-1]:
+            d = d.setdefault(k, {})
+        d[keys[-1]] = value
+        # 更新redis
+        self._redis.set(self.redis_key, yaml.dump(self._data))
+        # 更新本地node
+        self._node = ConfigNode(self._data)
+
+    def reload(self):
+        """ 从redis重新加载配置 """
+        self._load_config()
+
+    def to_dict(self):
+        return self._node.to_dict()
+
+# 全局单例
+_config_instance = None
+
+def get_args():
+    config_path = Path(get_root_dir(), 'conf')
+    print(config_path)
+    global _config_instance
+    if _config_instance is None:
+        _config_instance = GlobalConfig(redis_url='redis://localhost:6379/0', config_dir=config_path, redis_key='global_config')
+    else:
+        _config_instance.reload()
+    return _config_instance
+
+if __name__ == '__main__':
+    #from global_config import get_args
+
+    conf = get_args()
+    print(conf.lsi_file_path)
+    conf.update('wandb_run_name','temp')
+    print(conf.wandb_run_name)
+    #print(conf.to_dict())
