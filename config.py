@@ -108,10 +108,6 @@ def update_for_new_exp():
     conf.update('results_evaluate_path', results_evaluate_path)
     conf.update('wandb_run_name', time_id + '_' + circuit)
 
-def change_circuit():
-    #todo change circuit,and run name and qubits
-    #update time_id
-    pass
 
 def merge_dict(a, b):
     """
