@@ -107,15 +107,14 @@ def save_state():
 def flush_redis():
     r = redis.Redis(host='127.0.0.1', port=6379)
     r.flushall()
-Envs = {
+
+
+def run(args,cmd_args):
+    Envs = {
         "Env5": Env_5,
         "Env6": Env_6,
         # 添加更多环境映射...
-}
-
-def run(args,cmd_args):
-    SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
-    SharedMemoryDict(name='env', size=10240).cleanup()
+    }
     # set custom run config before init args
 
     # enable redis on linux
@@ -136,7 +135,17 @@ def run(args,cmd_args):
         PPOConfig()
         .environment(
             env=Envs[f'Env{args.env_version}'],
-            env_config={"key": "value"},
+            env_config={'config': {
+              'num_qubits':  args.num_qubits,
+              'chip_rows':  args.chip_rows,
+              'chip_cols':  args.chip_cols,
+              'lsi_file_path':  args.lsi_file_path,
+              'env_max_step':  args.env_max_step,
+              'layout_type':  args.layout_type,
+              'rf_version':  args.rf_version,
+              'gamma':  args.gamma,
+              'reward_scaling':  args.reward_scaling,
+            }},
         )
         .training(
             use_gae=True,
@@ -248,12 +257,14 @@ if __name__ == "__main__":
     cmd_args = parser.parse_args()
     # if is_windows():
     #     print('run on windows')
-    #     cmd_args.swanlab = False
-    for i in [5]:
+    #     cmd_args.swanlab = Falseq123
+    for i in [4]:
         ray.init(local_mode=False)
+        SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
+        SharedMemoryDict(name='env', size=10240).cleanup()
         try:
             exp = {
-                'lsi_file_path':f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_{i}.lsi',
+                'lsi_file_path':f'assets/circuits/random/LSI_random_gates_{i}.lsi',
                 'num_qubits': i,
             }
             print(f"Running experiment with {i} qubits...")
@@ -263,7 +274,9 @@ if __name__ == "__main__":
             args.update_redis(get_dynamic_conf(exp['lsi_file_path'], exp['num_qubits']))
 
             run(args, cmd_args)
-            time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
+            ray.shutdown()
+            time.sleep(3)  # Wait for a few seconds to ensure all processes are cleaned up
+
             print(f"Finsh experiment with {i} qubits...")
         except Exception as e:
             traceback.print_exc()

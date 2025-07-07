@@ -28,7 +28,7 @@ from ray.tune.result import TRAINING_ITERATION
 
 from config import enhance_base_config
 from ray.rllib.algorithms import AlgorithmConfig
-
+# from swanlab.integration.ray import SwanLabLoggerCallback
 from utils.checkpoint import CheckPointCallback
 from utils.swanlab.swanlab_logger_callback import SwanLabLoggerCallback
 

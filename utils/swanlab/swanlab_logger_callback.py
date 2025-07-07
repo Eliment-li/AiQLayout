@@ -157,7 +157,7 @@ class _SandbLabLoggingActor:
         run.config.trial_log_path = self._logdir
         #log config file
 
-        print(config.get_args().to_dict())
+        #print(config.get_args().to_dict())
 
         #_run_swanlab_process_run_info_hook(run)
         while True:
@@ -180,7 +180,7 @@ class _SandbLabLoggingActor:
                 # Ignore HTTPError. Missing a few data points is not a
                 # big issue, as long as things eventually recover.
                 logger.warning("Failed to log result to w&b: {}".format(str(e)))
-        print('swanlab finish')
+        #print('swanlab finish')
         self._swanlab.finish()
 
     def _handle_checkpoint(self, checkpoint_path: str):

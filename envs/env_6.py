@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 from gymnasium.envs.registration import current_namespace
 from gymnasium.spaces import  Discrete, Box
+from ray.rllib.env import EnvContext
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 from shared_memory_dict import SharedMemoryDict
 
@@ -22,8 +23,8 @@ from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
 
-import config
-args = config.RedisConfig()
+
+
 rfunctions = RewardFunction()
 '''
 use agent manager to manage agents
@@ -53,17 +54,17 @@ def min_max_normalize(observation, min_value, max_value):
 
 rootdir = Path(get_root_dir())
 class Env_6(MultiAgentEnv):
-
-    def __init__(self, config=None):
+    def __init__(self,env_context: EnvContext):
         super().__init__()
-        self.num_qubits = args.num_qubits
-        self.OBS_ROW = args.chip_rows
-        self.OBS_COL = args.chip_cols
+        self.args = env_context['config']
+        self.num_qubits = self.args['num_qubits']
+        self.OBS_ROW = self.args['chip_rows']
+        self.OBS_COL = self.args['chip_cols']
 
 
         print(f'OBS_ROW: {self.OBS_ROW}, OBS_COL: {self.OBS_COL}')
 
-        self.lsi_file_path = rootdir / Path(args.lsi_file_path)
+        self.lsi_file_path = rootdir / Path(self.args['lsi_file_path'])
         print(self.lsi_file_path)
 
         self.heat_map = get_heat_map(file_path = self.lsi_file_path)
@@ -72,15 +73,15 @@ class Env_6(MultiAgentEnv):
         self.RESIZE_HEATMAP = [self.RESIZE_HEATMAP]
 
         print(f'init env_5 with {self.num_qubits} qubits')
-        self.max_step = args.env_max_step * self.num_qubits
+        self.max_step = self.args['env_max_step'] * self.num_qubits
 
-        chip_layout = ChipLayout(args.chip_rows, args.chip_cols, ChipLayoutType.EMPTY, self.num_qubits)
-        self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,layout_type=ChipLayoutType.EMPTY,chip_layout=chip_layout)
+        chip_layout = ChipLayout(self.OBS_ROW,self.OBS_COL, ChipLayoutType.EMPTY, self.num_qubits)
+        self.chip = Chip(rows=self.OBS_ROW, cols=self.OBS_COL,num_qubits=self.num_qubits,layout_type=ChipLayoutType.EMPTY,chip_layout=chip_layout)
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
 
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
-        self.a_space = Discrete(args.chip_rows * args.chip_cols)
+        self.a_space = Discrete(self.OBS_ROW * self.OBS_COL)
         self.o_space =Box(
                             low=-5,
                             high=self.num_qubits + 1,
@@ -105,9 +106,9 @@ class Env_6(MultiAgentEnv):
         print(f'init_dist: {self.init_dist}')
 
     def get_init_dist(self):
-        layout_type = ChipLayoutType(args.layout_type)
-        layout = get_layout(layout_type=layout_type, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
-        temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
+        layout_type = ChipLayoutType(self.args['layout_type'])
+        layout = get_layout(layout_type=layout_type, rows=self.OBS_ROW, cols=self.OBS_COL, num_qubits=self.num_qubits)
+        temp_chip = Chip(rows=self.OBS_ROW, cols=self.OBS_COL, num_qubits=self.num_qubits,
                          layout_type=layout.layout_type, chip_layout=layout)
         return self.compute_dist(temp_chip, self.am.activate_agent)[0]
 
@@ -273,8 +274,9 @@ class Env_6(MultiAgentEnv):
 
     def reward_function(self,dist,last_dist):
         # prepare rewrad function
-        rf_name = f"rfv{args.rf_version}"
+        rf_name = f"rfv{self.args['rf_version']}"
         rf_to_call = getattr(rfunctions, rf_name, None)
+        gamma = self.args['gamma']
         assert callable(rf_to_call)
 
         reward_compen = False
@@ -287,7 +289,7 @@ class Env_6(MultiAgentEnv):
             if (dist < self.min_sum_dist) and reward_compen:
                 # 当 dist 首次出现这么小, 那么计算后的 total reward 也应该比之前所有的都大
                 factor = 1.1
-                r = (self._max_total_r - self._agent_total_r * args.gamma) * factor
+                r = (self._max_total_r - self._agent_total_r * gamma) * factor
                 if r < 0.2:
                     r = 0.2
                 if r < 0:
@@ -295,7 +297,7 @@ class Env_6(MultiAgentEnv):
             else:
                 r = rf_to_call(init_dist=self.init_dist, last_dist=last_dist, dist=dist, avg_dist=self.sw.current_avg)
             #update _agent_total_r
-            self._agent_total_r = self._agent_total_r * args.gamma + r
+            self._agent_total_r = self._agent_total_r * gamma + r
             # update _max_total_r for the current agent
             if self._agent_total_r > self._max_total_r:
                 self._max_total_r = self._agent_total_r
@@ -306,7 +308,7 @@ class Env_6(MultiAgentEnv):
                 self.smd['min_dist'] = dist
                 self.smd['best_state'] = deepcopy(self.chip.state)
 
-        if args.reward_scaling:
+        if self.args['reward_scaling']:
             r =self.r_scale(r)
         return r
 
