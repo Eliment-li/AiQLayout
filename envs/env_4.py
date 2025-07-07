@@ -15,7 +15,7 @@ from utils.calc_util import SlideWindow
 from utils.position import positionalencoding2d
 
 import config
-args = config.get_args()
+args = config.RedisConfig()
 rfunctions = RewardFunction()
 '''
 try to slove the real quantum chip placement problem with RL

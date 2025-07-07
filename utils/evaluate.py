@@ -26,7 +26,6 @@ from ray.rllib.core import COMPONENT_ENV_RUNNER, COMPONENT_ENV_TO_MODULE_CONNECT
 from ray.rllib.core.rl_module import MultiRLModule
 from ray.rllib.env.multi_agent_episode import MultiAgentEpisode
 
-from envs.env_4 import Env_4
 from envs.env_5 import Env_5
 from envs.env_6 import Env_6
 from utils.file.csv_util import write_data, append_data
@@ -294,7 +293,7 @@ def evaluate(base_config, args, results):
 
 def save_results(actions,rewards,distance,max_total_r,init_chip_state,final_chip_state):
     import config
-    args = config.get_args()
+    args = config.RedisConfig()
     path  = Path(args.results_evaluate_path, (args.time_id+'_results.csv'))
     #TODO refactor
     write_data(file_path =path,data= actions)

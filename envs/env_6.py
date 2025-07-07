@@ -23,7 +23,7 @@ from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
 
 import config
-args = config.get_args()
+args = config.RedisConfig()
 rfunctions = RewardFunction()
 '''
 use agent manager to manage agents

@@ -21,7 +21,7 @@ from ray.tune.logger import LoggerCallback
 from ray.tune.utils import flatten_dict
 from ray.util.queue import Queue
 import config
-args = config.get_args()
+args = config.RedisConfig()
 
 '''
 migrate from the WandbLoggerCallback
@@ -157,7 +157,7 @@ class _SandbLabLoggingActor:
         run.config.trial_log_path = self._logdir
         #log config file
 
-        print(ConfigSingleton().to_string())
+        print(config.get_args().to_dict())
 
         #_run_swanlab_process_run_info_hook(run)
         while True:

@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib.ticker import MaxNLocator  # 用于设置整数刻度
 
 import config
-args = config.get_args()
+args = config.RedisConfig()
 
 
 def plot_reward(data, save=True):

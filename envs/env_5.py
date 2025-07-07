@@ -22,7 +22,7 @@ from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
 import config
-args = config.get_args()
+args = config.RedisConfig()
 
 rfunctions = RewardFunction()
 '''
@@ -96,6 +96,8 @@ class Env_5(MultiAgentEnv):
         self.r_scale = RewardScaling(shape=1, gamma=0.9)
 
         self.smd = SharedMemoryDict(name='env', size=10240)
+        self.smd.cleanup()
+        assert  len(self.keys()) ==0, f' self.smd.keys() should be empty: {self.smd.keys()}'
         self.smd['min_dist'] = math.inf
 
         #self.gates = get_random_gates(num_qubits=self.num_qubits, size=args.gates_size)

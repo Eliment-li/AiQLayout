@@ -10,7 +10,7 @@ def print_ins(instructions):
             print(ins)
 
 import config
-args = config.get_args()
+args = config.RedisConfig()
 
 def convert_plus_and_measure(instructions,i):
     line = instructions[i]

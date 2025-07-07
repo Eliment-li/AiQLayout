@@ -2,8 +2,8 @@ env_version: 6
 
 #chip
 layout_type: GRID
-chip_rows: 25
-chip_cols: 25
+chip_rows: 12
+chip_cols: 12
 verbose: 1
 enable_broken_patch: False
 
@@ -13,8 +13,8 @@ gates_size: 1000
 reward_scaling: True
 
 rf_version: 3
-num_qubits: 50
-lsi_file_path: assets/circuits/dj_scale/LSI_dj_indep_qiskit_50.lsi
+#num_qubits: 5
+#lsi_file_path: assets/circuits/qnn/LSI_qnn_indep_qiskit_5.lsi
 env_max_step: 10
 #lstm
 use_lstm: False
@@ -44,7 +44,7 @@ fcnet_hiddens: [512, 512,512]
 head_fcnet_hiddens: [512,320]
 #cnn
 conv_activation: Swish
-enable_cnn: True
+#enable_cnn: True
 enable_redis: True
 
 
