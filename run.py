@@ -284,6 +284,9 @@ if __name__ == "__main__":
         except Exception as e:
             traceback.print_exc()
         finally:
+            # smd = SharedMemoryDict(name='env', size=10240)
+            # smd.cleanup()
+            # smd.shm.unlink()
             ray.shutdown()
 
 

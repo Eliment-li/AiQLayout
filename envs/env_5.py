@@ -2,6 +2,7 @@ import math
 import traceback
 from copy import deepcopy
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 from gymnasium.spaces import  Discrete, Box
@@ -21,8 +22,6 @@ from utils.file.file_util import get_root_dir
 from utils.ls_instructions import get_heat_map
 from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
-import config
-args = config.RedisConfig()
 
 rfunctions = RewardFunction()
 '''
@@ -54,16 +53,18 @@ def min_max_normalize(observation, min_value, max_value):
 rootdir = Path(get_root_dir())
 class Env_5(MultiAgentEnv):
 
-    def __init__(self, config=None):
+    def __init__(self,  config: Optional[dict] = None):
         super().__init__()
-        self.num_qubits = args.num_qubits
-        self.OBS_ROW = args.chip_rows
-        self.OBS_COL = args.chip_cols
-
+        self.args = config or {}
+        self.num_qubits = self.args['num_qubits']
+        self.OBS_ROW = self.args['chip_rows']
+        self.OBS_COL = self.args['chip_cols']
+        self.chip_rows = self.args.get('chip_rows')
+        self.chip_cols = self.args.get('chip_cols')
 
         print(f'OBS_ROW: {self.OBS_ROW}, OBS_COL: {self.OBS_COL}')
 
-        self.lsi_file_path = rootdir / Path(args.lsi_file_path)
+        self.lsi_file_path = rootdir / Path(self.args.get('lsi_file_path'))
         print(self.lsi_file_path)
 
         self.heat_map = get_heat_map(file_path = self.lsi_file_path)
@@ -72,15 +73,15 @@ class Env_5(MultiAgentEnv):
         self.RESIZE_HEATMAP = [self.RESIZE_HEATMAP]
 
         print(f'init env_5 with {self.num_qubits} qubits')
-        self.max_step = args.env_max_step * self.num_qubits
+        self.max_step = self.args.get('env_max_step') * self.num_qubits
 
-        chip_layout = ChipLayout(args.chip_rows, args.chip_cols, ChipLayoutType.EMPTY, self.num_qubits)
-        self.chip = Chip(rows=args.chip_rows, cols=args.chip_cols,num_qubits=self.num_qubits,layout_type=ChipLayoutType.EMPTY,chip_layout=chip_layout)
+        chip_layout = get_layout(ChipLayoutType.EMPTY, self.OBS_ROW, self.OBS_COL, self.num_qubits)
+        self.chip = Chip(layout=chip_layout)
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
 
         self.agents = self.possible_agents = [f"agent_{i+1}" for i in range(self.num_qubits)]
-        self.a_space = Discrete(args.chip_rows * args.chip_cols)
+        self.a_space = Discrete(self.chip_rows * self.chip_cols)
         self.o_space =Box(
                             low=-5,
                             high=self.num_qubits + 1,
@@ -96,8 +97,6 @@ class Env_5(MultiAgentEnv):
         self.r_scale = RewardScaling(shape=1, gamma=0.9)
 
         self.smd = SharedMemoryDict(name='env', size=10240)
-        self.smd.cleanup()
-        assert  len(self.keys()) ==0, f' self.smd.keys() should be empty: {self.smd.keys()}'
         self.smd['min_dist'] = math.inf
 
         #self.gates = get_random_gates(num_qubits=self.num_qubits, size=args.gates_size)
@@ -107,10 +106,9 @@ class Env_5(MultiAgentEnv):
         print(f'init_dist: {self.init_dist}')
 
     def get_init_dist(self):
-        layout_type = ChipLayoutType(args.layout_type)
-        layout = get_layout(layout_type=layout_type, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
-        temp_chip = Chip(rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits,
-                         layout_type=layout.layout_type, chip_layout=layout)
+        layout_type = ChipLayoutType(self.args.get('layout_type'))
+        layout = get_layout(layout_type=layout_type, rows=self.chip_rows, cols=self.chip_cols, num_qubits=self.num_qubits)
+        temp_chip = Chip( num_qubits=self.num_qubits,layout=layout)
         return self.compute_dist(temp_chip, self.am.activate_agent)[0]
 
     def reset(self, *, seed=None, options=None):
@@ -343,10 +341,10 @@ class Env_5(MultiAgentEnv):
 
     def reward_function(self,dist,last_dist):
         # prepare rewrad function
-        rf_name = f"rfv{args.rf_version}"
+        rf_name = f"rfv{self.args.get('rf_version')}"
         rf_to_call = getattr(rfunctions, rf_name, None)
         assert callable(rf_to_call)
-
+        gamma = self.args.get('gamma')
         reward_compen = False
         # p = self.am.activate_agent - 1
         # _min_dist = self.min_dist[p]
@@ -357,7 +355,7 @@ class Env_5(MultiAgentEnv):
             if (dist < self.min_sum_dist) and reward_compen:
                 # 当 dist 首次出现这么小, 那么计算后的 total reward 也应该比之前所有的都大
                 factor = 1.1
-                r = (self._max_total_r - self._agent_total_r * args.gamma) * factor
+                r = (self._max_total_r - self._agent_total_r * gamma) * factor
                 if r < 0.2:
                     r = 0.2
                 if r < 0:
@@ -365,7 +363,7 @@ class Env_5(MultiAgentEnv):
             else:
                 r = rf_to_call(init_dist=self.init_dist, last_dist=last_dist, dist=dist, avg_dist=self.sw.current_avg)
             #update _agent_total_r
-            self._agent_total_r = self._agent_total_r * args.gamma + r
+            self._agent_total_r = self._agent_total_r * gamma + r
             # update _max_total_r for the current agent
             if self._agent_total_r > self._max_total_r:
                 self._max_total_r = self._agent_total_r
@@ -376,15 +374,28 @@ class Env_5(MultiAgentEnv):
                 self.smd['min_dist'] = dist
                 self.smd['best_state'] = deepcopy(self.chip.state)
 
-        if args.reward_scaling:
+        if self.args.get('reward_scaling'):
             r =self.r_scale(r)
         return r
 
-
+import config
 if __name__ == '__main__':
-    env = Env_5()
-    state = env.reset()
-    print(state)
+    exp = {
+        'lsi_file_path': f'assets/circuits/random/LSI_random_indep_qiskit_{2}.lsi',
+        'num_qubits': 2,
+    }
+    args = config.RedisConfig()
+    args.wait_until_initialized()
+    args.update_redis(exp)
+
+    env_config = {
+        'num_qubits': args.num_qubits,
+    }
+    env = Env_5(config=args)
+    env.reset()
+    action = {f'agent_1': 10}
+    env.step(action)
+
     print(env.chip.state)
     print(env.chip.q_pos)
     print(env.chip.valid_positions)

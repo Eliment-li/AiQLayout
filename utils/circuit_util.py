@@ -222,5 +222,5 @@ def generates_random_lsi(qubits_num):
     plot_gate_heatmap(nodes, gates,savepath)
     # plot_heatmap_data(resize_2d_matrix(heatmap,(7,7)))
 if __name__ == "__main__":
-    for i in range(1,6):
+    for i in range(1,11):
          generates_random_lsi(2*i)

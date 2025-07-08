@@ -48,7 +48,7 @@ def get_env(env_version,args):
 
     print('env_version=',env_version)
     if env_version == 5:
-        return Env_5()
+        return Env_5(config = env_config)
     elif env_version == 6:
         return Env_6(config = env_config)
 
