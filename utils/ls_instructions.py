@@ -89,10 +89,11 @@ def process_file(input_file, output_file):
                 #outfile.write(line + '\n')
                 instructions.append(line)
                 i += 1
-        #print_ins(instructions)
+        # print_ins(instructions)
         ins_cnt = handle_repeated_lines(instructions)
+        #加上命令数量
         ins_resign = re_sign_patch_id(ins_cnt)
-        # print_ins(ins_resign)
+        #print_ins(ins_resign)
         ins_heat = inst_to_heatmap(ins_resign,int(qubits_number))
         #print(repr(ins_heat))
         print(f'heatmap shape = {ins_heat.shape}')
@@ -123,9 +124,7 @@ def handle_repeated_lines(arr):
 
 import re
 
-'''
-resign the patch id of patchs
-'''
+
 def replace_numbers_in_string(s, replacement_map):
     '''
     ['Init 3706 |+>', 1]
@@ -147,7 +146,9 @@ def replace_numbers_in_string(s, replacement_map):
     return pattern.sub(replace_match, s)
 
 
-
+'''
+resign the patch id of patchs
+'''
 def re_sign_patch_id(instructions):
     """
     将指令中的patch_id重新签名为从0开始的连续整数
@@ -221,6 +222,10 @@ def inst_to_heatmap(instructions,qubits_number):
             match = re.match(r'Plus_Mear_Two (\d+):Z,(\d+):X', ins)
             q1 = int(match.group(1))
             q2 = int(match.group(2))
+        elif ins.startswith('MultiBodyMeasure'):
+            match = re.match(r'MultiBodyMeasure (\d+):[Z,X],(\d+):[Z,X]', ins)
+            q1 = int(match.group(1))
+            q2 = int(match.group(2))
         if q1 >=q2:
             heat_map[q1][q2] +=cnt
         else:
@@ -258,11 +263,14 @@ def phrase_ls_instructions(instructions:str):
 
 #test code
 if __name__ == '__main__':
-    input_directory = r'D:\sync\mqtbench\ls_inst'
-    output_directory = r'D:\sync\mqtbench\out'
-    #for filename in os.listdir(input_directory):
-    file_name = r'D:\sync\mqtbench\ls_inst\LSI_qftentangled_indep_qiskit_15.lsi'
-    print(f'================== process file {file_name} ===================================')
-    input_file = os.path.join(input_directory, file_name)
-    output_file = os.path.join(output_directory, file_name)
-    process_file(input_file,output_file)
+    # input_directory = r'D:\sync\mqtbench\ls_inst'
+    # output_directory = r'D:\sync\mqtbench\out'
+    # #for filename in os.listdir(input_directory):
+    # file_name = r'D:\project\AiQLayout\assets\circuits\random\LSI_random_indep_qiskit_6.lsi'
+    #
+    # input_file = os.path.join(input_directory, file_name)
+    # output_file = os.path.join(output_directory, file_name)
+    # process_file(input_file,output_file)
+
+    file_name = r'D:\project\AiQLayout\assets\circuits\random\LSI_random_indep_qiskit_6.lsi'
+    get_heat_map(file_name)
