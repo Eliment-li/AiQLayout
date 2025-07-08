@@ -24,6 +24,7 @@ from utils.position import positionalencoding2d
 from utils.route_util import bfs_route
 
 
+from typing import Optional
 
 rfunctions = RewardFunction()
 '''
@@ -51,12 +52,11 @@ def min_max_normalize(observation, min_value, max_value):
     normalized = (observation - min_value) / denom
     return normalized
 
-
 rootdir = Path(get_root_dir())
 class Env_6(MultiAgentEnv):
-    def __init__(self,env_context: EnvContext):
+    def __init__(self, config: Optional[dict] = None):
         super().__init__()
-        self.args = env_context['config']
+        self.args = config or {}
         self.num_qubits = self.args['num_qubits']
         self.OBS_ROW = self.args['chip_rows']
         self.OBS_COL = self.args['chip_cols']
