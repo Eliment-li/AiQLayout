@@ -35,26 +35,20 @@ class ChipAction(Enum):
 
 class Chip():
 
-    def __init__(self,rows: int,cols: int,layout_type ,num_qubits,chip_layout:ChipLayout=None):
-        '''
-        :param rows:
-        :param cols:
-        :param broken: the broken postion of chip
-        '''
+    def __init__(self,rows: int = None,cols: int= None ,num_qubits:int= None,layout:ChipLayout=None):
         self.channel = 1
-        self.num_qubits = num_qubits
-        self._cols = cols
-        self._rows = rows
+        self.num_qubits = num_qubits or layout.num_qubits
+        self._cols = cols or layout.cols
+        self._rows = rows or layout.rows
         self.q_pos = [(None, None)] * self.num_qubits
-        self.chip_layout = chip_layout
-        self.layout_type = layout_type
+        self.layout = layout
         self._qubits_channel = np.zeros((self._rows, self._cols), dtype=np.float32)
         self._position_mask = np.zeros((self.num_qubits, self._rows, self._cols), dtype=np.float32)
 
         '''
           must reset() before use 
         '''
-        self.reset(self.layout_type)
+        self.reset(self.layout.layout_type)
 
 
     def reset(self,layout_type:ChipLayoutType=None):
@@ -79,7 +73,7 @@ class Chip():
     def _init_qubits_layout(self,layout_tpye):
         if layout_tpye is None:
             return
-        self.state = deepcopy(self.chip_layout.state)
+        self.state = deepcopy(self.layout.state)
         for i in range(len(self.state)):
             for j in range(len(self.state[i])):
                 qubit = self.state[i][j]
@@ -253,7 +247,7 @@ class Chip():
 
 # def test():
 #     layout = get_layout(name=ChipLayoutType.COMPACT_1, rows=12, cols=12, num_qubits=20)
-#     chip = Chip(12,12,layout_type = ChipLayoutType.GRID,num_qubits=20,chip_layout=layout)
+#     chip = Chip(12,12,layout_type = ChipLayoutType.GRID,num_qubits=20,layout=layout)
 #     chip.print_state()
 #     print(chip.q_pos)
 #
@@ -301,7 +295,7 @@ def benchmark_layouts(layout_type: ChipLayoutType = None,num_qubits: int = 0, si
                         num_qubits=num_qubits)
     # layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = ChipLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = ChipLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
     temp_chip = Chip(rows=size, cols=size, num_qubits=num_qubits,
-                     layout_type=layout.layout_type, chip_layout=layout)
+                     layout_type=layout.layout_type, layout=layout)
     dist  = compute_dist_v2(num_qubits, heat_map, temp_chip)
     return dist
 
@@ -312,7 +306,7 @@ if __name__ == '__main__':
     rootdir = get_root_dir()
     lsi_size = [10,15,20,25]
 
-    chip_layout = [
+    layout = [
         ChipLayoutType.LINER_1,
         ChipLayoutType.COMPACT_1,
         ChipLayoutType.COMPACT_2
@@ -322,7 +316,7 @@ if __name__ == '__main__':
     ]
 
     for j in range(len(chip_size)):
-        layout = chip_layout[j]
+        layout = layout[j]
         size = chip_size[j]
         print(layout)
         for i in range(4):

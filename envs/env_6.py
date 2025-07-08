@@ -75,8 +75,8 @@ class Env_6(MultiAgentEnv):
         print(f'init env_5 with {self.num_qubits} qubits')
         self.max_step = self.args['env_max_step'] * self.num_qubits
 
-        chip_layout = ChipLayout(self.OBS_ROW,self.OBS_COL, ChipLayoutType.EMPTY, self.num_qubits)
-        self.chip = Chip(rows=self.OBS_ROW, cols=self.OBS_COL,num_qubits=self.num_qubits,layout_type=ChipLayoutType.EMPTY,chip_layout=chip_layout)
+        chip_layout =get_layout(ChipLayoutType.EMPTY,self.OBS_ROW,self.OBS_COL,self.num_qubits)
+        self.chip = Chip(layout=chip_layout)
         #agnet manager
         self.am = AgentsManager(self.num_qubits, self.chip)
 
@@ -108,8 +108,7 @@ class Env_6(MultiAgentEnv):
     def get_init_dist(self):
         layout_type = ChipLayoutType(self.args['layout_type'])
         layout = get_layout(layout_type=layout_type, rows=self.OBS_ROW, cols=self.OBS_COL, num_qubits=self.num_qubits)
-        temp_chip = Chip(rows=self.OBS_ROW, cols=self.OBS_COL, num_qubits=self.num_qubits,
-                         layout_type=layout.layout_type, chip_layout=layout)
+        temp_chip = Chip(layout=layout)
         return self.compute_dist(temp_chip, self.am.activate_agent)[0]
 
     def reset(self, *, seed=None, options=None):
@@ -312,9 +311,20 @@ class Env_6(MultiAgentEnv):
             r =self.r_scale(r)
         return r
 
-
+import config
 if __name__ == '__main__':
-    env = Env_6()
+    exp = {
+        'lsi_file_path': f'assets/circuits/random/LSI_random_indep_qiskit_{2}.lsi',
+        'num_qubits': 2,
+    }
+    args = config.RedisConfig()
+    args.wait_until_initialized()
+    args.update_redis(exp)
+
+    env_config = {
+        'num_qubits': args.num_qubits,
+    }
+    env = Env_6(config = args)
     env.reset()
     action = {f'agent_1':10}
     env.step(action)

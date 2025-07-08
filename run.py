@@ -242,6 +242,12 @@ def get_dynamic_conf(lsi_file_path,num_qubits ):
    #      self.update('results_evaluate_path', results_evaluate_path)
    #      self.update('wandb_run_name', time_id + '_' + circuit)
 
+def init_args(exp):
+    args = config.RedisConfig()
+    args.wait_until_initialized()
+    args.update_redis(exp)
+    args.update_redis(get_dynamic_conf(exp['lsi_file_path'], exp['num_qubits']))
+    return args
 if __name__ == "__main__":
 
     path = Path(get_root_dir()) / 'conf'
@@ -259,7 +265,7 @@ if __name__ == "__main__":
     if is_windows():
         print('run on windows')
         cmd_args.swanlab = False
-    for i in [2,4,6,8,10]:
+    for i in [2,4,6]:
         ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
         SharedMemoryDict(name='env', size=10240).cleanup()
@@ -269,11 +275,7 @@ if __name__ == "__main__":
                 'num_qubits': i,
             }
             print(f"Running experiment with {i} qubits...")
-            args = config.RedisConfig()
-            args.wait_until_initialized()
-            args.update_redis(exp)
-            args.update_redis(get_dynamic_conf(exp['lsi_file_path'], exp['num_qubits']))
-
+            args =  init_args(exp)
             run(args, cmd_args)
             ray.shutdown()
             time.sleep(3)  # Wait for a few seconds to ensure all processes are cleaned up
