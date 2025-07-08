@@ -113,8 +113,10 @@ def gates_to_LSI(gates,num_qubits:int):
     content=''
     for instruction in lsi:
         content += instruction + '\n'
-    path =  Path(get_root_dir()) / 'assets' / 'circuits'/'random'/f'LSI_random_gates_{num_qubits}.lsi'
-    write_to_file(path,content)
+        print(instruction)
+
+    return content
+
     #write to file
 
 def plot_gate_heatmap(nodes, relations,savepath=None):
@@ -210,13 +212,15 @@ def resize_2d_matrix(matrix, r,c):
 
 def generates_random_lsi(qubits_num):
     gates = generate_node_relations(qubits_num, 100)
-    gates_to_LSI(gates, qubits_num)
+    content = gates_to_LSI(gates, qubits_num)
+
+    path = Path(get_root_dir()) / 'assets' / 'circuits' / 'random' / f'LSI_random_indep_qiskit_{qubits_num}.lsi'
+    write_to_file(path, content)
     nodes = [-1] + list(range(1, qubits_num + 1))  # -1在前
 
     savepath = Path(get_root_dir()) / 'assets' / 'circuits' /'random'/ f'gates_heatmap_{qubits_num}.png'
     plot_gate_heatmap(nodes, gates,savepath)
     # plot_heatmap_data(resize_2d_matrix(heatmap,(7,7)))
 if __name__ == "__main__":
-    for i in range(1,3):
-        generates_random_lsi(2*i)
-
+    for i in range(1,6):
+         generates_random_lsi(2*i)
