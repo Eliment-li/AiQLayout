@@ -2,6 +2,8 @@ import json
 import os
 from pathlib import Path
 from pprint import pprint
+
+from ray.rllib.env import EnvContext
 from shared_memory_dict import SharedMemoryDict
 import time
 from copy import deepcopy
@@ -31,12 +33,24 @@ from envs.env_6 import Env_6
 from utils.file.csv_util import write_data, append_data
 
 
-def get_env(env_version):
-    print('get_env env_version=',env_version)
+def get_env(env_version,args):
+    env_config = {
+        'num_qubits': args.num_qubits,
+        'chip_rows': args.chip_rows,
+        'chip_cols': args.chip_cols,
+        'lsi_file_path': args.lsi_file_path,
+        'env_max_step': args.env_max_step,
+        'layout_type': args.layout_type,
+        'rf_version': args.rf_version,
+        'gamma': args.gamma,
+        'reward_scaling': args.reward_scaling,
+    }
+
+    print('env_version=',env_version)
     if env_version == 5:
         return Env_5()
     elif env_version == 6:
-        return Env_6()
+        return Env_6(config = env_config)
 
 
 def evaluate_v2(base_config, args, results):
@@ -47,7 +61,7 @@ def evaluate_v2(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env =get_env(args.env_version)
+    env =get_env(args.env_version,args)
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
@@ -187,7 +201,7 @@ def evaluate(base_config, args, results):
         best_path = best_result.to_directory()
         print('best_path=', best_path)
     # Create the env.
-    env = Env_4()
+    env = get_env(args.env_version,args)
 
     # Create the env-to-module pipeline from the checkpoint.
     print("Restore env-to-module connector from checkpoint ...", end="")
