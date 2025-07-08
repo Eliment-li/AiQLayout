@@ -1,4 +1,4 @@
-import os
+
 
 import os
 import shutil
@@ -35,15 +35,14 @@ def get_root_dir():
     root_dir = root_dir[:-11]
     return root_dir
 
-def write_to_file(file,content):
+def write_to_file(path,content):
     try:
-        directory = os.path.dirname(file)
+        directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
         # Open file in write mode; if file doesn't exist, it will be created
-        file = open(file, "a", encoding="utf-8")
-        file.write(content)
-        file.close()
+        with open(path, "w", encoding="utf-8") as file:
+            file.write(content)
         print(f"Successfully written to '{file}'.")
 
     except Exception as e:

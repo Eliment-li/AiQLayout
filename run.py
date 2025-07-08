@@ -135,7 +135,7 @@ def run(args,cmd_args):
         PPOConfig()
         .environment(
             env=Envs[f'Env{args.env_version}'],
-            env_config={'config': {
+            env_config={
               'num_qubits':  args.num_qubits,
               'chip_rows':  args.chip_rows,
               'chip_cols':  args.chip_cols,
@@ -145,7 +145,7 @@ def run(args,cmd_args):
               'rf_version':  args.rf_version,
               'gamma':  args.gamma,
               'reward_scaling':  args.reward_scaling,
-            }},
+            },
         )
         .training(
             use_gae=True,
@@ -206,6 +206,7 @@ def run(args,cmd_args):
         results = train(config=base_config, cmd_args=cmd_args, args=args, enable_swanlab=cmd_args.swanlab, stop=stop)
         save_state()
     evaluate_v2(base_config, args, results)
+    #evaluate_v2(base_config,args,r'C:\Users\ADMINI~1\AppData\Local\Temp\checkpoint_tmp_20e0fb06eee944b1a3075b26cb2e39f5')
 
 
 def get_dynamic_conf(lsi_file_path,num_qubits ):
@@ -255,16 +256,16 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", '-c', type=str, help="best checkpoint", default=None)
     parser.add_argument("--run_name", '-name', type=str, help="wandb project run name", default=None)
     cmd_args = parser.parse_args()
-    # if is_windows():
-    #     print('run on windows')
-    #     cmd_args.swanlab = Falseq123
-    for i in [4]:
+    if is_windows():
+        print('run on windows')
+        cmd_args.swanlab = False
+    for i in [2,4,6,8,10]:
         ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
         SharedMemoryDict(name='env', size=10240).cleanup()
         try:
             exp = {
-                'lsi_file_path':f'assets/circuits/random/LSI_random_gates_{i}.lsi',
+                'lsi_file_path':f'assets/circuits/random/LSI_random_indep_qiskit_{i}.lsi',
                 'num_qubits': i,
             }
             print(f"Running experiment with {i} qubits...")
