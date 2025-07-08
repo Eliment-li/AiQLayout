@@ -186,8 +186,11 @@ def get_layout(layout_type,rows,cols, num_qubits):
                     qubit += 1
                 j += 2
             i += 2
+    elif layout_type == ChipLayoutType.EMPTY:
+        state = np.zeros((rows, cols), dtype=int)
     else:
         state = read_layout_from_xlsx(layout_type)
+
     layout = ChipLayout(
         rows=rows,
         cols=cols,
