@@ -265,7 +265,8 @@ if __name__ == "__main__":
     if is_windows():
         print('run on windows')
         cmd_args.swanlab = False
-    for i in [2,4,6]:
+    for i in [12,14,16]:
+        time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
         ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
         SharedMemoryDict(name='env', size=10240).cleanup()
@@ -277,8 +278,8 @@ if __name__ == "__main__":
             print(f"Running experiment with {i} qubits...")
             args =  init_args(exp)
             run(args, cmd_args)
-            ray.shutdown()
-            time.sleep(3)  # Wait for a few seconds to ensure all processes are cleaned up
+            #ray.shutdown()
+
 
             print(f"Finsh experiment with {i} qubits...")
         except Exception as e:
@@ -288,6 +289,7 @@ if __name__ == "__main__":
             # smd.cleanup()
             # smd.shm.unlink()
             ray.shutdown()
+
 
 
 
