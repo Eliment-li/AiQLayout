@@ -58,7 +58,7 @@ def get_rl_module_specs(args):
             [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
             [64, 3, 2],  # 过滤器数量，卷积核大小 步幅
             [128, 3, 2],  # 过滤器数量，卷积核大小 步幅
-            #[256, 3, 2],  # 过滤器数量，卷积核大小 步幅
+            [256, 3, 2],  # 过滤器数量，卷积核大小 步幅
         ]
     else:
         conv_filters = None
@@ -265,7 +265,7 @@ if __name__ == "__main__":
     if is_windows():
         print('run on windows')
         cmd_args.swanlab = False
-    for i in [12,14,16]:
+    for i in [8,20]:
         time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
         ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()

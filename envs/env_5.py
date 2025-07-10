@@ -132,7 +132,7 @@ class Env_5(MultiAgentEnv):
 
     def _get_obs(self):
         chip_state = deepcopy(self.chip.state)
-        chip_state = min_max_normalize(chip_state,min_value=-5,max_value=self.num_qubits + 1)
+        #chip_state = min_max_normalize(chip_state,min_value=-5,max_value=self.num_qubits + 1)
         repeat_state = np.repeat(chip_state[np.newaxis, :, :], 4, axis=0)
         obs = repeat_state + self.pe
         pm =np.expand_dims(self.chip.position_mask(self.am.activate_agent), axis=0)
