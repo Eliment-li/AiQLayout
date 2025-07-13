@@ -65,5 +65,41 @@ if __name__ == '__main__':
     # print(ChipLayoutType.COMPACT_2.value=='COMPACT_2')
     # layout  = ChipLayoutType('COMPACT_2')
     # print(layout==ChipLayoutType.COMPACT_2)
-    str = r'learners/policy_48/weights_seq_no'
-    print('weights_seq_no' in str)
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    # 生成一个随机三维数组
+    embed = [
+        [
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+
+        ],
+        [
+            [2, 2, 2],
+            [2, 2, 2],
+            [2, 2, 2],
+
+        ],
+    ]
+
+    i = 2  # 假设我们取第2个切片
+
+    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+
+    # embed[i]，即 embed[i, :, :]
+    axs[0].imshow(embed[i], aspect='auto')
+    axs[0].set_title('embed[i] (shape: {})'.format(embed[i].shape))
+    axs[0].set_xlabel('axis 2')
+    axs[0].set_ylabel('axis 1')
+
+    # embed[..., i]，即 embed[:, :, i]
+    axs[1].imshow(embed[..., i], aspect='auto')
+    axs[1].set_title('embed[..., i] (shape: {})'.format(embed[..., i].shape))
+    axs[1].set_xlabel('axis 1')
+    axs[1].set_ylabel('axis 0')
+
+    plt.tight_layout()
+    plt.show()

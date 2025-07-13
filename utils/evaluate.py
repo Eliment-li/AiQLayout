@@ -117,7 +117,8 @@ def evaluate_v2(base_config, args, results):
 
     env.chip.print_state()
     terminated, truncated = False, False
-    stop_timesteps = 800
+    stop_timesteps = 20
+    print('start inference...')
     while True:
 
         shared_data = {}
@@ -188,6 +189,7 @@ def evaluate_v2(base_config, args, results):
     save_results(actions,rewrads,distance,max_total_r,init_chip_state,final_chip_state)
 
     #show_trace(actions)
+    print('clean SharedMemoryDict...')
     SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
     SharedMemoryDict(name='env', size=10240).cleanup()
 

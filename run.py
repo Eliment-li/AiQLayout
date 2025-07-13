@@ -54,12 +54,13 @@ LSTM settings
     # specific the rl module
 def get_rl_module_specs(args):
     if args.enable_cnn:
-        conv_filters = [
-            [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
-            [64, 3, 2],  # 过滤器数量，卷积核大小 步幅
-            [128, 3, 2],  # 过滤器数量，卷积核大小 步幅
-            [256, 3, 2],  # 过滤器数量，卷积核大小 步幅
-        ]
+        # conv_filters = [
+        #     [32, 3, 1],  # 过滤器数量，卷积核大小 步幅
+        #     [64, 3, 2],  # 过滤器数量，卷积核大小 步幅
+        #     [128, 3, 2],  # 过滤器数量，卷积核大小 步幅
+        #     #[256, 3, 2],  # 过滤器数量，卷积核大小 步幅
+        # ]
+        conv_filters = args.conv_filters
     else:
         conv_filters = None
 
@@ -252,7 +253,7 @@ if __name__ == "__main__":
 
     path = Path(get_root_dir()) / 'conf'
     redis_config = config.RedisConfig()
-    redis_config.flush()  # 清空 Redis 数据库
+    redis_config.clear_redis()  # 清空 Redis 数据库
     # 初始化（只做一次）
     redis_config.initialize(path)
     parser = argparse.ArgumentParser(description="")
@@ -262,25 +263,23 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", '-c', type=str, help="best checkpoint", default=None)
     parser.add_argument("--run_name", '-name', type=str, help="wandb project run name", default=None)
     cmd_args = parser.parse_args()
-    if is_windows():
-        print('run on windows')
-        cmd_args.swanlab = False
-    for i in [8,20]:
+    # if is_windows():
+    #     print('run on windows')
+    #     cmd_args.swanlab = False
+    for i in [20,25]:
         time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
-        ray.init(local_mode=False)
+        #ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
         SharedMemoryDict(name='env', size=10240).cleanup()
         try:
             exp = {
-                'lsi_file_path':f'assets/circuits/random/LSI_random_indep_qiskit_{i}.lsi',
+                'lsi_file_path':f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_{i}.lsi',
                 'num_qubits': i,
             }
             print(f"Running experiment with {i} qubits...")
             args =  init_args(exp)
             run(args, cmd_args)
             #ray.shutdown()
-
-
             print(f"Finsh experiment with {i} qubits...")
         except Exception as e:
             traceback.print_exc()

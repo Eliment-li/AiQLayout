@@ -6,6 +6,7 @@ from typing import Optional
 
 import numpy as np
 from gymnasium.spaces import  Discrete, Box
+from pennylane import layer
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 from shared_memory_dict import SharedMemoryDict
 
@@ -133,8 +134,9 @@ class Env_5(MultiAgentEnv):
     def _get_obs(self):
         chip_state = deepcopy(self.chip.state)
         #chip_state = min_max_normalize(chip_state,min_value=-5,max_value=self.num_qubits + 1)
-        repeat_state = np.repeat(chip_state[np.newaxis, :, :], 4, axis=0)
-        obs = repeat_state + self.pe
+        #repeat_state = np.repeat(chip_state[np.newaxis, :, :], 4, axis=0)
+        #obs = repeat_state + self.pe
+        obs = self.pe
         pm =np.expand_dims(self.chip.position_mask(self.am.activate_agent), axis=0)
         obs = np.concatenate((obs,pm),axis = 0)  # (4, rows, cols) -> (4+1, rows, cols)
 
@@ -214,41 +216,37 @@ class Env_5(MultiAgentEnv):
                         'max_total_r':self._max_total_r
                     }
                  }
-    def compute_depth(self,chip:Chip):
-        gates = self.gates
-        depth = 0
-        layer = deepcopy(chip.state)
-        new = True
-        i=0
-        while i < len(gates):
-            start, goal = gates[i]
-            sr,sc = chip.q_coor(start)
-            #
-            if  goal == QubitState.MAGIC.value:
-                path,dist,target_m= bfs_route(self.chip.state, start_row=sr, start_col=sc, target_values={QubitState.MAGIC.value})
-            else:
+    def compute_depth(self,chip:Chip,player):
+        depth= 0
+        new_layer = deepcopy(chip.state)
+        new  = True
+        for i in range(self.num_qubits):
+            j=0
+            while j<i:
+                cnt = self.heat_map[i][j]
+                if cnt <= 0.000001:
+                    j += 1
+                    continue
+                start = i + 1
+                goal = j + 1
+                sr, sc = chip.q_coor(start)
                 gr, gc = chip.q_coor(goal)
-                path = a_star_path( (sr,sc), ( gr,gc), layer,goal)
-                dist = len(path)
-            if path is None:
-                if new:
-                    return None, None, None
+                if j == QubitState.MAGIC.value:
+                    path,dist,target_m= bfs_route(new_layer, start_row=sr, start_col=sc, target_values={QubitState.MAGIC.value})
                 else:
-                    layer = deepcopy(chip.state)
-                    depth += 1
-                    new = True
-                    #keep i the same
-            elif dist == 2:
-                #the two qubits are already connected
-                i += 1
-                continue
-            else:
-                #occupy the path
-                for p in path:
-                    layer[p[0]][p[1]] = -3
-                new = False
-                i+=1
-        return depth
+                    path = a_star_path((sr, sc), (gr, gc), new_layer, goal)
+                    dist = len(path)
+                if len(path) == 0:
+                    # fail to find path
+                    if new:
+                        return None, None, None
+                    else:
+                        new_layer = deepcopy(chip.state)
+                else:
+                    depth+=(cnt*dist)
+                    new = False
+                    j += 1
+        return depth, None,None
 
     def compute_dist_v2(self,chip:Chip, player:int):
         sum_dist= 0
@@ -268,15 +266,15 @@ class Env_5(MultiAgentEnv):
                 else:
                     path = a_star_path((sr, sc), (gr, gc), chip.state, goal)
                     dist = len(path)
-                    if dist == 0:
-                        return None, None, None
+                if dist == 0:
+                    return None, None, None
                 j+=1
                 sum_dist+=(cnt*dist)
 
         return sum_dist, None,None
 
     def compute_dist(self,chip:Chip, player:int):
-        return self.compute_dist_v2(chip, player)
+        return self.compute_depth(chip, player)
         #TODO consider  schedule the gates
         # gates = get_gates_fixed()
         # depth = 1
@@ -381,7 +379,7 @@ class Env_5(MultiAgentEnv):
 import config
 if __name__ == '__main__':
     exp = {
-        'lsi_file_path': f'assets/circuits/random/LSI_random_indep_qiskit_{2}.lsi',
+        'lsi_file_path': f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_5.lsi',
         'num_qubits': 2,
     }
     args = config.RedisConfig()

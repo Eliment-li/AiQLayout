@@ -177,6 +177,10 @@ class RedisConfig(MutableMapping):
             return self._cache[name]
         except KeyError:
             raise AttributeError(f"No such key: {name}")
+    def __str__(self):
+        if self._cache is None:
+            self._load_from_redis()
+        return yaml.dump(self._cache, allow_unicode=True, default_flow_style=False)
 
     def update_redis(self, key, value=None):
         for k, v in key.items():
@@ -202,8 +206,4 @@ if __name__ == '__main__':
     print(rc['gamma'])
     print(rc.gamma)
 
-    # 更新
-    rc.update_redis('gamma', 'new_value')
-    print(rc.gamma)
-    # 清理
-    rc.clear_redis()
+    print(redis_config)

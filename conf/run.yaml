@@ -47,9 +47,13 @@ conv_activation: Swish
 #enable_cnn: True
 enable_redis: True
 
+conv_filters: [ [32, 3, 1],
+                [64, 3, 1],
+                [128, 3, 1]]
+
 
 ###Iters is the number of batches the model will train on and the number of times your model weights will be updated (not counting minibatches).
-stop_iters:  1 # Default: default_iters
+stop_iters:  4 # Default: default_iters
 
 # If run --as-release-test, --as-test must also be set.
 as_test: false

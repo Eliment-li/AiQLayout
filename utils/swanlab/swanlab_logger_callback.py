@@ -157,7 +157,7 @@ class _SandbLabLoggingActor:
         run.config.trial_log_path = self._logdir
         #log config file
 
-        print(config.get_args().to_dict())
+        print(str(args))
 
         #_run_swanlab_process_run_info_hook(run)
         while True:
@@ -180,7 +180,7 @@ class _SandbLabLoggingActor:
                 # Ignore HTTPError. Missing a few data points is not a
                 # big issue, as long as things eventually recover.
                 logger.warning("Failed to log result to w&b: {}".format(str(e)))
-        #print('swanlab finish')
+        print('swanlab finish')
         self._swanlab.finish()
 
     def _handle_checkpoint(self, checkpoint_path: str):
@@ -194,7 +194,7 @@ class _SandbLabLoggingActor:
         flat_result = flatten_dict(result, delimiter="/")
 
         for k, v in flat_result.items():
-            if any(k.startswith(item + "/") or k in item for item in self._exclude ):
+            if any(k.startswith(item + "/") or k == item for item in self._exclude ):
                 continue
             elif any(k.startswith(item + "/") or k == item for item in self._to_config):
                 config_update[k] = v
@@ -384,7 +384,7 @@ class SwanLabLoggerCallback(LoggerCallback):
                 env_vars = {}
                 #TODO  check api key
                 self._remote_logger_class = ray.remote(
-                    #num_cpus=0,
+                    # num_cpus=0,
                     **_force_on_current_node(),
                     runtime_env={"env_vars": env_vars},
                     max_restarts=-1,

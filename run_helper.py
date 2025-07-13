@@ -28,9 +28,8 @@ from ray.tune.result import TRAINING_ITERATION
 
 from config import enhance_base_config
 from ray.rllib.algorithms import AlgorithmConfig
-# from swanlab.integration.ray import SwanLabLoggerCallback
 from utils.checkpoint import CheckPointCallback
-from utils.swanlab.swanlab_logger_callback import SwanLabLoggerCallback
+# from utils.swanlab.swanlab_logger_callback import SwanLabLoggerCallback
 
 jax, _ = try_import_jax()
 tf1, tf, tfv = try_import_tf()
@@ -178,11 +177,13 @@ def append_swanlab(tune_callbacks,args,config,group,name = None):
     project = args.swanlab_project or (
             args.algo.lower() + "-" + re.sub("\\W+", "-", str(config.env).lower())
     )
+    print("swanlab with project: ", project)
     kwargs = {
         "name": name if name else args.wandb_run_name,
         # "group":group
         #"silent": True
     }
+    from utils.swanlab.swanlab_logger_callback_offical import SwanLabLoggerCallback
     tune_callbacks.append(
         # WandbLoggerCallback(
         #     api_key=wandb_key,

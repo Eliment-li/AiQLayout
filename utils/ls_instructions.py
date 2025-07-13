@@ -96,7 +96,7 @@ def process_file(input_file, output_file):
         #print_ins(ins_resign)
         ins_heat = inst_to_heatmap(ins_resign,int(qubits_number))
         #print(repr(ins_heat))
-        print(f'heatmap shape = {ins_heat.shape}')
+        #print(f'heatmap shape = {ins_heat.shape}')
         return ins_heat
 
 '''

@@ -53,17 +53,6 @@ class ChipLayout():
         #reset the magic state after set state,because the state should only contain qubits,not magic state or broken qubits
 
 
-    # def set_valid_qubits(self,layout):
-    #     '''
-    #     :return: a list of available qubits
-    #     '''
-    #     available_qubits = [()] * self.num_qubits
-    #     for i in range(self.rows):
-    #         for j in range(self.cols):
-    #             qubit = layout[i][j]
-    #             if qubit > 0:
-    #                 available_qubits[qubit-1] = (i,j)
-    #     return available_qubits
 
     def dynamic_set_layout(self):
         assert self.layout_type == ChipLayoutType.GRID, "Dynamic layout is designed only be set for GRID layout type."
@@ -171,8 +160,10 @@ def read_layout_from_xlsx(layout_type:ChipLayoutType):
 
 
 
-def get_layout(layout_type,rows,cols, num_qubits):
-    if layout_type == ChipLayoutType.GRID:
+def get_layout(layout_type,rows,cols, num_qubits,given_state=None):
+    if layout_type == ChipLayoutType.GIVEN:
+        state = given_state
+    elif layout_type == ChipLayoutType.GRID:
         state = np.zeros((rows, cols), dtype=int)
         qubit = 1
         i = 1
@@ -190,6 +181,7 @@ def get_layout(layout_type,rows,cols, num_qubits):
         state = np.zeros((rows, cols), dtype=int)
     else:
         state = read_layout_from_xlsx(layout_type)
+
 
     layout = ChipLayout(
         rows=rows,

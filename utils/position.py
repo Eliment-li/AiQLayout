@@ -1,8 +1,10 @@
 import math
 from pprint import pprint
 
+import numpy as np
 import torch
-from torch import nn
+from matplotlib import pyplot as plt
+from torch import nn, Tensor
 
 
 def positionalencoding2d( height, width,d_model):
@@ -138,3 +140,103 @@ class PositionalEncoding2DSpaceOnly(PositionalEncodingTransposed):
 # print(a+pos_encoding)
 
 # pprint(positionalencoding2d(15, 15, 4))
+
+def plot_pe(heatmap_data):
+    x_vals = [i + 1 for i in range(len(heatmap_data))]
+    y_vals = [i + 1 for i in range(len(heatmap_data[0]))]
+    plt.figure(figsize=(10, 10))
+
+    # 使用绿色色系
+    im = plt.imshow(heatmap_data, cmap='Greys', interpolation='nearest',
+                    extent=[min(x_vals) - 0.5, max(x_vals) + 0.5,
+                            min(y_vals) - 0.5, max(y_vals) + 0.5],
+                    origin='lower')
+
+    # 添加颜色条
+    cbar = plt.colorbar(im)
+    cbar.set_label('cnt', rotation=270, labelpad=15)
+
+    # 设置坐标轴为整数
+    plt.xticks(np.arange(min(x_vals), max(x_vals) + 1, 1))
+    plt.yticks(np.arange(min(y_vals), max(y_vals) + 1, 1))
+
+    # 添加网格线
+    plt.grid(which='both', color='gray', linestyle='--', linewidth=0.5, alpha=0.5)
+
+    # 标签和标题
+    plt.xlabel('X (x ≤ y)')
+    plt.ylabel('Y (x ≤ y)')
+    plt.title(' (stander x ≤ y)')
+    # 显示图形
+
+    plt.show()
+
+
+
+
+def get_2d_sinusoidal_positional_embedding(height: int, width: int, dim: int, base: float = 10000) -> Tensor:
+    """return embed (height, width, dim)"""
+    assert dim % 4 == 0
+    grid_h = torch.arange(height, dtype=torch.float32)
+    grid_w = torch.arange(width, dtype=torch.float32)
+    grid = torch.meshgrid(grid_h, grid_w, indexing='ij')
+    embed_h = sinusoidal_embedding(grid[0], dim // 2, base=base)
+    embed_w = sinusoidal_embedding(grid[1], dim // 2, base=base)
+    embed = torch.cat([embed_h, embed_w], dim=-1)
+    return embed
+
+def sinusoidal_embedding(idx: Tensor, dim: int, base: float = 10000) -> Tensor:
+    """idx (*) -> embed (*, dim)"""
+    assert dim % 2 == 0
+    half_dim = dim // 2
+    freqs = torch.arange(half_dim, dtype=torch.float32) / half_dim
+    freqs = torch.exp(-math.log(base) * freqs).to(device=idx.device)
+    embed = idx.float()[..., None] * freqs
+    embed = torch.cat([torch.sin(embed), torch.cos(embed)], dim=-1)
+    return embed
+if __name__ == '__main__':
+    # pos_encoding = positionalencoding2d(9,9, 8)
+    # print("位置编码:", pos_encoding)
+    #
+    # for i in range(4):
+    #     n1 = np.array(pos_encoding[i][0][0])
+    #     n2 = np.array(pos_encoding[i][1][0])
+    #     print(n1,n2)
+
+    #embed = get_2d_sinusoidal_positional_embedding(7, 7, 4)
+
+    # embed = np.array([
+    #     [
+    #         [11, 12, 13],
+    #         [14, 15, 16],
+    #         [17, 18, 19],
+    #
+    #     ],
+    #     [
+    #         [21, 22, 23],
+    #         [2, 2, 2],
+    #         [2, 2, 2],
+    #
+    #     ],
+    #     [
+    #         [3, 3, 3],
+    #         [3, 3, 3],
+    #         [3, 3, 3],
+    #
+    #     ],
+    #     [
+    #         [4, 4, 4],
+    #         [4, 4, 4],
+    #         [4, 4, 4],
+    #
+    #     ],
+    # ])
+    # print(embed[...,0])
+
+    embed = positionalencoding2d(7,7, 4)
+
+    for i in range(4):
+        plt.subplot(1, 4, i + 1)
+        plt.imshow(embed[ i])
+        plt.title(f'Channel {i}')
+    plt.show()

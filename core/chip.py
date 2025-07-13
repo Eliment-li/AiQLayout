@@ -7,10 +7,10 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from openpyxl.compat import deprecated
-from torch import layout
 
 import config
+
+
 from core.layout import ChipLayoutType, ChipLayout, QubitState, get_layout
 
 from core.routing import bfs_find_target, a_star_path
@@ -261,6 +261,8 @@ class Chip():
 #     chip.print_state()
 #     print(chip.valid_positions)
 
+
+
 def compute_dist_v2(num_qubits, heat_map,chip:Chip):
     sum_dist = 0
     for i in range(num_qubits):
@@ -280,24 +282,61 @@ def compute_dist_v2(num_qubits, heat_map,chip:Chip):
             else:
                 path = a_star_path((sr, sc), (gr, gc), chip.state, goal)
                 dist = len(path)
-                if dist == 0:
-                    return None, None, None
+
+            if dist == 0:
+                return None, None, None
             j += 1
             sum_dist += (cnt * dist)
 
     return sum_dist
 
 
+def compute_depth(num_qubits, heat_map,chip:Chip):
+    depth = 0
+    new = True
+    layer = deepcopy(chip.state)
+    for i in range(num_qubits):
+        j = 0
+        while j < i:
+            cnt = heat_map[i][j]
+            if cnt <=0.000001:
+                j += 1
+                continue
+            start = i + 1
+            goal = j + 1
+            sr, sc = chip.q_coor(start)
+            gr, gc = chip.q_coor(goal)
+            if j == QubitState.MAGIC.value:
+                path, dist, target_m = bfs_route(layer, start_row=sr, start_col=sc,
+                                                 target_values={QubitState.MAGIC.value})
+            else:
+                path = a_star_path((sr, sc), (gr, gc), layer, goal)
+                dist = len(path)
+
+            if dist == 0:
+                if new:
+                    return None
+                else:
+                    layer = deepcopy(chip.state)
+                    depth += cnt
+                    new = True
+            else:
+                for p in path:
+                    layer[p[0]][p[1]] = -3
+                new = False
+            j += 1
+    return depth
 
 def benchmark_layouts(layout_type: ChipLayoutType = None,num_qubits: int = 0, size: int=0,heat_map=None):
     layout_type = ChipLayoutType(layout_type)
-    layout = get_layout(layout_type=layout_type, rows=size, cols=size,
-                        num_qubits=num_qubits)
+    layout = get_layout(layout_type=layout_type, rows=size, cols=size,num_qubits=num_qubits)
     # layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = ChipLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = ChipLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
-    temp_chip = Chip(rows=size, cols=size, num_qubits=num_qubits,
-                     layout_type=layout.layout_type, layout=layout)
-    dist  = compute_dist_v2(num_qubits, heat_map, temp_chip)
+    temp_chip = Chip(rows=size, cols=size, num_qubits=num_qubits,layout=layout)
+    #dist  = compute_dist_v2(num_qubits, heat_map, temp_chip)
+    dist  = compute_depth(num_qubits, heat_map, temp_chip)
     return dist
+
+
 
 #
 
@@ -306,7 +345,7 @@ if __name__ == '__main__':
     rootdir = get_root_dir()
     lsi_size = [10,15,20,25]
 
-    layout = [
+    LAYOUT = [
         ChipLayoutType.LINER_1,
         ChipLayoutType.COMPACT_1,
         ChipLayoutType.COMPACT_2
@@ -316,16 +355,36 @@ if __name__ == '__main__':
     ]
 
     for j in range(len(chip_size)):
-        layout = layout[j]
+        layout = LAYOUT[j]
         size = chip_size[j]
         print(layout)
         for i in range(4):
             num_qubits = lsi_size[i]
             file = Path(f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_{num_qubits}.lsi')
             heat_map = get_heat_map(file_path=rootdir / file)
-            dist = benchmark_layouts(layout_type=ChipLayoutType(layout), num_qubits=num_qubits, size=size,
-                                     heat_map=heat_map)
+            dist = benchmark_layouts(layout_type=ChipLayoutType(layout), num_qubits=num_qubits, size=size,heat_map=heat_map)
             print(dist)
+
+    # state = np.array([[ 0,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1],
+    #    [-1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+    #    [ 0,  0,  0,  4,  7,  0,  0,  0,  0,  0,  0,  0],
+    #    [ 0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0, -1],
+    #    [-1,  0,  3,  1,  8,  0,  0,  0,  0,  0,  0,  0],
+    #    [ 0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+    #    [ 0,  0,  9,  0,  0,  0,  0,  0,  0,  0,  0, -1],
+    #    [-1,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+    #    [ 0,  0,  0,  6,  0,  0,  0,  0,  0,  0,  0, -1],
+    #    [-1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0]])
+    # size = 12
+    # num_qubits = 10
+    # file = Path(f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_{num_qubits}.lsi')
+    # heat_map = get_heat_map(file_path=rootdir / file)
+    # layout = get_layout(layout_type=ChipLayoutType.GIVEN, rows=size, cols=size, num_qubits=num_qubits,given_state=state)
+    # temp_chip = Chip(rows=size, cols=size, num_qubits=num_qubits, layout=layout)
+    # dist = compute_depth(num_qubits, heat_map, temp_chip)
+    # print(dist)
 
 
 
