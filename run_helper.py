@@ -9,10 +9,8 @@ from typing import (
     Optional,
     Union,
 )
-
 from gymnasium import register
 import numpy as np
-
 import ray
 from ray import tune
 from ray.rllib.utils.framework import try_import_jax, try_import_tf, try_import_torch
@@ -30,8 +28,7 @@ from config import enhance_base_config
 from ray.rllib.algorithms import AlgorithmConfig
 from utils.checkpoint import CheckPointCallback
 from utils.custom_logger import CustomLoggerCallback
-
-# from utils.swanlab.swanlab_logger_callback import SwanLabLoggerCallback
+from utils.swanlab.swanlab_logger_callback import SwanLabLoggerCallback
 
 jax, _ = try_import_jax()
 tf1, tf, tfv = try_import_tf()
@@ -79,41 +76,11 @@ def train(
     config: "AlgorithmConfig",
     args: Optional[argparse.Namespace] = None,
     cmd_args = None,
-    tune_callbacks: Optional[List] = None,
     scheduler=None,
     stop = None,
     enable_swanlab = False
 ) -> Union[ResultDict, tune.result_grid.ResultGrid]:
-    """Given an algorithm config and some command line args, runs an experiment.a
 
-    The function sets up an Algorithm object from the given config (altered by the
-    contents of `args`), then runs the Algorithm via Tune (or manually, if
-    `args.no_tune` is set to True) using the stopping criteria in `stop`.
-
-    At the end of the experiment, if `args.as_test` is True, checks, whether the
-    Algorithm reached the `success_metric` (if None, use `env_runners/
-    episode_return_mean` with a minimum value of `args.stop_reward`).
-
-    See https://github.com/ray-project/ray/tree/master/rllib/examples for an overview
-    of all supported command line options.
-
-    Args:
-        config: The AlgorithmConfig object to use for this experiment. This base
-            config will be automatically "extended" based on some of the provided
-            `args`. For example, `args.num_env_runners` is used to set
-            `config.num_env_runners`, etc..
-        args: A config, It must have the following
-            properties defined: `stop_iters`, `stop_reward`, `stop_timesteps`,
-            `no_tune`, `verbose`, `checkpoint_freq`, `as_test`. Optionally, for WandB
-            logging: `wandb_key`, `wandb_project`, `wandb_run_name`.
-
-        tune_callbacks: A list of Tune callbacks to configure with the tune.Tuner.
-            In case `args.wandb_key` is provided, appends a WandB logger to this
-            list
-    Returns:
-        The last ResultDict from a --no-tune run OR the tune.Tuner.fit()
-        results.
-    """
     ray.init(
         num_cpus=args.num_cpus or None,
         local_mode=args.local_mode,
@@ -121,10 +88,10 @@ def train(
     )
 
     enhance_base_config(config,args)
-    print(config)
+    # print(config)
 
     # Log results
-    tune_callbacks = tune_callbacks or []
+    tune_callbacks = []
     tune_callbacks.append(CheckPointCallback())
     # if enable_swanlab:
     #     append_swanlab(tune_callbacks,args,config,name=cmd_args.run_name)
@@ -228,17 +195,6 @@ def cli_reporter(config):
 
 def trial_str_creator(trial):
     return "{}_{}".format(trial.trainable_name, trial.trial_id)
-def register_env():
-    for version in range(1):
-        register(
-            id='Env_'+str(version),
-            # entry_point='core.envs.circuit_env:CircuitEnv',
-            entry_point='envs.env_'+str(version)+':Env_'+str(version),
-            #max_episode_steps=999999,
-        )
-
-
-
 
 if __name__ == '__main__':
     pass

@@ -105,10 +105,6 @@ def save_state():
     else:
         print('no best state found in shared memory dict')
 
-def flush_redis():
-    r = redis.Redis(host='127.0.0.1', port=6379)
-    r.flushall()
-
 
 def run(args,cmd_args):
     Envs = {
@@ -241,7 +237,7 @@ if __name__ == "__main__":
 
     path = Path(get_root_dir()) / 'conf'
     redis_config = config.RedisConfig()
-    redis_config.clear_redis()  # 清空 Redis 数据库
+    #redis_config.clear_redis()  # 清空 Redis 数据库
     # 初始化（只做一次）
     redis_config.initialize(path)
     parser = argparse.ArgumentParser(description="")
@@ -254,7 +250,7 @@ if __name__ == "__main__":
     # if is_windows():
     #     print('run on windows')
     #     cmd_args.swanlab = False
-    for i in [5,10]:
+    for i in [5]:
         time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
         #ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
