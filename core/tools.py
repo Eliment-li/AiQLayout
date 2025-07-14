@@ -44,7 +44,6 @@ from ray.rllib.utils.error import UnsupportedSpaceException
 from ray.tune import CLIReporter
 from ray.tune.result import TRAINING_ITERATION
 
-from utils.custom_logger import CustomLoggerCallback
 
 if TYPE_CHECKING:
     from ray.rllib.algorithms import Algorithm, AlgorithmConfig
@@ -1248,9 +1247,9 @@ def run_rllib_example_script_experiment(
     #             **({"name": args.wandb_run_name} if args.wandb_run_name else {}),
     #         )
     #     )
-    tune_callbacks.append(
-        CustomLoggerCallback('temp')
-    )
+    # tune_callbacks.append(
+    #     CustomLoggerCallback('temp')
+    # )
     # Auto-configure a CLIReporter (to log the results to the console).
     # Use better ProgressReporter for multi-agent cases: List individual policy rewards.
     if progress_reporter is None and args.num_agents > 0:
