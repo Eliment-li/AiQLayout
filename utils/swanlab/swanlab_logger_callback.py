@@ -390,8 +390,6 @@ class _swanlabLoggingActor:
             assert item_type == _QueueItem.RESULT
 
             log, config_update = self._handle_result(item_content)
-            print('###### log #######')
-            print(log)
             try:
                 # 更新配置并记录日志
                 self._swanlab.config.update(config_update, allow_val_change=True)
@@ -690,8 +688,6 @@ class SwanLabLoggerCallback(LoggerCallback):
         self._trial_queues[trial].put((_QueueItem.END, None))
 
     def log_trial_result(self, iteration: int, trial: "Trial", result: Dict):
-        print('###### result #######')
-        print(result)
         """
         记录试验结果
 
