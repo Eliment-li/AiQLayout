@@ -26,6 +26,7 @@ results = tuner.fit()
 
 import enum
 import os
+import pickle
 import urllib
 import warnings
 from numbers import Number
@@ -212,33 +213,86 @@ def _is_allowed_type(obj):
     return isinstance(obj, (Number))
 
 
+# def _clean_log(obj: Any):
+#     """
+#     清理日志对象，移除不可序列化的项目
+#     递归处理字典、列表、集合和元组，只保留允许的类型
+#
+#     Args:
+#         obj: 要清理的对象
+#
+#     Returns:
+#         清理后的对象
+#     """
+#     if isinstance(obj, dict):
+#         return {k: _clean_log(v) for k, v in obj.items()}
+#     elif isinstance(obj, (list, set)):
+#         return [_clean_log(v) for v in obj]
+#     elif isinstance(obj, tuple):
+#         return tuple(_clean_log(v) for v in obj)
+#     elif _is_allowed_type(obj):
+#         return obj
+#
+#     fallback = str(obj)
+#     try:
+#         fallback = int(fallback)
+#         return fallback
+#     except ValueError:
+#         pass
+#     return fallback
+
+
 def _clean_log(obj: Any):
-    """
-    清理日志对象，移除不可序列化的项目
-    递归处理字典、列表、集合和元组，只保留允许的类型
-
-    Args:
-        obj: 要清理的对象
-
-    Returns:
-        清理后的对象
-    """
+    # Fixes https://github.com/ray-project/ray/issues/10631
     if isinstance(obj, dict):
         return {k: _clean_log(v) for k, v in obj.items()}
     elif isinstance(obj, (list, set)):
         return [_clean_log(v) for v in obj]
     elif isinstance(obj, tuple):
         return tuple(_clean_log(v) for v in obj)
+    ##TODO
+    # elif isinstance(obj, np.ndarray) and obj.ndim == 3:
+    #     # Must be single image (H, W, C).
+    #     return Image(obj)
+    # elif isinstance(obj, np.ndarray) and obj.ndim == 4:
+    #     # Must be batch of images (N >= 1, H, W, C).
+    #     return (
+    #         _clean_log([Image(v) for v in obj]) if obj.shape[0] > 1 else Image(obj[0])
+    #     )
+    # elif isinstance(obj, np.ndarray) and obj.ndim == 5:
+    #     # Must be batch of videos (N >= 1, T, C, W, H).
+    #     return (
+    #         _clean_log([Video(v) for v in obj]) if obj.shape[0] > 1 else Video(obj[0])
+    #     )
     elif _is_allowed_type(obj):
         return obj
 
-    fallback = str(obj)
     try:
-        fallback = int(fallback)
+        # This is probably unnecessary, but left here to be extra sure.
+        pickle.dumps(obj)
+
+        return obj
+    except Exception:
+        # give up, similar to _SafeFallBackEncoder
+        fallback = str(obj)
+
+        # Try to convert to int
+        try:
+            fallback = int(fallback)
+            return fallback
+        except ValueError:
+            pass
+
+        # Try to convert to float
+        try:
+            fallback = float(fallback)
+            return fallback
+        except ValueError:
+            pass
+
+        # Else, return string
         return fallback
-    except ValueError:
-        pass
-    return fallback
+
 
 
 class _QueueItem(enum.Enum):
@@ -313,8 +367,13 @@ class _swanlabLoggingActor:
         5. 调用swanlab.finish()完成运行
         """
         # 初始化SwanLab运行实例
+        print('start run...')
         run = self._swanlab.init(*self.args, **self.kwargs)
         run.config.trial_log_path = self._logdir
+
+        import config
+        args = config.RedisConfig()
+        print(str(args))
 
         # 主处理循环
         while True:
@@ -331,6 +390,8 @@ class _swanlabLoggingActor:
             assert item_type == _QueueItem.RESULT
 
             log, config_update = self._handle_result(item_content)
+            print('###### log #######')
+            print(log)
             try:
                 # 更新配置并记录日志
                 self._swanlab.config.update(config_update, allow_val_change=True)
@@ -339,6 +400,7 @@ class _swanlabLoggingActor:
                 logger.warning("Failed to log result to swanlab: {}".format(str(e)))
 
         # 完成SwanLab运行
+        print('swanlab finish')
         self._swanlab.finish()
 
     def _handle_result(self, result: Dict) -> Tuple[Dict, Dict]:
@@ -611,6 +673,8 @@ class SwanLabLoggerCallback(LoggerCallback):
         self._trial_queues[trial].put((_QueueItem.END, None))
 
     def log_trial_result(self, iteration: int, trial: "Trial", result: Dict):
+        print('###### result #######')
+        print(result)
         """
         记录试验结果
 
@@ -630,6 +694,7 @@ class SwanLabLoggerCallback(LoggerCallback):
         # 如果Actor还没有启动，先启动
         if trial not in self._trial_logging_actors:
             self.log_trial_start(trial)
+
 
         # 清理结果数据
         result = _clean_log(result)

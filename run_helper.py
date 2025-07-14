@@ -29,6 +29,8 @@ from ray.tune.result import TRAINING_ITERATION
 from config import enhance_base_config
 from ray.rllib.algorithms import AlgorithmConfig
 from utils.checkpoint import CheckPointCallback
+from utils.custom_logger import CustomLoggerCallback
+
 # from utils.swanlab.swanlab_logger_callback import SwanLabLoggerCallback
 
 jax, _ = try_import_jax()
@@ -82,7 +84,7 @@ def train(
     stop = None,
     enable_swanlab = False
 ) -> Union[ResultDict, tune.result_grid.ResultGrid]:
-    """Given an algorithm config and some command line args, runs an experiment.
+    """Given an algorithm config and some command line args, runs an experiment.a
 
     The function sets up an Algorithm object from the given config (altered by the
     contents of `args`), then runs the Algorithm via Tune (or manually, if
@@ -119,17 +121,20 @@ def train(
     )
 
     enhance_base_config(config,args)
-    #print(config)
+    print(config)
 
-    # Log results using WandB.
+    # Log results
     tune_callbacks = tune_callbacks or []
     tune_callbacks.append(CheckPointCallback())
-    if enable_swanlab:
-        append_swanlab(tune_callbacks,args,config,name=cmd_args.run_name,group = cmd_args.wandb_group)
+    # if enable_swanlab:
+    #     append_swanlab(tune_callbacks,args,config,name=cmd_args.run_name)
+    tune_callbacks.append(
+        CustomLoggerCallback("log_test.txt")
+    )
 
-    progress_reporter =cli_reporter(config)
-    if args.no_tune:
-        return train_no_tune(args, config, stop=stop)
+    #progress_reporter =cli_reporter(config)
+    # if args.no_tune:
+    #     return train_no_tune(args, config, stop=stop)
 
     start_time = time.time()
     # Run the actual experiment (using Tune).
@@ -170,20 +175,17 @@ def train(
     return results
 
 
-def append_swanlab(tune_callbacks,args,config,group,name = None):
-    wandb_key = args.swanlab_key
+def append_swanlab(tune_callbacks,args,config,name = None):
+    from utils.swanlab.swanlab_logger_callback import SwanLabLoggerCallback
     # 设置环境变量，静默 wandb 输出
-    os.environ["WANDB_SILENT"] = "true"
     project = args.swanlab_project or (
             args.algo.lower() + "-" + re.sub("\\W+", "-", str(config.env).lower())
     )
     print("swanlab with project: ", project)
     kwargs = {
         "name": name if name else args.wandb_run_name,
-        # "group":group
-        #"silent": True
     }
-    from utils.swanlab.swanlab_logger_callback_offical import SwanLabLoggerCallback
+
     tune_callbacks.append(
         # WandbLoggerCallback(
         #     api_key=wandb_key,
@@ -192,7 +194,7 @@ def append_swanlab(tune_callbacks,args,config,group,name = None):
         #     **kwargs,
         # )
         SwanLabLoggerCallback(
-            api_key=wandb_key,
+            api_key=args.swanlab_key,
             project=project,
             workspace='Eliment-li',
             upload_checkpoints=True,

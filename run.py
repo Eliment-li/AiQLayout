@@ -230,18 +230,6 @@ def get_dynamic_conf(lsi_file_path,num_qubits ):
     cfg['enable_cnn'] = not is_windows()
 
     return cfg
-   # def update_for_new_exp(self,exp):
-   #      for k, v in exp.items():
-   #          self.update(k, v)
-   #      time_id = datetime.now().strftime('%m%d_%H%M')
-   #      path = Path(get_root_dir()) / 'results' / 'evaluate' / time_id
-   #      results_evaluate_path = str(path)
-   #      os.makedirs(path, exist_ok=True)
-   #      match = re.search(r"LSI.*", exp.lsi_file_path)
-   #      circuit = match.group()
-   #      self.update('time_id', time_id)
-   #      self.update('results_evaluate_path', results_evaluate_path)
-   #      self.update('wandb_run_name', time_id + '_' + circuit)
 
 def init_args(exp):
     args = config.RedisConfig()
@@ -266,7 +254,7 @@ if __name__ == "__main__":
     # if is_windows():
     #     print('run on windows')
     #     cmd_args.swanlab = False
-    for i in [20,25]:
+    for i in [5,10]:
         time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
         #ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
