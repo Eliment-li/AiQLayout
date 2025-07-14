@@ -237,7 +237,7 @@ if __name__ == "__main__":
 
     path = Path(get_root_dir()) / 'conf'
     redis_config = config.RedisConfig()
-    #redis_config.clear_redis()  # 清空 Redis 数据库
+    redis_config.flush()  # 清空 Redis 数据库
     # 初始化（只做一次）
     redis_config.initialize(path)
     parser = argparse.ArgumentParser(description="")
