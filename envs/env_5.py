@@ -279,7 +279,7 @@ class Env_5(MultiAgentEnv):
         return sum_dist, None,None
 
     def compute_dist(self,chip:Chip, player:int):
-        return self.compute_depth(chip, player)
+        return self.compute_dist_v2(chip, player)
         #TODO consider  schedule the gates
         # gates = get_gates_fixed()
         # depth = 1
