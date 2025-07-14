@@ -6,7 +6,6 @@ from typing import Optional
 
 import numpy as np
 from gymnasium.spaces import  Discrete, Box
-from pennylane import layer
 from ray.rllib.env.multi_agent_env import  MultiAgentEnv
 from shared_memory_dict import SharedMemoryDict
 
@@ -217,7 +216,7 @@ class Env_5(MultiAgentEnv):
                     }
                  }
     def compute_depth(self,chip:Chip,player):
-        depth= 0
+        depth= 1
         new_layer = deepcopy(chip.state)
         new  = True
         for i in range(self.num_qubits):
@@ -231,19 +230,25 @@ class Env_5(MultiAgentEnv):
                 goal = j + 1
                 sr, sc = chip.q_coor(start)
                 gr, gc = chip.q_coor(goal)
+
                 if j == QubitState.MAGIC.value:
                     path,dist,target_m= bfs_route(new_layer, start_row=sr, start_col=sc, target_values={QubitState.MAGIC.value})
                 else:
                     path = a_star_path((sr, sc), (gr, gc), new_layer, goal)
                     dist = len(path)
+
                 if len(path) == 0:
                     # fail to find path
                     if new:
                         return None, None, None
                     else:
                         new_layer = deepcopy(chip.state)
+                        new = True
+                        depth += cnt
                 else:
-                    depth+=(cnt*dist)
+                    #occupy
+                    for p in path:
+                        new_layer[p[0]][p[1]] = -3
                     new = False
                     j += 1
         return depth, None,None

@@ -324,7 +324,7 @@ def compute_depth(num_qubits, heat_map,chip:Chip):
                 for p in path:
                     layer[p[0]][p[1]] = -3
                 new = False
-            j += 1
+                j += 1
     return depth
 
 def benchmark_layouts(layout_type: ChipLayoutType = None,num_qubits: int = 0, size: int=0,heat_map=None):
