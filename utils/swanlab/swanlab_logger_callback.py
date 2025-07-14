@@ -423,7 +423,7 @@ class _swanlabLoggingActor:
         # 处理每个键值对
         for k, v in flat_result.items():
             # 跳过排除的键
-            if any(k.startswith(item + "/") or k == item for item in self._exclude):
+            if any(k.startswith(item + "/") or k in item for item in self._exclude):
                 continue
             # 添加到配置的键
             elif any(k.startswith(item + "/") or k == item for item in self._to_config):
@@ -457,7 +457,24 @@ class SwanLabLoggerCallback(LoggerCallback):
     """
 
     # 不记录这些结果键
-    _exclude_results = ["done", "should_checkpoint"]
+    _exclude_results = ["done",
+                        "should_checkpoint"
+
+                        "gradients_default_optimizer_global_norm",
+                        "module_train_batch_size_mean",
+                        "num_module_steps_trained_lifetime",
+                        "module_train_batch_size_mean",
+                        "total_loss",
+                        "default_optimizer_learning_rate",
+                        "vf_loss_unclipped",
+                        "curr_entropy_coeff",
+                        "agent_to_module_mapping",
+                        "diff_num_grad_updates_vs_sampler_policy",
+                        "weights_seq_no",
+
+                        r"env_runners/agent_steps",
+                        "connector_pipeline_timer",
+                        ]
 
     # 自动添加到配置的键
     AUTO_CONFIG_KEYS = [

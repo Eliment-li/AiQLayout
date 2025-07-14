@@ -93,11 +93,8 @@ def train(
     # Log results
     tune_callbacks = []
     tune_callbacks.append(CheckPointCallback())
-    # if enable_swanlab:
-    #     append_swanlab(tune_callbacks,args,config,name=cmd_args.run_name)
-    tune_callbacks.append(
-        CustomLoggerCallback("log_test.txt")
-    )
+    if enable_swanlab:
+        append_swanlab(tune_callbacks,args,config,name=cmd_args.run_name)
 
     #progress_reporter =cli_reporter(config)
     # if args.no_tune:
