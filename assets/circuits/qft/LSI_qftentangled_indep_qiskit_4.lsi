@@ -1,0 +1,25 @@
+HGate 3
+Init 1000000 |+>
+MultiBodyMeasure 3:Z,1000000:Z
+MultiBodyMeasure 2:X,1000000:X
+MeasureSinglePatch 1000000 Z
+Init 1000001 |+>
+MultiBodyMeasure 2:Z,1000001:Z
+MultiBodyMeasure 1:X,1000001:X
+MeasureSinglePatch 1000001 Z
+Init 1000002 |+>
+MultiBodyMeasure 1:Z,1000002:Z
+MultiBodyMeasure 0:X,1000002:X
+MeasureSinglePatch 1000002 Z
+HGate 3
+HGate 2
+HGate 1
+HGate 0
+Init 1000003 |+>
+MultiBodyMeasure 0:Z,1000003:Z
+MultiBodyMeasure 3:X,1000003:X
+MeasureSinglePatch 1000003 Z
+Init 1000004 |+>
+MultiBodyMeasure 1:Z,1000004:Z
+MultiBodyMeasure 2:X,1000004:X
+MeasureSinglePatch 1000004 Z
