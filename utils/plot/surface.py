@@ -14,16 +14,16 @@ def plot_3d_surface_smooth(data,
                            cbar_label='Fidelity Improvement(%)',
                            save_path=None):
     # 原始网格
-    y = np.arange(data.shape[0])
-    x = np.arange(data.shape[1])
+    y = np.arange(9)
+    x = np.arange(9)
     # 插值函数
     interp_func = RegularGridInterpolator((y, x), data, method='linear')
     # 新的更密集网格
-    ynew = np.linspace(0, data.shape[0] - 1, 9)
-    xnew = np.linspace(0, data.shape[1] - 1, 9)
+    ynew = np.linspace(0, data.shape[0] - 1, 100)
+    xnew = np.linspace(0, data.shape[1] - 1, 100)
     x_grid, y_grid = np.meshgrid(xnew, ynew)
     points = np.stack([y_grid.ravel(), x_grid.ravel()], axis=-1)
-    data_smooth = interp_func(points).reshape(9, 9)
+    data_smooth = interp_func(points).reshape(100, 100)
     # 归一化用于着色
     norm = Normalize(vmin=0, vmax=25)
     n_data_smooth = norm(data_smooth)
@@ -32,9 +32,9 @@ def plot_3d_surface_smooth(data,
     ax = fig.add_subplot(111, projection='3d')
 
     surf = ax.plot_surface(
-        x_grid, y_grid, data,
+        x_grid, y_grid, data_smooth,
         rstride=1, cstride=1,
-        facecolors=plt.cm.viridis(data),
+        facecolors=plt.cm.viridis(n_data_smooth),
         shade=False
     )
 
@@ -96,5 +96,5 @@ if __name__ == '__main__':
         [0.00000000e+00, 3.80236811e-06, 3.80236811e-06, 3.80236811e-06,
          7.60473623e-06, 1.14071043e-05, 1.52094725e-05, 1.52094725e-05,
          6.30774847e-01]],)
-    data = np.log10(data+1e-6)
+
     plot_3d_surface_smooth(data)

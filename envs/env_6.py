@@ -210,7 +210,7 @@ class Env_6(MultiAgentEnv):
 
                 self.chip.print_state()
 
-        rewards = {f'agent_{self.am.activate_agent}': self.round_reward*0.2+ current_reward*0.8}
+        rewards = {f'agent_{self.am.activate_agent}': self.round_reward*0.1+ current_reward*0.9}
 
         truncated = {}
         infos = self._get_infos()
@@ -314,7 +314,7 @@ class Env_6(MultiAgentEnv):
 import config
 if __name__ == '__main__':
     exp = {
-        'lsi_file_path': f'assets/circuits/random/LSI_random_indep_qiskit_{2}.lsi',
+        'lsi_file_path': f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_5.lsi',
         'num_qubits': 2,
     }
     args = config.RedisConfig()
@@ -324,9 +324,9 @@ if __name__ == '__main__':
     env_config = {
         'num_qubits': args.num_qubits,
     }
-    env = Env_6(config = args)
+    env = Env_6(config=args)
     env.reset()
-    action = {f'agent_1':10}
+    action = {f'agent_1': 10}
     env.step(action)
 
     print(env.chip.state)

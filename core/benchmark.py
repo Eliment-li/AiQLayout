@@ -77,24 +77,28 @@ def benchmark_qagent_success_rate():
     states = layout['state'].tolist()
     result =[]
     print(nqubits)
-    for j in range(9):
+    for j in range(10):
         error_rate = j*2e-8
         row_data = []
-        for i in range(len(nqubits-1)):
-            n = nqubits[i]
-            s = str_to_array(states[i])
+        #for i in range(len(nqubits-1)):
+        for i in [20]:
+            #n = nqubits[i]
+            n = i
+            s = str_to_array(states[8])
             size = len(s[0])
             file = Path(f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_{n}.lsi')
             heat_map = get_heat_map(file_path=rootdir / file)
             # layout = get_layout(layout_type=ChipLayoutType.GRID, rows=size, cols=size, num_qubits=n,
             #                     given_state=None)
-            layout = get_layout(layout_type=ChipLayoutType.GRID, rows=size, cols=size, num_qubits=n,
+            size = 17
+            layout = get_layout(layout_type=ChipLayoutType.LINER_1, rows=size, cols=size, num_qubits=n,
                                 given_state=None)
             temp_chip = Chip(rows=size, cols=size, num_qubits=n, layout=layout)
             sr = compute_success_rate(num_qubits=n, heat_map=heat_map, chip=temp_chip,error_rate=error_rate)
             sr = round(sr, 6)
             row_data.append(sr)
-        result.append(row_data)
+            result.append(sr)
+
         print(row_data)
     print(result)
 

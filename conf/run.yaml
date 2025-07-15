@@ -1,9 +1,9 @@
-env_version: 5
+env_version: 6
 enable_brb: True
 #chip
 layout_type: GRID
-chip_rows: 12
-chip_cols: 12
+chip_rows: 15
+chip_cols: 15
 verbose: 1
 enable_broken_patch: False
 

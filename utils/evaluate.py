@@ -120,7 +120,6 @@ def evaluate_v2(base_config, args, results):
     stop_timesteps = 20
     print('start inference...')
     while True:
-        print(f'in... {stop_timesteps}')
         shared_data = {}
         episode = MultiAgentEpisode(
             observations=[obs],
