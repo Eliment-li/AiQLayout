@@ -19,11 +19,11 @@ def plot_3d_surface_smooth(data,
     # 插值函数
     interp_func = RegularGridInterpolator((y, x), data, method='linear')
     # 新的更密集网格
-    ynew = np.linspace(0, data.shape[0] - 1, 100)
-    xnew = np.linspace(0, data.shape[1] - 1, 100)
+    ynew = np.linspace(0, data.shape[0] - 1, 9)
+    xnew = np.linspace(0, data.shape[1] - 1, 9)
     x_grid, y_grid = np.meshgrid(xnew, ynew)
     points = np.stack([y_grid.ravel(), x_grid.ravel()], axis=-1)
-    data_smooth = interp_func(points).reshape(100, 100)
+    data_smooth = interp_func(points).reshape(9, 9)
     # 归一化用于着色
     norm = Normalize(vmin=0, vmax=25)
     n_data_smooth = norm(data_smooth)
@@ -32,9 +32,9 @@ def plot_3d_surface_smooth(data,
     ax = fig.add_subplot(111, projection='3d')
 
     surf = ax.plot_surface(
-        x_grid, y_grid, data_smooth,
+        x_grid, y_grid, data,
         rstride=1, cstride=1,
-        facecolors=plt.cm.viridis(n_data_smooth),
+        facecolors=plt.cm.viridis(data),
         shade=False
     )
 
@@ -51,13 +51,13 @@ def plot_3d_surface_smooth(data,
 
     x_ticks = [0, 5, 10, 16]
     x_labels = ['18', '48', '78', '120']
-    ax.set_xticks(x_ticks)
-    ax.set_xticklabels(x_labels)
+    # ax.set_xticks(x_ticks)
+    # ax.set_xticklabels(x_labels)
 
     y_ticks = [0, 5, 10, 15, 20]
     y_labels = ['10', '20', '30', '40', '50']
-    ax.set_yticks(y_ticks)
-    ax.set_yticklabels(y_labels)
+    # ax.set_yticks(y_ticks)
+    # ax.set_yticklabels(y_labels)
 
     ax.view_init(elev=17, azim=-60)
 
@@ -67,6 +67,34 @@ def plot_3d_surface_smooth(data,
 
 # 用法示例
 if __name__ == '__main__':
-    np.random.seed(0)
-    data = np.random.uniform(0, 25, (21, 17))
+    # np.random.seed(0)
+    # data = np.random.uniform(0, 25, (21, 17))
+    data = np.array([[0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+         0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+         0.00000000e+00],
+        [0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+         0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 3.80236811e-06,
+         8.52452908e-02],
+        [0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+         3.80236811e-06, 3.80236811e-06, 3.80236811e-06, 3.80236811e-06,
+         1.68577990e-01],
+        [0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 3.80236811e-06,
+         3.80236811e-06, 3.80236811e-06, 3.80236811e-06, 7.60473623e-06,
+         2.50039925e-01],
+        [0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 3.80236811e-06,
+         3.80236811e-06, 3.80236811e-06, 7.60473623e-06, 7.60473623e-06,
+         3.29680525e-01],
+        [0.00000000e+00, 0.00000000e+00, 3.80236811e-06, 3.80236811e-06,
+         3.80236811e-06, 7.60473623e-06, 7.60473623e-06, 1.14071043e-05,
+         4.07530210e-01],
+        [0.00000000e+00, 0.00000000e+00, 3.80236811e-06, 3.80236811e-06,
+         7.60473623e-06, 7.60473623e-06, 1.14071043e-05, 1.14071043e-05,
+         4.83638410e-01],
+        [0.00000000e+00, 3.80236811e-06, 3.80236811e-06, 3.80236811e-06,
+         7.60473623e-06, 7.60473623e-06, 1.14071043e-05, 1.52094725e-05,
+         5.58039347e-01],
+        [0.00000000e+00, 3.80236811e-06, 3.80236811e-06, 3.80236811e-06,
+         7.60473623e-06, 1.14071043e-05, 1.52094725e-05, 1.52094725e-05,
+         6.30774847e-01]],)
+    data = np.log10(data+1e-6)
     plot_3d_surface_smooth(data)

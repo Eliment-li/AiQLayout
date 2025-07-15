@@ -1,10 +1,11 @@
 import ast
 import math
 from pathlib import Path
+from pprint import pprint
 
 import numpy as np
 
-from core.chip import Chip, compute_depth
+from core.chip import Chip, compute_depth, benchmark_layouts
 from core.layout import ChipLayoutType, get_layout, QubitState, ChipLayout
 from core.routing import a_star_path
 from utils.file.excel_util import ExcelUtil
@@ -13,8 +14,7 @@ from utils.ls_instructions import get_heat_map
 from utils.route_util import bfs_route
 
 rootdir = get_root_dir()
-def compute_success_rate(num_qubits, heat_map, chip):
-    error_rate = 8e-8
+def compute_success_rate(num_qubits, heat_map, chip,error_rate):
     base_rate = 1 - error_rate
     final_rate = 1
     for i in range(num_qubits):
@@ -67,33 +67,38 @@ def str_to_array(array_str):
 
 def benchmark_qagent_success_rate():
     # # get data
-    path = r'D:\AAAI2026\experiment/sum_up.xlsx'
+    path = r'D:\AAAI2026\experiment/qft/sumUp.xlsx'
     sheets, dfs = ExcelUtil.read_by_sheet(path)
-    # pharse data
-    for sheet in sheets:
-        df = dfs[sheet]
-        #get 0:4 row
-        df = df.iloc[0:4, :]
 
-        nqubits = df['qubits'].tolist()
-        nqubits = np.array(nqubits).astype(int)
-        # 从字符串中提取出该线路的比特数量 qnn/qnn_indep_qiskit_5.qasm-> 5
-        best_state = df['best_state'].tolist()
-        circuit = df['circuit'].tolist()
-        #data.update({sheet:(rl,grid)})
-        print(sheet)
-        for i in range(4):
-
-            state = str_to_array(best_state[i])
-            num_qubits = nqubits[i]
-            size = len(state[0])
-            file = Path(f'assets/circuits/{sheet}/{circuit[i]}')
+    layout = dfs['layout']
+    layout = layout.iloc[0:10, :]
+    nqubits = layout['qubits'].tolist()
+    nqubits = np.array(nqubits).astype(int)
+    states = layout['state'].tolist()
+    result =[]
+    print(nqubits)
+    for j in range(9):
+        error_rate = j*2e-8
+        row_data = []
+        for i in range(len(nqubits-1)):
+            n = nqubits[i]
+            s = str_to_array(states[i])
+            size = len(s[0])
+            file = Path(f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_{n}.lsi')
             heat_map = get_heat_map(file_path=rootdir / file)
-            layout = get_layout(layout_type=ChipLayoutType.GRID, rows=size, cols=size, num_qubits=num_qubits,
+            # layout = get_layout(layout_type=ChipLayoutType.GRID, rows=size, cols=size, num_qubits=n,
+            #                     given_state=None)
+            layout = get_layout(layout_type=ChipLayoutType.GRID, rows=size, cols=size, num_qubits=n,
                                 given_state=None)
-            temp_chip = Chip(rows=size, cols=size, num_qubits=num_qubits, layout=layout)
-            sr = compute_success_rate(num_qubits=num_qubits, heat_map=heat_map, chip=temp_chip)
-            print(sr)
+            temp_chip = Chip(rows=size, cols=size, num_qubits=n, layout=layout)
+            sr = compute_success_rate(num_qubits=n, heat_map=heat_map, chip=temp_chip,error_rate=error_rate)
+            sr = round(sr, 6)
+            row_data.append(sr)
+        result.append(row_data)
+        print(row_data)
+    print(result)
+
+
 
 
 def temp():
@@ -143,3 +148,12 @@ def temp():
 #test code
 if __name__ == '__main__':
     benchmark_qagent_success_rate()
+
+    # grid_success =[
+    #
+    # ]
+    #
+    # rl_success = []
+    # error_rate1 = 1- np.array(grid_success)
+    # error_rate1 *=100
+    # print(repr(error_rate1))
