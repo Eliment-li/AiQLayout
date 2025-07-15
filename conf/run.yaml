@@ -1,5 +1,5 @@
 env_version: 5
-
+enable_brb: True
 #chip
 layout_type: GRID
 chip_rows: 12
@@ -9,7 +9,6 @@ enable_broken_patch: False
 
 #random gate
 gates_size: 1000
-
 reward_scaling: True
 
 rf_version: 3

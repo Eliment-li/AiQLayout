@@ -142,6 +142,7 @@ def run(args,cmd_args):
               'rf_version':  args.rf_version,
               'gamma':  args.gamma,
               'reward_scaling':  args.reward_scaling,
+                'enable_brb': args.enable_brb
             },
         )
         .training(
@@ -250,7 +251,7 @@ if __name__ == "__main__":
     # if is_windows():
     #     print('run on windows')
     #     cmd_args.swanlab = False
-    for i in [10,12,14,16,18,20]:
+    for i in [10]:
         time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
         #ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
