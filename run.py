@@ -251,14 +251,14 @@ if __name__ == "__main__":
     # if is_windows():
     #     print('run on windows')
     #     cmd_args.swanlab = False
-    for i in [20,25,30]:
+    for i in [20]:
         time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
         #ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
         SharedMemoryDict(name='env', size=10240).cleanup()
         try:
             exp = {
-                'lsi_file_path':f'assets/circuits/dj/dj_indep_qiskit_{i}.qasm',
+                'lsi_file_path':f'assets/circuits/dj/LSI_dj_indep_qiskit_{i}.lsi',
                 'num_qubits': i,
             }
             print(f"Running experiment with {i} qubits...")
