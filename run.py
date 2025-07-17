@@ -238,7 +238,7 @@ if __name__ == "__main__":
 
     path = Path(get_root_dir()) / 'conf'
     redis_config = config.RedisConfig()
-    redis_config.flush()  # 清空 Redis 数据库
+    redis_config.clear_redis()  # 清空 Redis 数据库
     # 初始化（只做一次）
     redis_config.initialize(path)
     parser = argparse.ArgumentParser(description="")
@@ -251,14 +251,14 @@ if __name__ == "__main__":
     # if is_windows():
     #     print('run on windows')
     #     cmd_args.swanlab = False
-    for i in [20]:
-        time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
+    for i in [5,7,9,11]:
+
         #ray.init(local_mode=False)
         SharedMemoryDict(name='ConfigSingleton', size=10240).cleanup()
         SharedMemoryDict(name='env', size=10240).cleanup()
         try:
             exp = {
-                'lsi_file_path':f'assets/circuits/dj/LSI_dj_indep_qiskit_{i}.lsi',
+                'lsi_file_path':f'assets/circuits/vqe/LSI_vqe_indep_qiskit_{i}.lsi',
                 'num_qubits': i,
             }
             print(f"Running experiment with {i} qubits...")
@@ -266,6 +266,7 @@ if __name__ == "__main__":
             run(args, cmd_args)
             #ray.shutdown()
             print(f"Finsh experiment with {i} qubits...")
+
         except Exception as e:
             traceback.print_exc()
         finally:
@@ -273,6 +274,7 @@ if __name__ == "__main__":
             # smd.cleanup()
             # smd.shm.unlink()
             ray.shutdown()
+        time.sleep(5)  # Wait for a few seconds to ensure all processes are cleaned up
 
 
 

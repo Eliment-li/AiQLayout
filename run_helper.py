@@ -127,7 +127,6 @@ def train(
 
     time_taken = time.time() - start_time
     print('time_taken ',str(time_taken/60))
-    ray.shutdown()
 
     # Error out, if Tuner.fit() failed to run.
     if results.errors:
