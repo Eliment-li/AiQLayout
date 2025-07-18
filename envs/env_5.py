@@ -384,7 +384,7 @@ class Env_5(MultiAgentEnv):
 import config
 if __name__ == '__main__':
     exp = {
-        'lsi_file_path': f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_5.lsi',
+        'lsi_file_path': f'assets/circuits/vqe/LSI_vqe_indep_qiskit_11.lsi',
         'num_qubits': 2,
     }
     args = config.RedisConfig()
