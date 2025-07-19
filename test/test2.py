@@ -1,105 +1,34 @@
-from pprint import pprint
-
+import matplotlib.pyplot as plt
 import numpy as np
-from PIL._imaging import display
-from qiskit import QuantumCircuit
-from qiskit.quantum_info import Operator
-from qiskit.visualization import array_to_latex
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
 
-from core.layout import ChipLayoutType, ChipLayout, QubitState, get_layout
+# 生成数据
+x = np.linspace(0, 10, 100)
+y = np.sin(x) + 0.1 * np.random.randn(100)
 
+# 主图
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.plot(x, y, label='y=sin(x)')
 
-def demo():
-    # 定义标准 T† 门的矩阵
-    t_dagger = np.array([[1, 0], [0, np.exp(-1j * np.pi / 4)]], dtype=complex)
+# 添加局部放大图
+# 参数[左, 下, 宽, 高]，单位是axes fraction
+axins = inset_axes(ax, width="40%", height="30%", loc='upper right', borderpad=2)
 
-    # z = np.array([[1, 0], [0, -1]], dtype=complex)  # Z 门矩阵
-    # t = np.array([[1, 0], [0, np.exp(1j * np.pi / 4)]], dtype=complex)  # T 门矩阵
-    #
-    # print(t_dagger)
-    # print(z*t*z)
+# 在放大图上画相同的数据
+axins.plot(x, y)
 
-    # 构造电路T dagger = Z-S-T
-    qc = QuantumCircuit(1)
-    qc.z(0)  # T 门
-    qc.s(0)
-    qc.t(0)
+# 设置放大区域的x轴和y轴范围
+x1, x2 = 2, 4  # x轴放大范围
+y1, y2 = y[(x > x1) & (x < x2)].min(), y[(x > x1) & (x < x2)].max()  # y轴自动适应
+axins.set_xlim(x1, x2)
+axins.set_ylim(y1, y2)
 
-    # # 提取电路的酉矩阵
-    circuit_unitary = Operator(qc).data
-    print(circuit_unitary)
-    print(t_dagger)
+# 去掉放大图的刻度标签
+axins.set_xticklabels([])
+axins.set_yticklabels([])
 
-    # 验证是否等价（忽略全局相位）
-    if np.allclose(circuit_unitary, t_dagger):
-        print("\n电路等价于 Tdagger！")
-    else:
-        # 检查是否仅差全局相位
-        global_phase = np.angle(circuit_unitary[0, 0] / t_dagger[0, 0])
-        scaled_unitary = circuit_unitary * np.exp(-1j * global_phase)
-        if np.allclose(scaled_unitary, t_dagger):
-            print(f"\n电路等价于 T†（允许全局相位 {global_phase / np.pi:.2f}π）！")
-        else:
-            print("\n电路不等价于 T†。")
+# 在主图上画出放大区域的矩形，并连线到inset
+mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5")
 
-
-def reshape_to_2d(arr, n):
-    """
-    将一维数组转换为二维数组，每行n个元素
-
-    参数:
-        arr (list): 输入的一维数组
-        n (int): 每行的元素数量
-
-    返回:
-        list: 二维数组
-    """
-    if not isinstance(n, int) or n <= 0:
-        raise ValueError("n必须是正整数")
-
-    return [arr[i:i + n] for i in range(0, len(arr), n)]
-if __name__ == '__main__':
-    # import redis
-    # r = redis.Redis(host='127.0.0.1', port=6379)
-    # r.flushall()
-    # print(ChipLayoutType.COMPACT_2.value=='COMPACT_2')
-    # layout  = ChipLayoutType('COMPACT_2')
-    # print(layout==ChipLayoutType.COMPACT_2)
-
-    import numpy as np
-    import matplotlib.pyplot as plt
-
-    # 生成一个随机三维数组
-    embed = [
-        [
-            [1,1,1],
-            [1,1,1],
-            [1,1,1],
-
-        ],
-        [
-            [2, 2, 2],
-            [2, 2, 2],
-            [2, 2, 2],
-
-        ],
-    ]
-
-    i = 2  # 假设我们取第2个切片
-
-    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
-
-    # embed[i]，即 embed[i, :, :]
-    axs[0].imshow(embed[i], aspect='auto')
-    axs[0].set_title('embed[i] (shape: {})'.format(embed[i].shape))
-    axs[0].set_xlabel('axis 2')
-    axs[0].set_ylabel('axis 1')
-
-    # embed[..., i]，即 embed[:, :, i]
-    axs[1].imshow(embed[..., i], aspect='auto')
-    axs[1].set_title('embed[..., i] (shape: {})'.format(embed[..., i].shape))
-    axs[1].set_xlabel('axis 1')
-    axs[1].set_ylabel('axis 0')
-
-    plt.tight_layout()
-    plt.show()
+ax.legend()
+plt.show()
