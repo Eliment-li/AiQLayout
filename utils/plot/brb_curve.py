@@ -5,6 +5,7 @@ from matplotlib.ticker import FuncFormatter
 import matplotlib as mpl
 
 import matplotlib.ticker as ticker
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset, inset_axes
 
 from utils.file.csv_util import to_dataframe
 from utils.file.file_util import get_root_dir
@@ -17,9 +18,10 @@ plt.rcParams['ps.fonttype'] = 42
 # # 列出可用字体
 # available_fonts = sorted([f.name for f in font_manager.fontManager.ttflist])
 # print(available_fonts)
+legend_size=20
 mpl.rcParams['font.size'] = 24
-label_size = 24
-line_width = 1.0
+label_size = 26
+line_width = 1.5
 v6=[]
 v7=[]
 dpi = 500
@@ -38,173 +40,196 @@ def seconds_to_hours(x, pos):
     return f'{hours:.1f}'
 
 
-fig, axs = plt.subplots(2, 1, figsize=(10, 8))
+fig, axs = plt.subplots(4, 1, figsize=(10,16))
+#设置子图上下之间的间距
+fig.subplots_adjust(hspace=0.1)
 
 def plot1():
     ax = axs[0]
     data_path = f'assets\\data\\BRB_policy_loss.csv'
-    group1,group2 = get_data(data_path)
+    disable_brb,enable_brb = get_brb_policy_loss_data(data_path)
 
-    for i  in range(len(group1)):
-        data = group1[i]
-        label='disable BRB' if i == 0 else None
-        ax.plot(data,color='#1565c0',linewidth=line_width, label=label)
-    for i  in range(len(group2)):
-        data = group2[i]
-        label = 'enable BRB' if i == 0 else None
-        ax.plot(data,color='#df6172',linewidth=line_width, label=label)
+    for i  in range(len(disable_brb)):
+        data = disable_brb[i]
+        label = 'disable BRB'
+        ax.plot(data,color='#1565c0',linewidth=line_width ,alpha=0.25)
+    mean1 = np.mean(disable_brb, axis=0)
+    ax.plot(mean1,color='#1565c0',linewidth=line_width*1.5, label=label,alpha=0.99)
 
+    for i  in range(len(enable_brb)):
+        data = enable_brb[i]
+        label = 'enable BRB'
+        ax.plot(data,color='#df6172',linewidth=line_width,alpha=0.25)
+    mean2 = np.mean(enable_brb, axis=0)
+    ax.plot(mean2,color='#df6172',linewidth=line_width*1.5, label=label,alpha=0.99)
     # 设置y轴为对数刻度
     #ax.set_yscale('log',base=10)
 
     y_min, y_max =  ax.get_ylim()
     #循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
-    for y_coord in np.arange(y_min, y_max, 0.02):
+    for y_coord in np.arange(y_min, y_max, 0.05):
         ax.axhline(y=y_coord, color='#cfcfcf', linestyle='--', zorder=0 )
+
+    #x轴添加参考线
+    for x_coord in np.arange(0, len(mean1), 20):
+        ax.axvline(x=x_coord, color='#cfcfcf', linestyle='--', zorder=0 )
 
     #plt.title('amplitude_estimation')
     #ax.set_xlabel('Training Iteration',fontsize = label_size)
-    ax.set_ylabel('Policy Loss',fontsize = label_size)
-
-    # ustom formatter
-
-    #ax.xaxis.set_major_formatter(FuncFormatter(time_formatter))
-
-    # 设置 x 轴的主刻度为每 1800 秒（0.5 小时）
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(10))
-
+    ax.set_xticklabels([])
+    ax.set_ylabel('Policy loss',fontsize = label_size)
+    # 5 和  0 对应的是x轴和y轴的坐标值
+    ax.text(1, -0.08, 'a)', fontsize=label_size, color='black', transform=ax.transData)
 
     from matplotlib.ticker import ScalarFormatter
-    ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+    #ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
     ax.yaxis.get_major_formatter().set_scientific(True)
     ax.yaxis.get_major_formatter().set_powerlimits((0, 0))
-
-    ax.legend(loc='upper right', fontsize='small')
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.05))
+    ax.legend(loc='upper right', fontsize=legend_size)
 
 #total loss
 def plot2():
     ax = axs[1]
     data_path = f'assets\\data\\BRB_vf_loss.csv'
-    group1,group2 = get_data(data_path)
-    x = range(0, len(group1[0]))
-    for i  in range(len(group1)):
-        data = group1[i]
-        label='disable BRB' if i == 0 else None
-        ax.plot(x,data,color='#1565c0',linewidth=line_width, label=label)
-    for i  in range(len(group2)):
-        data = group2[i]
-        label = 'enable BRB' if i == 0 else None
-        ax.plot(x,data,color='#df6172',linewidth=line_width, label=label)
-
+    disable_brb,enable_brb = get_brb_policy_loss_data(data_path)
+    x = range(0, len(disable_brb[0]))
+    for i  in range(len(disable_brb)):
+        data = disable_brb[i]
+        label='disable BRB'
+        ax.plot(x,data,color='#1565c0',linewidth=line_width, alpha=0.25)
+    mean1 = np.mean(disable_brb, axis=0)
+    ax.plot(x,mean1,color='#1565c0',linewidth=line_width*1.5, label=label,alpha=0.99)
+    for i  in range(len(enable_brb)):
+        data = enable_brb[i]
+        label = 'enable BRB'
+        ax.plot(x,data,color='#df6172',linewidth=line_width, alpha=0.25)
+    mean2 = np.mean(enable_brb, axis=0)
+    ax.plot(x,mean2,color='#df6172',linewidth=line_width*1.5, label=label,alpha=0.99)
     # 设置y轴为对数刻度
     #ax.set_yscale('log',base=10)
+    # 5 和  0 对应的是x轴和y轴的坐标值
+    ax.text(1, 0.2, 'b)', fontsize=label_size, color='black', transform=ax.transData)
 
     y_min, y_max =  ax.get_ylim()
     #循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
-    for y_coord in np.arange(y_min, y_max, 0.2):
+    for y_coord in np.arange(y_min, y_max, 0.5):
         ax.axhline(y=y_coord, color='#cfcfcf', linestyle='--', zorder=0 )
+        # x轴添加参考线
+    for x_coord in np.arange(0, len(mean1), 20):
+        ax.axvline(x=x_coord, color='#cfcfcf', linestyle='--', zorder=0)
+   # plt.title('amplitude_estimation')
+    ax.set_xlabel('',fontsize = label_size)
+    ax.set_ylabel('Value Function loss',fontsize = label_size)
 
-    #plt.title('amplitude_estimation')
-    ax.set_xlabel('Training Iteration',fontsize = label_size)
-    ax.set_ylabel('Value Function Loss',fontsize = label_size)
+    #hide x axis labels
+    ax.set_xticklabels([])
 
-    # ustom formatter
-
-    #ax.xaxis.set_major_formatter(FuncFormatter(time_formatter))
-
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(10))
-
-    # 使用 FuncFormatter 应用自定义格式
-    #ax.xaxis.set_major_formatter(ticker.FuncFormatter(seconds_to_hours))
+   # ax.xaxis.set_major_locator(ticker.MultipleLocator(10))
 
     from matplotlib.ticker import ScalarFormatter
     ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
     ax.yaxis.get_major_formatter().set_scientific(True)
     ax.yaxis.get_major_formatter().set_powerlimits((0, 0))
+    ax.legend(loc='upper right', fontsize=legend_size)
 
-    ax.legend(loc='upper right', fontsize='small')
+    # ====== 添加局部放大图 ======
+    # 1. 创建 inset axes
+    axins = inset_axes(ax, width="120%", height="120%",bbox_to_anchor=(0.35, 0.8, 0.35, 0.35),bbox_transform=ax.transAxes, borderpad=2)
+    # 设置 inset 边框线宽
+    for spine in axins.spines.values():
+        spine.set_linewidth(1)  # 设置边框线宽为 2
+    # 2. 在 inset 上画同样的数据
+    for i in range(len(disable_brb)):
+        data = disable_brb[i]
+        axins.plot(x, data, color='#1565c0', linewidth=line_width, alpha=0.25)
+    axins.plot(x, mean1, color='#1565c0', linewidth=line_width * 2, alpha=0.99)
 
-# sample_steps
-##The throughput of sampled environmental steps per second,
-def plot3():
-    ax = axs[0]
-    xv6,yv6,xv7,yv7 = get_data('sample_time_s',x_index = 'Step')
-    # 创建折线图
-    ax.plot(xv6, yv6,color='#1565c0',linewidth=line_width, label='PPO')
-    ax.plot(xv7, yv7,color='#df6172',linewidth=line_width, label='RR-PPO')
-    ax.set_ylim(bottom=85)
-    ax.set_ylim(top=190)
+    for i in range(len(enable_brb)):
+        data = enable_brb[i]
+        axins.plot(x, data, color='#df6172', linewidth=line_width, alpha=0.25)
+    axins.plot(x, mean2, color='#df6172', linewidth=line_width * 2, alpha=0.99)
 
+    # 3. 设置放大区域范围
+    x1, x2 = 10,20
+    axins.set_xlim(x1, x2)
+
+    # 4. 自动适应y轴
+    all_data = np.concatenate([disable_brb, enable_brb], axis=0)
+    y_data_in_zoom = all_data[:, x1:x2 + 1]
+    y1, y2 = np.min(y_data_in_zoom), np.max(y_data_in_zoom)
+    axins.set_ylim(y1, y2)
+
+    # 5. 去掉 inset 的刻度标签
+    axins.set_xticklabels([])
+    axins.set_yticklabels([])
+
+    # # 6. 画参考线（风格一致）
+    # for y_coord in np.arange(y1, y2, 0.2):
+    #     axins.axhline(y=y_coord, color='#cfcfcf', linestyle='--', zorder=0)
+
+    # 7. 用 mark_inset 连接主图和 inset
+    mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5", linewidth=1.5)
+
+def get_episode_return_data(path):
+    data = to_dataframe(relative_path=path)
+    group1 = []
+    group2 = []
+    # iter by column and get index for each column
+    i = 0
+    for column in data.columns:
+        col_data = data[column].values
+        col_data = replace_nan_with_average(col_data)
+        if i ==1:
+            group1.append(col_data)
+        elif i==2:
+            group2.append(col_data)
+        i += 1
+    return group1, group2
+def plot4():
+    ax = axs[3]
+    data_path = f'assets\\data\\episode_return_mean.csv'
+    disable_brb, enable_brb = get_brb_policy_loss_data(data_path)
+    x = range(0, len(disable_brb[0]))
+    for i in range(len(disable_brb)):
+        data = disable_brb[i]
+        label = 'disable BRB'
+        ax.plot(x, data, color='#1565c0', linewidth=line_width*1.5,label=label, alpha=0.99)
+    for i in range(len(enable_brb)):
+        data = enable_brb[i]
+        label = 'enable BRB'
+        ax.plot(x, data, color='#df6172', linewidth=line_width*1.5,label=label, alpha=0.99)
+
+    ax.text(1, -1, 'c)', fontsize=label_size, color='black', transform=ax.transData)
     y_min, y_max =  ax.get_ylim()
     #循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
-    for y_coord in np.arange(y_min, y_max, 10):
+    for y_coord in np.arange(y_min, y_max, 5):
         ax.axhline(y=y_coord, color='#cfcfcf', linestyle='--', zorder=0 )
-
+    # x轴添加参考线
+    for x_coord in np.arange(0, len(disable_brb[0]), 20):
+        ax.axvline(x=x_coord, color='#cfcfcf', linestyle='--', zorder=0)
     #plt.title('amplitude_estimation')
-    ax.set_xlabel('Steps',fontsize = label_size)
+
+
+    ax.set_xlabel('Training iteration', fontsize=label_size)
+    ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
+
     ax.set_ylabel('Sample Time (s)',fontsize = label_size)
 
-    # ustom formatter
-    ax.xaxis.set_major_formatter(FuncFormatter(time_formatter))
 
-    ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
+    ax.set_ylabel('Episode return ',fontsize = label_size)
 
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(25))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(10))
+    #ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
+    ax.legend(loc='lower right', fontsize=legend_size)
 
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
-    ax.legend(loc='upper right', fontsize='medium')
-
-#Time in seconds this iteration took to run
-def plot4():
-    ax = axs[1]
-    xv6, yv6, xv7, yv7 = get_data('train_iter_s', x_index='Step')
-    # 创建折线图
-    ax.plot(xv6, yv6,color='#1565c0',linewidth=line_width, label='PPO')
-    ax.plot(xv7, yv7,color='#df6172',linewidth=line_width, label='RR-PPO')
-    ax.set_ylim(bottom=85)
-    ax.set_ylim(top=190)
-    y_min, y_max = ax.get_ylim()
-    # 循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
-    for y_coord in np.arange(y_min, y_max, 10):
-        ax.axhline(y=y_coord, color='#cfcfcf', linestyle='--', linewidth=line_width, zorder=0)
-
-    # plt.title('amplitude_estimation')
-    ax.set_xlabel('Steps',fontsize = label_size)
-    ax.set_ylabel('Iteration Time (s) ',fontsize = label_size)
-
-    # ustom formatter
-    ax.xaxis.set_major_formatter(FuncFormatter(time_formatter))
-
-    ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
-
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(25))
-    ax.legend(loc='upper right', fontsize='medium')
-
-def plot_t1():
-    plot1()
-    plot2()
-    plt.tight_layout()
-    plt.savefig(get_root_dir()+'/data/fig/t1.png',dpi = dpi)
-    plt.show()
-
-def plot_t2():
-    plot3()
-    plot4()
-    plt.tight_layout()
-    plt.savefig(get_root_dir()+'/data/fig/t2.png',dpi = dpi)
-    plt.show()
-
-def get_data(path):
+def get_brb_policy_loss_data(path):
     data=to_dataframe(relative_path=path)
     group1=[]
     group2=[]
     #iter by column and get index for each column
     i = 0
     for column in data.columns:
-        #skip the step column
-        if column == 'step':
-            continue
         col_data=data[column].values
         col_data =replace_nan_with_average(col_data)
         if i % 2 == 0:
@@ -239,14 +264,77 @@ def replace_nan_with_average(arr):
 
     return arr
 
+def get_brb_policy_entropy_data(data_path):
+    data = to_dataframe(relative_path=data_path)
+    group1 = []
+    group2 = []
+    # iter by column and get index for each column
+    i = 0
+    for column in data.columns:
+        col_data = data[column].values
+        col_data = replace_nan_with_average(col_data)
+        if str(column).startswith('disable'):
+            group1.append(col_data)
+        elif str(column).startswith('enable'):
+            group2.append(col_data)
+        i += 1
+    return group1, group2
+def plot3():
+    ax = axs[2]
+    data_path = f'assets\\data\\policy_entropy.csv'
+    disable_brb, enable_brb = get_brb_policy_entropy_data(data_path)
+    x = range(0, len(disable_brb[0]))
+    for i in range(len(disable_brb)):
+        data = disable_brb[i]
+        label = 'disable BRB'
+        ax.plot(x, data, color='#1565c0', linewidth=line_width, alpha=0.3)
+    mean1 = np.mean(disable_brb, axis=0)
+    ax.plot(x, mean1, color='#1565c0', linewidth=line_width*2, label=label, alpha=0.99)
 
+    for i in range(len(enable_brb)):
+        data = enable_brb[i]
+        label = 'enable BRB'
+        ax.plot(x, data, color='#df6172', linewidth=line_width, alpha=0.3)
+    mean2 = np.mean(enable_brb, axis=0)
+    ax.plot(x, mean2, color='#df6172', linewidth=line_width*2, label=label, alpha=0.99)
+
+    ax.text(1, 2.3, 'd)', fontsize=label_size, color='black', transform=ax.transData)
+
+    y_min, y_max =  ax.get_ylim()
+    #循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
+    for y_coord in np.arange(2, y_max, 0.5):
+        ax.axhline(y=y_coord, color='#cfcfcf', linestyle='--', zorder=0 )
+    # x轴添加参考线
+    for x_coord in np.arange(0, len(disable_brb[0]), 20):
+        ax.axvline(x=x_coord, color='#cfcfcf', linestyle='--', zorder=0)
+    #plt.title('amplitude_estimation')
+    ax.set_ylabel('Sample Time (s)',fontsize = label_size)
+
+    # ustom formatte
+    plt.subplots_adjust(bottom=0.2)
+
+    ax.set_ylabel('Policy entropy',fontsize = label_size)
+
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.5))
+    #ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
+    ax.legend(loc='upper right', fontsize=legend_size)
+ # hide x axis labels
+    ax.set_xticklabels([])
+# 设置所有子图的 ylabel 左对齐
+def align_ylabels_left(axs, label_x_position=-0.1):
+    for ax in axs:
+        ax.yaxis.set_label_coords(label_x_position, 0.5)  # 设置 y-label 的 x 坐标和 y 坐标
 
 if __name__ == '__main__':
-    # plot_t2()
-    group1,group2 = get_data(f'assets\\data\\BRB_policy_loss.csv')
-    # print(group1)
-    # print(group2)
     plot1()
     plot2()
+    plot3()
+    plot4()
+
+    align_ylabels_left(axs)
+    rootdir = get_root_dir()
+    path = rootdir + '\\results\\fig\\brb.png'
+    plt.savefig(path, dpi=dpi, bbox_inches='tight')
     plt.show()
+
     # print(replace_nan_with_average(group1[0]))
