@@ -104,7 +104,7 @@ def plot():
         fontsize = 26
         # 添加图例
         if i==0:
-            ax.legend(['QAgent ','Grid'], loc='upper left')
+            ax.legend(['QAgent ','Grid-based'], loc='upper left')
 
         # 设置横轴的标签
         # Set x-axis to show only integers
@@ -125,7 +125,7 @@ def plot():
         if i in range(6,9):
             ax.set_xlabel('Qubits' ,fontsize = fontsize)
         # 设置图表的标题
-        ax.set_title(title[i], fontsize = fontsize+6)
+        ax.set_title(title[i], fontsize = fontsize+8)
         # 显示背景网格
         ax.grid(True, which='both', axis='y', linestyle='-', linewidth=1.5,zorder = 0)
 

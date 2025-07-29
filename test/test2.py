@@ -1,34 +1,45 @@
-import matplotlib.pyplot as plt
+import re
 import numpy as np
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
 
-# 生成数据
-x = np.linspace(0, 10, 100)
-y = np.sin(x) + 0.1 * np.random.randn(100)
+def parse_phrase(instruction):
+    # 使用正则表达式匹配括号内的内容
+    match = re.search(r'\((.*?)\)', instruction)
+    if not match:
+        raise ValueError("输入字符串中没有找到括号")
 
-# 主图
-fig, ax = plt.subplots(figsize=(8, 5))
-ax.plot(x, y, label='y=sin(x)')
+    expr = match.group(1).replace(' ', '')  # 移除空格
 
-# 添加局部放大图
-# 参数[左, 下, 宽, 高]，单位是axes fraction
-axins = inset_axes(ax, width="40%", height="30%", loc='upper right', borderpad=2)
+    # 处理 pi 的表达式
+    pi_pattern = re.compile(r'^([+-]?[\d\.]*)\*?pi(?:/([+-]?[\d\.]+))?$')
+    m = pi_pattern.match(expr)
+    if m:
+        m_coeff = m.group(1)
+        n_denom = m.group(2)
+        # 处理 m
+        if m_coeff == '' or m_coeff == '+':
+            m_val = 1.0
+        elif m_coeff == '-':
+            m_val = -1.0
+        else:
+            m_val = float(m_coeff)
+        # 处理 n
+        if n_denom:
+            n_val = float(n_denom)
+            return m_val * np.pi / n_val
+        else:
+            return m_val * np.pi
 
-# 在放大图上画相同的数据
-axins.plot(x, y)
+    # 纯数字
+    try:
+        return float(expr)
+    except ValueError:
+        raise ValueError(f"invalid expr: {expr}")
 
-# 设置放大区域的x轴和y轴范围
-x1, x2 = 2, 4  # x轴放大范围
-y1, y2 = y[(x > x1) & (x < x2)].min(), y[(x > x1) & (x < x2)].max()  # y轴自动适应
-axins.set_xlim(x1, x2)
-axins.set_ylim(y1, y2)
 
-# 去掉放大图的刻度标签
-axins.set_xticklabels([])
-axins.set_yticklabels([])
-
-# 在主图上画出放大区域的矩形，并连线到inset
-mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5")
-
-ax.legend()
-plt.show()
+if __name__ == '__main__':
+    # 测试用例
+    for test in [
+        "p(pi)", "p(-pi)", "p(pi/3)", "p(-pi/7)", "p(2*pi/5)", "p(-2*pi/5)", "p(3*pi)", "p(4)", "p(-1.5)", "p(0)",
+        "p(+pi/2)", "p(-pi/2)", "p(+3*pi/4)", "p(3.5*pi/2)", "p(2.1)"
+    ]:
+        print(f"{test} -> {parse_phrase(test)}")
