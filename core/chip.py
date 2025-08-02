@@ -332,8 +332,8 @@ def benchmark_layouts(layout_type: ChipLayoutType = None,num_qubits: int = 0, si
     layout = get_layout(layout_type=layout_type, rows=size, cols=size,num_qubits=num_qubits)
     # layout = ChipLayout(rows=args.chip_rows,cols=args.chip_cols,layout_type = ChipLayoutType.GRID,num_qubits=self.num_qubits)#get_layout(name = ChipLayoutType.GRID, rows=args.chip_rows, cols=args.chip_cols, num_qubits=self.num_qubits)
     temp_chip = Chip(rows=size, cols=size, num_qubits=num_qubits,layout=layout)
-    #dist  = compute_dist_v2(num_qubits, heat_map, temp_chip)
-    dist  = compute_depth(num_qubits, heat_map, temp_chip)
+    dist  = compute_dist_v2(num_qubits, heat_map, temp_chip)
+    #dist  = compute_depth(num_qubits, heat_map, temp_chip)
     return dist
 
 
@@ -343,7 +343,7 @@ def benchmark_layouts(layout_type: ChipLayoutType = None,num_qubits: int = 0, si
 #test code
 if __name__ == '__main__':
     rootdir = get_root_dir()
-    lsi_size = [10,15,20,25]
+    circuit_size = [3,5,7,9]
 
     LAYOUT = [
         ChipLayoutType.LINER_1,
@@ -359,31 +359,35 @@ if __name__ == '__main__':
         size = chip_size[j]
         print(layout)
         for i in range(4):
-            num_qubits = lsi_size[i]
-            file = Path(f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_{num_qubits}.lsi')
+            num_qubits = circuit_size[i]
+            file = Path(f'assets/circuits/qaoa/LSI_qaoa_indep_qiskit_{num_qubits}.lsi')
             heat_map = get_heat_map(file_path=rootdir / file)
             dist = benchmark_layouts(layout_type=ChipLayoutType(layout), num_qubits=num_qubits, size=size,heat_map=heat_map)
             print(dist)
 
-    # state = np.array([[ 0,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0],
-    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1],
-    #    [-1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
-    #    [ 0,  0,  0,  4,  7,  0,  0,  0,  0,  0,  0,  0],
-    #    [ 0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0, -1],
-    #    [-1,  0,  3,  1,  8,  0,  0,  0,  0,  0,  0,  0],
-    #    [ 0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
-    #    [ 0,  0,  9,  0,  0,  0,  0,  0,  0,  0,  0, -1],
-    #    [-1,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0],
-    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
-    #    [ 0,  0,  0,  6,  0,  0,  0,  0,  0,  0,  0, -1],
-    #    [-1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0]])
-    # size = 12
-    # num_qubits = 10
-    # file = Path(f'assets/circuits/qft/LSI_qftentangled_indep_qiskit_{num_qubits}.lsi')
+    # state = np.array([[ 0,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1],
+    #    [-1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  8,  0,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  0,  0,  0, -1],
+    #    [-1,  0,  0,  0,  0,  0,  0,  0,  0,  4, 10,  0,  0,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  6,  0,  7,  0,  0,  1,  0,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  9,  0,  0,  0,  0,  0,  0, -1],
+    #    [-1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11,  0,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  2,  0,  0,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1],
+    #    [-1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+    #    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1],
+    #    [-1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0, -1,  0,  0]])
+    # size = 15
+    # num_qubits = 11
+    # file = Path(f'assets/circuits/vqe/LSI_vqe_indep_qiskit_{num_qubits}.lsi')
     # heat_map = get_heat_map(file_path=rootdir / file)
     # layout = get_layout(layout_type=ChipLayoutType.GIVEN, rows=size, cols=size, num_qubits=num_qubits,given_state=state)
     # temp_chip = Chip(rows=size, cols=size, num_qubits=num_qubits, layout=layout)
-    # dist = compute_depth(num_qubits, heat_map, temp_chip)
+    # #dist = compute_depth(num_qubits, heat_map, temp_chip)
+    # #dist = benchmark_layouts(layout_type=ChipLayoutType(layout), num_qubits=num_qubits, size=size,heat_map=heat_map)
     # print(dist)
 
 

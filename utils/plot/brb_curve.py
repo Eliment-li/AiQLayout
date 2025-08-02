@@ -200,9 +200,8 @@ def plot4():
         label = 'enable BRB'
         ax.plot(x, data, color='#df6172', linewidth=line_width*1.5,label=label, alpha=0.99)
 
-    ax.text(1, -1, 'c)', fontsize=label_size, color='black', transform=ax.transData)
-    y_min, y_max =  ax.get_ylim()
-    #循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
+    ax.text(1, -1, 'd)', fontsize=label_size, color='black', transform=ax.transData)
+    y_min, y_max =  ax.get_ylim()    #循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
     for y_coord in np.arange(y_min, y_max, 5):
         ax.axhline(y=y_coord, color='#cfcfcf', linestyle='--', zorder=0 )
     # x轴添加参考线
@@ -298,7 +297,7 @@ def plot3():
     mean2 = np.mean(enable_brb, axis=0)
     ax.plot(x, mean2, color='#df6172', linewidth=line_width*2, label=label, alpha=0.99)
 
-    ax.text(1, 2.3, 'd)', fontsize=label_size, color='black', transform=ax.transData)
+    ax.text(1, 2.3, 'c)', fontsize=label_size, color='black', transform=ax.transData)
 
     y_min, y_max =  ax.get_ylim()
     #循环遍历 y 轴坐标值，为每个 y 坐标值添加参考线
