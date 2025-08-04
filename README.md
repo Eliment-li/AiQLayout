@@ -29,14 +29,28 @@ The  **Pytorch**  package is also required, For **Windows**, the Pytorch  is alr
 For **Linux** or to install Pytorch with GPU,  please see [Pytorch Get Started](https://pytorch.org/get-started/locally/)
 
 ### Large-Scale training
-We suggest to use high performance memory management system  **Redis** to store temp data.
+We use  **Redis** to store temp data, redis is a high performance memory management system.
 A simple official installation tutorial is available at https://redis.io/docs/latest/operate/oss_and_stack/install/
 
 
 ## Configuration
 
 1. you have the option to utilize the default settings or customize the important items in the **conf/run.xml** 
-2. A private.yaml is also need to setup the redis password and wandb token.
+2. A private.yaml is also need to setup the redis password and wandb token. below is an example:
+>private.yaml
+
+```yaml  
+swanlab_key: 
+swanlab_project: my_project 
+upload_checkpoints_to_wandb: False
+wandb_run_name: None
+save_render_img: True
+
+#redis_ip: 172.26.192.168
+redis_ip: 127.0.0.1
+redis_port: 6379
+redis_password: (the default password is empty)
+```
 
 ## Training
 
