@@ -11,7 +11,6 @@ plt.rcParams['pdf.fonttype'] = 42
 plt.rcParams['ps.fonttype'] = 42
 plt.rcParams['font.size'] = 13
 
-# 示例数据
 data = np.array([
     [1.0, 0.962573, 0.926548, 0.89187, 0.85849, 0.82636, 0.795432, 0.765662, 0.737006],
     [1.0, 0.965656, 0.932491, 0.900465, 0.869539, 0.839675, 0.810837, 0.782989, 0.756098],
@@ -49,13 +48,13 @@ cbar.outline.set_visible(False)
 # cbar.set_label('Value', labelpad=8)
 
 # 轴标签
-ax.set_xlabel('Layout', labelpad=25)
+# ax.set_xlabel('Methods', labelpad=25)
 ax.set_ylabel(r'Error rate ($\times 2.0\times 10^{-8}$)', labelpad=10)
 ax.set_zlabel(r'Success rate ($\%$)', labelpad=10)
 
 # 添加xticklabels和yticklabels
 ax.set_xticks(_x + dx / 2)
-ax.set_xticklabels(['Grid     ', 'Compact_1', 'Compact_2', 'Liner    ', 'QAgent'], rotation=10, ha='right')
+ax.set_xticklabels([ "Paler's",'AutoBarid', 'Ecmas', 'Ecmas+', 'QAgent',], rotation=10, ha='right')
 ax.set_yticks(_y + dy / 3 -1)
 ax.set_yticklabels([0,1,2,3,4,5,6,7,8], rotation=45, ha='right')
 ax.invert_xaxis()
