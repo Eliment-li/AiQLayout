@@ -144,7 +144,7 @@ def plot_gate_heatmap(nodes, relations,savepath=None):
     plt.tight_layout()
     if savepath:
         plt.savefig(savepath, dpi=300)
-    #plt.show()
+    plt.show()
 
 from PIL import Image
 import numpy as np

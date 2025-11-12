@@ -4,13 +4,11 @@ import re
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
-from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import MaxNLocator, MultipleLocator  # 添加 MultipleLocator
+from matplotlib.ticker import FuncFormatter  # 新增导入
 
 from utils.file.excel_util import ExcelUtil
 from utils.file.file_util import get_root_dir
-
-# from utils.file.excel_util import ExcelUtil
-# from utils.file.file_util import FileUtil
 
 mpl.rcParams['font.family'] = ['Arial']
 mpl.rcParams['font.size'] = 34
@@ -20,13 +18,43 @@ sep = os.path.sep
 
 def get_data():
     # # get data
-    path = r'D:\AAAI2026\experiment/sum_up.xlsx'
+    path = r'D:\paper\dac2026\experiment/sum_up.xlsx'
     sheets, dfs = ExcelUtil.read_by_sheet(path)
     data={}
     labels_2d = [
 
     ]
     # pharse data
+
+    def parse_series_value(v):
+        """
+        输入可能为：
+         - 单个数值（int/float）或字符串数字 -> 返回 mean, std (std=0)
+         - 逗号分隔的数字字符串 '1,2,3' 或 '1, 2,3' -> 返回均值和标准差
+         - 空值或无法解析 -> 返回 np.nan, 0
+        """
+        if v is None or (isinstance(v, float) and np.isnan(v)):
+            return np.nan, 0.0
+        # 如果已经是数值
+        if isinstance(v, (int, float, np.integer, np.floating)):
+            return float(v), 0.0
+        # 转为字符串并尝试按逗号分割
+        s = str(v).strip()
+        if s == '':
+            return np.nan, 0.0
+        parts = [p.strip() for p in s.split(',') if p.strip() != '']
+        vals = []
+        for p in parts:
+            try:
+                vals.append(float(p))
+            except:
+                # 无法解析则忽略该部分
+                continue
+        if len(vals) == 0:
+            return np.nan, 0.0
+        arr = np.array(vals, dtype=float)
+        return float(arr.mean()), float(arr.std(ddof=0))
+
     for sheet in sheets:
         df = dfs[sheet]
         #get 0:4 row
@@ -39,12 +67,32 @@ def get_data():
         labels_2d.append(qubits_number)
         rl = df['rl_distance'].tolist()
         grid = df['grid_distance'].tolist()
-        data.update({sheet:(rl,grid)})
+
+        # 解析每一项，得到 mean 列表和 std 列表
+        rl_means = []
+        rl_stds = []
+        for v in rl:
+            m, s = parse_series_value(v)
+            rl_means.append(m)
+            rl_stds.append(s)
+
+        grid_means = []
+        grid_stds = []
+        for v in grid:
+            m, s = parse_series_value(v)
+            grid_means.append(m)
+            grid_stds.append(s)
+
+        # 保证 numpy 数组类型为 float，便于绘图
+        rl_means = np.array(rl_means, dtype=float)
+        rl_stds = np.array(rl_stds, dtype=float)
+        grid_means = np.array(grid_means, dtype=float)
+        grid_stds = np.array(grid_stds, dtype=float)
+
+        data.update({sheet:(rl_means, rl_stds, grid_means, grid_stds)})
 
     print('===data===')
-    # for i, (group_name, (group1, group2)) in enumerate(data.items()):
-    #     if i==0:
-    #         print(f'{group_name}: {group1}, {group2}')
+    print(data)
     return data,labels_2d
 
 def plot():
@@ -55,21 +103,9 @@ def plot():
         'Quantum Walk',
         'Deutsch-Jozsa Algorithm',
         'Quantum Neural Network',
-        #
-        # 'Portfolio Optimization with VQE',
-        # 'Real Amplitudes ansatz',
     ]
 
     labels=['a','b','c','d']
-   # labels_2d=[labels,labels,labels,labels,labels,labels]
-    # data = {
-    #     'g1': ([1, 2, 3], [4, 5, 6]),
-    #     'g2': ([1, 2, 3], [4, 5, 6]),
-    #     'g3': ([1, 2, 3], [4, 5, 6]),
-    #     'g4': ([1, 2, 3], [4, 5, 6])
-    #
-    # }
-
     # 设置每个柱子的宽度
     bar_width = 0.04
 
@@ -83,7 +119,7 @@ def plot():
     # 遍历数据和子图网格，绘制柱状图
     cnt = 0
     all = 0
-    for i, (group_name, (group1, group2)) in enumerate(data.items()):
+    for i, (group_name, (group1_means, group1_stds, group2_means, group2_stds)) in enumerate(data.items()):
         # 计算子图的行和列索引
         row = i // 2
         col = i % 2
@@ -95,19 +131,20 @@ def plot():
             spine.set_linewidth(2.5)  # 将边框宽度设置为2
             spine.set_edgecolor('grey')  # 设置边框颜色
 
-        # 绘制第一组数据的柱状图
-        ax.bar(index, group1,  bar_width,color = '#5370c4',label=f'{group_name} 1',hatch='', edgecolor='black',zorder = 0)
+        # 绘制第一组数据的柱状图，使用 mean 作为高度，用 std 作为 yerr
+        ax.bar(index, group1_means,  bar_width, color = '#5370c4', label=f'{group_name} 1', hatch='', edgecolor='black', zorder = 2,
+               yerr=group1_stds, error_kw={'elinewidth':2, 'capsize':6, 'capthick':2, 'ecolor':'black'})
 
-        # 绘制第二组数据的柱状图
-        ax.bar(index + bar_width, group2, bar_width,color = '#f16569', label=f'{group_name} 2',hatch='/', edgecolor='black',zorder = 1)
-        #ax.bar(index + bar_width*2, group3, bar_width,color = '#95c978', label=f'{group_name} 3',hatch='//', edgecolor='black')
-        fontsize = 26
+        # 绘制第二组数据的柱状图，使用 mean 作为高度，用 std 作为 yerr
+        ax.bar(index + bar_width, group2_means, bar_width, color = '#f16569', label=f'{group_name} 2', hatch='/', edgecolor='black', zorder = 2,
+               yerr=group2_stds, error_kw={'elinewidth':2, 'capsize':6, 'capthick':2, 'ecolor':'black'})
+
+        fontsize = 28
         # 添加图例
         if i==0:
-            ax.legend(['QAgent ','Grid-based'], loc='upper left')
+            ax.legend(['QAgent ','Ecmas+'], loc='upper left')
 
         # 设置横轴的标签
-        # Set x-axis to show only integers
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax.set_xticks(index + bar_width / 1)
         ax.set_xticklabels(labels_2d[i])
@@ -119,15 +156,22 @@ def plot():
         ax.yaxis.get_offset_text().set_position((-0.05, 0.9))  # 调整位置
         ax.yaxis.get_offset_text().set_fontsize(fontsize)  # 设置字体大小
 
+        # 最左侧两幅图添加纵坐标说明（文字与纵轴平行）
+        if col == 0:
+            ax.set_ylabel('Ancilla Qubit Cost', fontsize=fontsize, rotation=90, labelpad=18, va='center')
 
-        # if i % 2 ==0:
-        #     ax.set_ylabel('Depth', fontsize = fontsize)
+        # 最底部一行的两幅图添加横坐标说明
+        if row == 1:
+            ax.set_xlabel('Qubits', fontsize=fontsize+6)
+
         if i in range(6,9):
-            ax.set_xlabel('Qubits' ,fontsize = fontsize)
+            ax.set_xlabel('Qubits' ,fontsize = fontsize+6)
         # 设置图表的标题
-        ax.set_title(title[i], fontsize = fontsize+8)
+        ax.set_title(title[i], fontsize = fontsize+6)
+        # 设置纵轴刻度间隔为0.5
+        #ax.yaxis.set_major_locator(MultipleLocator(0.5*group2_means.max()/10))
         # 显示背景网格
-        ax.grid(True, which='both', axis='y', linestyle='-', linewidth=1.5,zorder = 0)
+        ax.grid(True, which='both', axis='y', linestyle='-', linewidth=2,zorder = 0)
 
         # 调整子图之间的间距
         plt.tight_layout()
